@@ -6,8 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { properties, bookings } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, Briefcase } from 'lucide-react';
 
 export default function HostingPage() {
   const { user } = useAuth();
@@ -35,7 +34,7 @@ export default function HostingPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {hostProperties.map((property) => {
-          const propertyBookings = bookings.filter(b => b.propertyId === property.id).length;
+          const propertyBookingsCount = bookings.filter(b => b.propertyId === property.id).length;
           return (
             <Card key={property.id} className="flex flex-col">
               <CardHeader className="p-0">
@@ -51,10 +50,12 @@ export default function HostingPage() {
               </CardHeader>
               <CardContent className="p-4 flex-grow">
                  <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
-                 <Badge variant="secondary">{propertyBookings} Bookings</Badge>
                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
               </CardContent>
-              <CardFooter className="p-4 flex justify-end">
+              <CardFooter className="p-4 flex justify-end gap-2">
+                <Button variant="secondary" asChild>
+                  <Link href={`/hosting/bookings/${property.id}`}><Briefcase className="mr-2 h-4 w-4"/> View Bookings ({propertyBookingsCount})</Link>
+                </Button>
                 <Button variant="outline" asChild>
                   <Link href={`/hosting/faq/${property.id}`}><Edit className="mr-2 h-4 w-4"/> Manage FAQs</Link>
                 </Button>

@@ -31,11 +31,11 @@ export default function LoginPage() {
   };
 
   const Logo = () => (
-    <div className="flex items-center justify-center gap-2 text-3xl font-bold text-primary font-headline mb-2">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10 text-accent">
-        <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.028a.75.75 0 00-.366.648v10.337a.75.75 0 00.33.633L9 22.01l.004.002a2.25 2.25 0 002.992 0l.004-.002 5.67-4.367a.75.75 0 00.33-.633V6.676a.75.75 0 00-.366-.648L12.378 1.602zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" />
+    <div className="flex items-center justify-center gap-2 text-3xl font-bold text-destructive font-headline mb-2">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-10 h-10">
+        <path d="M16 1.11A10.43 10.43 0 0 0 5.57 11.54c0 7.8 8.94 15.35 9.6 16.14a1 1 0 0 0 1.66 0c.66-.79 9.6-8.34 9.6-16.14A10.43 10.43 0 0 0 16 1.11zM16 15.84a4.31 4.31 0 1 1 0-8.62 4.31 4.31 0 0 1 0 8.62z"/>
       </svg>
-      <span>Tripsy</span>
+      <span>Airbnb</span>
     </div>
   );
 

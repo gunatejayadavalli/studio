@@ -4,7 +4,7 @@ import { AuthProvider } from '@/hooks/use-auth';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Tripsy',
+  title: 'Airbnb',
   description: 'A modern Airbnb clone',
 };
 

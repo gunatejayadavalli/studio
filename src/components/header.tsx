@@ -1,8 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, Briefcase, UserCircle, LogOut, BedDouble, PlusCircle } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, Briefcase, UserCircle, LogOut, BedDouble } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,11 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 const Logo = () => (
-  <Link href="/home" className="flex items-center gap-2 text-2xl font-bold text-primary-foreground font-headline">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-accent">
-      <path d="M12.378 1.602a.75.75 0 00-.756 0L3.366 6.028a.75.75 0 00-.366.648v10.337a.75.75 0 00.33.633L9 22.01l.004.002a2.25 2.25 0 002.992 0l.004-.002 5.67-4.367a.75.75 0 00.33-.633V6.676a.75.75 0 00-.366-.648L12.378 1.602zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" />
+  <Link href="/home" className="flex items-center gap-2 text-2xl font-bold text-destructive font-headline">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-8 h-8">
+      <path d="M16 1.11A10.43 10.43 0 0 0 5.57 11.54c0 7.8 8.94 15.35 9.6 16.14a1 1 0 0 0 1.66 0c.66-.79 9.6-8.34 9.6-16.14A10.43 10.43 0 0 0 16 1.11zM16 15.84a4.31 4.31 0 1 1 0-8.62 4.31 4.31 0 0 1 0 8.62z"/>
     </svg>
-    Tripsy
+    <span className="text-primary-foreground">Airbnb</span>
   </Link>
 );
 
@@ -31,13 +31,13 @@ const Logo = () => (
 export function Header() {
   const { user, logout, mode, setMode } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = mode === 'guest' ? [
     { href: '/home', icon: Home, label: 'Home' },
     { href: '/my-trips', icon: Briefcase, label: 'My Trips' },
   ] : [
     { href: '/hosting', icon: BedDouble, label: 'My Listings' },
-    { href: '/hosting/new', icon: PlusCircle, label: 'Add New' },
   ];
 
   return (
@@ -64,15 +64,15 @@ export function Header() {
 
         <div className="flex items-center gap-4">
           {user?.isHost && (
-            <div className="hidden items-center space-x-2 md:flex">
-              <Label htmlFor="hosting-mode-switch" className="text-sm text-primary-foreground/80">Guest</Label>
+            <div className="hidden items-center space-x-2 md:flex bg-primary-foreground/10 p-1 rounded-full">
+              <Label htmlFor="hosting-mode-switch" className="text-sm text-primary-foreground/90 px-2 cursor-pointer">Guest</Label>
               <Switch
                 id="hosting-mode-switch"
                 checked={mode === 'host'}
                 onCheckedChange={(checked) => setMode(checked ? 'host' : 'guest')}
                 aria-label="Switch between guest and hosting mode"
               />
-              <Label htmlFor="hosting-mode-switch" className="text-sm text-primary-foreground/80">Host</Label>
+              <Label htmlFor="hosting-mode-switch" className="text-sm text-primary-foreground/90 px-2 cursor-pointer">Host</Label>
             </div>
           )}
           <DropdownMenu>
@@ -91,6 +91,11 @@ export function Header() {
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <UserCircle className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />

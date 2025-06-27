@@ -26,7 +26,7 @@ const answerTripQuestionPrompt = ai.definePrompt(
     name: "answerTripQuestionPrompt",
     input: { schema: AnswerTripQuestionInputSchema },
     output: { schema: AnswerTripQuestionOutputSchema },
-    prompt: `You are a helpful assistant for a travel app called Tripsy. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
+    prompt: `You are a helpful assistant for a travel app called Airbnb. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
 
 User's Question: "{{question}}"
 

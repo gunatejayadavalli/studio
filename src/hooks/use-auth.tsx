@@ -11,6 +11,7 @@ type AuthContextType = {
   login: (email: string) => boolean;
   logout: () => void;
   setMode: (mode: 'guest' | 'host') => void;
+  updateUser: (data: Partial<User>) => void;
   isLoading: boolean;
 };
 
@@ -24,8 +25,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('tripsyUser');
-      const storedMode = localStorage.getItem('tripsyMode');
+      const storedUser = localStorage.getItem('airbnbUser');
+      const storedMode = localStorage.getItem('airbnbMode');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
@@ -42,13 +43,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (email: string) => {
     const foundUser = users.find(u => u.email === email);
     if (foundUser) {
-      localStorage.setItem('tripsyUser', JSON.stringify(foundUser));
+      localStorage.setItem('airbnbUser', JSON.stringify(foundUser));
       setUser(foundUser);
       if (foundUser.isHost) {
-        localStorage.setItem('tripsyMode', 'host');
+        localStorage.setItem('airbnbMode', 'host');
         setModeState('host');
       } else {
-        localStorage.setItem('tripsyMode', 'guest');
+        localStorage.setItem('airbnbMode', 'guest');
         setModeState('guest');
       }
       return true;
@@ -57,8 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('tripsyUser');
-    localStorage.removeItem('tripsyMode');
+    localStorage.removeItem('airbnbUser');
+    localStorage.removeItem('airbnbMode');
     setUser(null);
     setModeState('guest');
     router.push('/login');
@@ -66,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setMode = (newMode: 'guest' | 'host') => {
     if (user?.isHost) {
-      localStorage.setItem('tripsyMode', newMode);
+      localStorage.setItem('airbnbMode', newMode);
       setModeState(newMode);
        if (newMode === 'host') {
         router.push('/hosting');
@@ -75,9 +76,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
   };
+  
+  const updateUser = (data: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...data };
+      setUser(updatedUser);
+      localStorage.setItem('airbnbUser', JSON.stringify(updatedUser));
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, mode, login, logout, setMode, isLoading }}>
+    <AuthContext.Provider value={{ user, mode, login, logout, setMode, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
