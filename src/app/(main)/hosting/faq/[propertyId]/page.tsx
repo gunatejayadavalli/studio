@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,7 +28,8 @@ const faqFormSchema = z.object({
 
 type FaqFormValues = z.infer<typeof faqFormSchema>;
 
-export default function FaqPage({ params }: { params: { propertyId: string } }) {
+export default function FaqPage() {
+  const params = useParams();
   const property = properties.find((p) => p.id === params.propertyId);
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);

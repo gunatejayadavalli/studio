@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams, notFound } from 'next/navigation';
+import { useRouter, useSearchParams, notFound, useParams } from 'next/navigation';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { properties } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
-export default function CheckoutPage({ params }: { params: { id: string } }) {
+export default function CheckoutPage() {
+  const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();

@@ -2,7 +2,7 @@
 "use client";
 
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { bookings, properties, users, faqs } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,7 +12,8 @@ import { Calendar, MapPin, Users, Shield, ShieldOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
 
-export default function TripDetailsPage({ params }: { params: { bookingId: string } }) {
+export default function TripDetailsPage() {
+  const params = useParams();
   const booking = bookings.find((b) => b.id === params.bookingId);
 
   if (!booking) {

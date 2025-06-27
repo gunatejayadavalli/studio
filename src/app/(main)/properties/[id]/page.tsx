@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useParams } from 'next/navigation';
 import { addDays, format } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star } from 'lucide-react';
 
@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import type { DateRange } from 'react-day-picker';
+import { Label } from '@/components/ui/label';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
@@ -25,7 +26,8 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
   'Kitchen': <Utensils className="w-5 h-5 text-primary" />,
 };
 
-export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
+export default function PropertyDetailsPage() {
+  const params = useParams();
   const router = useRouter();
   const property = properties.find((p) => p.id === params.id);
   
