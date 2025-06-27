@@ -52,7 +52,7 @@ export default function HostingPage() {
                  <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
                  <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
               </CardContent>
-              <CardFooter className="p-4 flex justify-end gap-2">
+              <CardFooter className="p-4 flex flex-wrap justify-end gap-2">
                 <Button variant="secondary" asChild>
                   <Link href={`/hosting/bookings/${property.id}`}><Briefcase className="mr-2 h-4 w-4"/> View Bookings ({propertyBookingsCount})</Link>
                 </Button>

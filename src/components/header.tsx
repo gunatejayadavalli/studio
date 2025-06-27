@@ -51,8 +51,8 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors hover:text-accent",
-                  pathname === item.href ? "text-accent" : "text-primary-foreground/80"
+                  "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary-foreground",
+                  pathname === item.href ? "text-primary-foreground font-semibold" : "text-primary-foreground/80"
                 )}
               >
                 <item.icon className="h-4 w-4" />
