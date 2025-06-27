@@ -24,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, Info, FileText } from 'lucide-react';
+import { CheckCircle, Info, FileText, Loader2 } from 'lucide-react';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -41,6 +41,7 @@ export default function CheckoutPage() {
   
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
 
   if (!property || !from || !to) {
     return notFound();
@@ -67,21 +68,27 @@ export default function CheckoutPage() {
         });
         return;
     }
+    
+    if (isBooking) return;
 
-    addBooking({
-      propertyId: property.id,
-      checkIn: from,
-      checkOut: to,
-      totalCost: totalCost,
-      insurancePlanId: selectedInsurancePlanId ?? undefined,
-      guests: parseInt(guests, 10),
-    });
+    setIsBooking(true);
 
-    toast({
-      title: "Booking Confirmed!",
-      description: `Your trip to ${property.title} is booked.`,
-    });
-    router.push('/confirmation');
+    setTimeout(() => {
+        addBooking({
+        propertyId: property.id,
+        checkIn: from,
+        checkOut: to,
+        totalCost: totalCost,
+        insurancePlanId: selectedInsurancePlanId ?? undefined,
+        guests: parseInt(guests, 10),
+        });
+
+        toast({
+        title: "Booking Confirmed!",
+        description: `Your trip to ${property.title} is booked.`,
+        });
+        router.push('/confirmation');
+    }, 1000);
   };
 
   const handleInsuranceToggle = (checked: boolean) => {
@@ -178,8 +185,15 @@ export default function CheckoutPage() {
                 <span>${totalCost.toFixed(2)}</span>
             </CardFooter>
             <div className="px-6 pb-6">
-                <Button onClick={handleBooking} className="w-full h-12 text-lg" size="lg">
-                    Proceed to Book
+                <Button onClick={handleBooking} className="w-full h-12 text-lg" size="lg" disabled={isBooking}>
+                    {isBooking ? (
+                        <>
+                            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                            Processing...
+                        </>
+                    ) : (
+                        'Proceed to Book'
+                    )}
                 </Button>
             </div>
           </Card>
