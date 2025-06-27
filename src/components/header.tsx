@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -28,7 +27,7 @@ export function Header() {
   const Logo = () => (
     <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center gap-2 text-2xl font-bold text-primary-foreground font-headline">
       <Image
-        src="https://cdn.brandfetch.io/idkuvXnjOH/w/800/h/863/theme/dark/symbol.png?c=1dxbfHSJFAPEGdCLU4o5B"
+        src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg"
         alt="Airbnb logo"
         width={32}
         height={32}

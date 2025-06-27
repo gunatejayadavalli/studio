@@ -76,7 +76,7 @@ export default function RegisterPage() {
   const Logo = () => (
     <div className="flex items-center justify-center gap-2 text-3xl font-bold text-primary font-headline mb-2">
       <Image
-        src="https://cdn.brandfetch.io/idkuvXnjOH/w/800/h/863/theme/dark/symbol.png?c=1dxbfHSJFAPEGdCLU4o5B"
+        src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg"
         alt="Airbnb logo"
         width={40}
         height={40}
