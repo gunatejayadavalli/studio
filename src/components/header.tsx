@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -25,15 +26,14 @@ export function Header() {
   const router = useRouter();
 
   const Logo = () => (
-    <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center gap-2 text-2xl font-bold text-primary-foreground font-headline">
+    <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center text-2xl font-bold text-primary-foreground font-headline">
       <Image
         src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg"
         alt="Airbnb logo"
-        width={32}
+        width={102}
         height={32}
-        className="h-8 w-8"
+        className="h-8 w-auto"
       />
-      <span>Airbnb</span>
     </Link>
   );
 

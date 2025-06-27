@@ -34,15 +34,14 @@ export default function LoginPage() {
   };
 
   const Logo = () => (
-    <div className="flex items-center justify-center gap-2 text-3xl font-bold text-primary font-headline mb-2">
+    <div className="flex justify-center mb-2">
       <Image
         src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg"
         alt="Airbnb logo"
-        width={40}
-        height={40}
-        className="h-10 w-10"
+        width={120}
+        height={38}
+        className="h-10 w-auto"
       />
-      <span>Airbnb</span>
     </div>
   );
 
