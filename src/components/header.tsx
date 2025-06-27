@@ -18,20 +18,19 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
-const Logo = () => (
-  <Link href="/home" className="flex items-center gap-2 text-2xl font-bold text-destructive font-headline">
-    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-8 h-8">
-      <path d="M16 1.11A10.43 10.43 0 0 0 5.57 11.54c0 7.8 8.94 15.35 9.6 16.14a1 1 0 0 0 1.66 0c.66-.79 9.6-8.34 9.6-16.14A10.43 10.43 0 0 0 16 1.11zM16 15.84a4.31 4.31 0 1 1 0-8.62 4.31 4.31 0 0 1 0 8.62z"/>
-    </svg>
-    <span className="text-primary-foreground">Airbnb</span>
-  </Link>
-);
-
-
 export function Header() {
   const { user, logout, mode, setMode } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+
+  const Logo = () => (
+    <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center gap-2 text-2xl font-bold text-destructive font-headline">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-8 h-8">
+        <path d="M16 1.11A10.43 10.43 0 0 0 5.57 11.54c0 7.8 8.94 15.35 9.6 16.14a1 1 0 0 0 1.66 0c.66-.79 9.6-8.34 9.6-16.14A10.43 10.43 0 0 0 16 1.11zM16 15.84a4.31 4.31 0 1 1 0-8.62 4.31 4.31 0 0 1 0 8.62z"/>
+      </svg>
+      <span className="text-primary-foreground">Airbnb</span>
+    </Link>
+  );
 
   const navItems = mode === 'guest' ? [
     { href: '/home', icon: Home, label: 'Home' },

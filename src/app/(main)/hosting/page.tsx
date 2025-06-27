@@ -4,10 +4,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
-import { properties } from '@/lib/data';
+import { properties, bookings } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit } from 'lucide-react';
+import { PlusCircle, Edit, Briefcase } from 'lucide-react';
 
 export default function HostingPage() {
   const { user } = useAuth();
@@ -34,33 +34,42 @@ export default function HostingPage() {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {hostProperties.map((property) => (
-            <Link key={property.id} href={`/hosting/edit/${property.id}`} className="group block h-full">
-                <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  <CardHeader className="p-0">
-                     <div className="relative h-48 w-full">
-                      <Image
-                        src={property.thumbnail}
-                        alt={property.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 flex-grow">
-                     <CardTitle className="text-lg font-headline mb-2 group-hover:text-primary">{property.title}</CardTitle>
-                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
-                  </CardContent>
-                  <CardFooter className="p-4 bg-muted/50 mt-auto">
-                     <div className="flex items-center justify-center w-full text-sm font-semibold text-primary">
-                        <Edit className="mr-2 h-4 w-4"/>
-                        Manage Listing
-                     </div>
-                  </CardFooter>
+        {hostProperties.map((property) => {
+            const bookingsCount = bookings.filter(b => b.propertyId === property.id).length;
+            return (
+                <Card key={property.id} className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl">
+                    <Link href={`/hosting/edit/${property.id}`} className="group block flex-grow flex flex-col">
+                      <CardHeader className="p-0">
+                         <div className="relative h-48 w-full">
+                          <Image
+                            src={property.thumbnail}
+                            alt={property.title}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 flex-grow">
+                         <CardTitle className="text-lg font-headline mb-2 group-hover:text-primary">{property.title}</CardTitle>
+                         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
+                      </CardContent>
+                    </Link>
+                    <CardFooter className="p-4 bg-muted/50 mt-auto flex items-center gap-2">
+                       <Button asChild variant="outline" className="flex-1">
+                           <Link href={`/hosting/edit/${property.id}`}>
+                               <Edit className="mr-2 h-4 w-4"/> Manage
+                           </Link>
+                       </Button>
+                       <Button asChild className="flex-1">
+                           <Link href={`/hosting/bookings/${property.id}`}>
+                               <Briefcase className="mr-2 h-4 w-4"/> Bookings ({bookingsCount})
+                           </Link>
+                       </Button>
+                    </CardFooter>
                 </Card>
-            </Link>
-        ))}
+            )
+        })}
       </div>
     </div>
   );
