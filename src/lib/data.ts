@@ -289,7 +289,7 @@ export const bookings: Booking[] = [
   },
   {
     id: 'booking2',
-    userId: '1',
+    userId: '2',
     propertyId: '2',
     checkIn: '2024-09-05',
     checkOut: '2024-09-10',
@@ -407,5 +407,3 @@ export const faqs: Faq[] = [
     answer: 'We are about a 15-minute walk or a 5-minute ride-share from the Ryman and other downtown attractions.',
   },
 ];
-
-    
