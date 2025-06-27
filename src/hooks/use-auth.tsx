@@ -1,17 +1,21 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { users } from '@/lib/data';
+import { initialUsers } from '@/lib/data';
 
 type AuthContextType = {
   user: User | null;
+  allUsers: User[];
   mode: 'guest' | 'host';
-  login: (email: string) => boolean;
+  login: (email: string, password: string) => boolean;
   logout: () => void;
+  register: (data: Omit<User, 'id'>) => { success: boolean, message?: string };
   setMode: (mode: 'guest' | 'host') => void;
   updateUser: (data: Partial<User>) => void;
+  changePassword: (currentPassword: string, newPassword: string) => { success: boolean, message?: string };
   isLoading: boolean;
 };
 
@@ -19,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [mode, setModeState] = useState<'guest' | 'host'>('guest');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -27,39 +32,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('airbnbUser');
+      const storedAllUsers = localStorage.getItem('airbnbAllUsers');
+      
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
+      if (storedAllUsers) {
+        setAllUsers(JSON.parse(storedAllUsers));
+      } else {
+        setAllUsers(initialUsers);
+      }
     } catch (error) {
       console.error("Failed to parse auth data from localStorage", error);
+      setAllUsers(initialUsers);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Automatically switch mode based on the current page
+  useEffect(() => {
+    if(!isLoading) {
+      localStorage.setItem('airbnbAllUsers', JSON.stringify(allUsers));
+    }
+  }, [allUsers, isLoading]);
+
   useEffect(() => {
     if (user?.isHost) {
       if (pathname.startsWith('/hosting')) {
         if (mode !== 'host') {
           setModeState('host');
-          localStorage.setItem('airbnbMode', 'host');
         }
       } else {
         if (mode !== 'guest') {
           setModeState('guest');
-          localStorage.setItem('airbnbMode', 'guest');
         }
       }
     }
   }, [pathname, user, mode]);
 
-  const login = (email: string) => {
-    const foundUser = users.find(u => u.email === email);
-    if (foundUser) {
+  const login = (email: string, password: string) => {
+    const foundUser = allUsers.find(u => u.email === email);
+    if (foundUser && foundUser.password === password) {
       localStorage.setItem('airbnbUser', JSON.stringify(foundUser));
       setUser(foundUser);
-      // Always default to guest mode on login
       localStorage.setItem('airbnbMode', 'guest');
       setModeState('guest');
       return true;
@@ -74,10 +89,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setModeState('guest');
     router.push('/login');
   };
+  
+  const register = (data: Omit<User, 'id'>) => {
+    if (allUsers.some(u => u.email === data.email)) {
+      return { success: false, message: 'An account with this email already exists.' };
+    }
+    
+    const newUser: User = {
+      ...data,
+      id: `user${Date.now()}`,
+    };
+    
+    setAllUsers(prevUsers => [...prevUsers, newUser]);
+    return { success: true };
+  };
+  
+  const changePassword = (currentPassword: string, newPassword: string) => {
+     if (!user || user.password !== currentPassword) {
+      return { success: false, message: 'The current password you entered is incorrect.' };
+    }
+    
+    updateUser({ password: newPassword });
+    return { success: true };
+  };
 
   const setMode = (newMode: 'guest' | 'host') => {
     if (user?.isHost) {
-      // The useEffect will handle setting the state and local storage after navigation
       if (newMode === 'host') {
         router.push('/hosting');
       } else {
@@ -90,12 +127,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (user) {
       const updatedUser = { ...user, ...data };
       setUser(updatedUser);
+      setAllUsers(prevUsers => prevUsers.map(u => u.id === user.id ? updatedUser : u));
       localStorage.setItem('airbnbUser', JSON.stringify(updatedUser));
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, mode, login, logout, setMode, updateUser, isLoading }}>
+    <AuthContext.Provider value={{ user, allUsers, mode, login, logout, register, setMode, updateUser, changePassword, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

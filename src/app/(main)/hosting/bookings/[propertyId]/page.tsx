@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { properties, users } from '@/lib/data';
+import { properties } from '@/lib/data';
 import { useBookings } from '@/hooks/use-bookings';
+import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,6 +16,7 @@ export default function PropertyBookingsPage() {
   const params = useParams();
   const propertyId = params.propertyId as string;
   const { bookings } = useBookings();
+  const { allUsers: users } = useAuth();
 
   const property = properties.find((p) => p.id === propertyId);
   const propertyBookings = bookings.filter((b) => b.propertyId === propertyId);

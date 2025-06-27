@@ -1,10 +1,12 @@
+
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +20,7 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(email);
+    const success = login(email, password);
     if (success) {
       router.push('/home');
     } else {
@@ -75,6 +77,12 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
+        <CardFooter className="justify-center text-sm">
+          <p className="text-muted-foreground">Don't have an account?&nbsp;</p>
+          <Link href="/register" className="font-medium text-primary hover:underline">
+            Register
+          </Link>
+        </CardFooter>
       </Card>
     </div>
   );

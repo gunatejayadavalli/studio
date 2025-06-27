@@ -1,8 +1,10 @@
+
 // src/lib/types.ts
 export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string; // Made optional for safety, but will be present
   avatar: string;
   isHost: boolean;
 }
@@ -22,7 +24,7 @@ export interface Property {
 }
 
 export interface InsurancePlan {
-  id: string;
+  id:string;
   name: string;
   pricePercent: number;
   minTripValue: number;

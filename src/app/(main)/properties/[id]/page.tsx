@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -5,8 +6,9 @@ import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { addDays, format } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
-import { properties, users } from '@/lib/data';
+import { properties } from '@/lib/data';
 import type { Property } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +38,7 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { allUsers: users } = useAuth();
   const property = properties.find((p) => p.id === params.id);
   
   const [date, setDate] = useState<DateRange | undefined>({

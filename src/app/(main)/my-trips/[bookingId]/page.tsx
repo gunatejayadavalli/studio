@@ -5,7 +5,8 @@
 import Image from 'next/image';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
-import { properties, users, faqs, insurancePlans } from '@/lib/data';
+import { useAuth } from '@/hooks/use-auth';
+import { properties, faqs, insurancePlans } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +17,7 @@ import { Chatbot } from '@/components/chatbot';
 export default function TripDetailsPage() {
   const params = useParams();
   const { bookings } = useBookings();
+  const { allUsers: users } = useAuth();
   const booking = bookings.find((b) => b.id === params.bookingId);
 
   if (!booking) {
