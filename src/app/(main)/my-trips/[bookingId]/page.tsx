@@ -3,6 +3,7 @@
 "use client";
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,9 +11,10 @@ import { properties, faqs, insurancePlans } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
+import { Button } from '@/components/ui/button';
 
 export default function TripDetailsPage() {
   const params = useParams();
@@ -129,6 +131,12 @@ export default function TripDetailsPage() {
                                 </li>
                             ))}
                         </ul>
+                        <Separator className="!mt-4"/>
+                        <Button variant="link" asChild className="p-0 text-sm h-auto -ml-1">
+                            <Link href={insurancePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                                <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
+                            </Link>
+                        </Button>
                     </CardContent>
                 </Card>
              ) : (

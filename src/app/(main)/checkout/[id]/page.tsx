@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { properties, insurancePlans } from '@/lib/data';
@@ -23,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, Info } from 'lucide-react';
+import { CheckCircle, Info, FileText } from 'lucide-react';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -201,6 +202,13 @@ export default function CheckoutPage() {
                             <p>{benefit}</p>
                         </div>
                     ))}
+                </div>
+                <div className="pt-2">
+                  <Button variant="link" asChild className="p-0 text-sm h-auto">
+                      <Link href={eligiblePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                          <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
+                      </Link>
+                  </Button>
                 </div>
                 <AlertDialogFooter>
                 <AlertDialogCancel>Close</AlertDialogCancel>

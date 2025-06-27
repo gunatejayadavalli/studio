@@ -30,6 +30,7 @@ export interface InsurancePlan {
   minTripValue: number;
   maxTripValue: number;
   benefits: string[];
+  termsUrl: string;
 }
 
 export interface Booking {
