@@ -19,7 +19,7 @@
     "checkOut": "2024-09-10",
     "totalCost": 1100,
     "guests": 3,
-    "status": "confirmed"
+    "status": "cancelled-by-guest"
   },
   {
     "id": "booking3",
@@ -29,7 +29,8 @@
     "checkOut": "2024-10-07",
     "totalCost": 2450,
     "guests": 4,
-    "status": "confirmed"
+    "status": "cancelled-by-host",
+    "cancellationReason": "Property is undergoing unexpected maintenance."
   },
   {
     "id": "booking4",
@@ -62,6 +63,27 @@
     "totalCost": 3234,
     "insurancePlanId": "GTI-03",
     "guests": 4,
+    "status": "confirmed"
+  },
+  {
+    "id": "booking7",
+    "userId": "1",
+    "propertyId": "5",
+    "checkIn": "2024-07-20",
+    "checkOut": "2024-07-25",
+    "totalCost": 1207.5,
+    "guests": 2,
+    "status": "cancelled-by-host",
+    "cancellationReason": "Host had a family emergency."
+  },
+  {
+    "id": "booking8",
+    "userId": "1",
+    "propertyId": "8",
+    "checkIn": "2024-12-01",
+    "checkOut": "2024-12-05",
+    "totalCost": 920,
+    "guests": 1,
     "status": "confirmed"
   }
 ]
