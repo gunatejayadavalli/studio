@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { users } from '@/lib/data';
 
@@ -22,16 +22,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setModeState] = useState<'guest' | 'host'>('guest');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('airbnbUser');
-      const storedMode = localStorage.getItem('airbnbMode');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
-      }
-      if (storedMode) {
-        setModeState(storedMode as 'guest' | 'host');
       }
     } catch (error) {
       console.error("Failed to parse auth data from localStorage", error);
@@ -40,18 +37,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Automatically switch mode based on the current page
+  useEffect(() => {
+    if (user?.isHost) {
+      if (pathname.startsWith('/hosting')) {
+        if (mode !== 'host') {
+          setModeState('host');
+          localStorage.setItem('airbnbMode', 'host');
+        }
+      } else {
+        if (mode !== 'guest') {
+          setModeState('guest');
+          localStorage.setItem('airbnbMode', 'guest');
+        }
+      }
+    }
+  }, [pathname, user, mode]);
+
   const login = (email: string) => {
     const foundUser = users.find(u => u.email === email);
     if (foundUser) {
       localStorage.setItem('airbnbUser', JSON.stringify(foundUser));
       setUser(foundUser);
-      if (foundUser.isHost) {
-        localStorage.setItem('airbnbMode', 'host');
-        setModeState('host');
-      } else {
-        localStorage.setItem('airbnbMode', 'guest');
-        setModeState('guest');
-      }
+      // Always default to guest mode on login
+      localStorage.setItem('airbnbMode', 'guest');
+      setModeState('guest');
       return true;
     }
     return false;
@@ -67,9 +77,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const setMode = (newMode: 'guest' | 'host') => {
     if (user?.isHost) {
-      localStorage.setItem('airbnbMode', newMode);
-      setModeState(newMode);
-       if (newMode === 'host') {
+      // The useEffect will handle setting the state and local storage after navigation
+      if (newMode === 'host') {
         router.push('/hosting');
       } else {
         router.push('/home');
