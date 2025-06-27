@@ -8,17 +8,21 @@ import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { useBookings } from '@/hooks/use-bookings';
+import { properties } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 const profileFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
   avatar: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
+  isHost: z.boolean().default(false),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -37,11 +41,12 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 export default function ProfilePage() {
   const router = useRouter();
   const { user, updateUser, changePassword, isLoading } = useAuth();
+  const { bookings } = useBookings();
   const { toast } = useToast();
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: { name: '', avatar: '' },
+    defaultValues: { name: '', avatar: '', isHost: false },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -54,10 +59,14 @@ export default function ProfilePage() {
       profileForm.reset({
         name: user.name,
         avatar: user.avatar,
+        isHost: user.isHost,
       });
     }
   }, [user, profileForm]);
-  
+
+  const hostProperties = user?.isHost ? properties.filter(p => p.hostId === user.id) : [];
+  const hasActiveBookings = bookings.some(b => hostProperties.some(p => p.id === b.propertyId));
+
   if (isLoading || !user) {
     return (
       <div className="container mx-auto max-w-xl py-8 px-4 md:px-6">
@@ -96,7 +105,7 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold font-headline">Edit Profile</CardTitle>
-          <CardDescription>Update your name and profile picture.</CardDescription>
+          <CardDescription>Update your personal information and settings.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...profileForm}>
@@ -115,11 +124,39 @@ export default function ProfilePage() {
               </div>
                <FormField control={profileForm.control} name="name" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>Name<span className="text-destructive ml-1">*</span></FormLabel>
                     <FormControl><Input placeholder="Your full name" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+
+              <FormField
+                control={profileForm.control}
+                name="isHost"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Enable Hosting</FormLabel>
+                      <FormDescription>
+                        Turn on to list and manage your properties.
+                        {user.isHost && hasActiveBookings && (
+                          <span className="text-xs text-destructive/90 block mt-1">
+                            Cannot be disabled while you have active bookings.
+                          </span>
+                        )}
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={user.isHost && hasActiveBookings}
+                        aria-readonly={user.isHost && hasActiveBookings}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <Button type="submit">Save Profile</Button>
             </form>
           </Form>
@@ -138,21 +175,21 @@ export default function ProfilePage() {
             <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
               <FormField control={passwordForm.control} name="currentPassword" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Current Password</FormLabel>
+                  <FormLabel>Current Password<span className="text-destructive ml-1">*</span></FormLabel>
                   <FormControl><Input type="password" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={passwordForm.control} name="newPassword" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>New Password</FormLabel>
+                  <FormLabel>New Password<span className="text-destructive ml-1">*</span></FormLabel>
                   <FormControl><Input type="password" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={passwordForm.control} name="confirmPassword" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormLabel>Confirm New Password<span className="text-destructive ml-1">*</span></FormLabel>
                   <FormControl><Input type="password" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
