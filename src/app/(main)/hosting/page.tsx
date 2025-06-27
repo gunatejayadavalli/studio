@@ -1,12 +1,13 @@
+
 "use client";
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
-import { properties, bookings } from '@/lib/data';
+import { properties } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit, Briefcase } from 'lucide-react';
+import { PlusCircle, Edit } from 'lucide-react';
 
 export default function HostingPage() {
   const { user } = useAuth();
@@ -33,36 +34,33 @@ export default function HostingPage() {
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {hostProperties.map((property) => {
-          const propertyBookingsCount = bookings.filter(b => b.propertyId === property.id).length;
-          return (
-            <Card key={property.id} className="flex flex-col">
-              <CardHeader className="p-0">
-                 <div className="relative h-48 w-full">
-                  <Image
-                    src={property.thumbnail}
-                    alt={property.title}
-                    layout="fill"
-                    objectFit="cover"
-                    className="rounded-t-lg"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 flex-grow">
-                 <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
-                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
-              </CardContent>
-              <CardFooter className="p-4 flex flex-wrap justify-end gap-2">
-                <Button variant="secondary" asChild>
-                  <Link href={`/hosting/bookings/${property.id}`}><Briefcase className="mr-2 h-4 w-4"/> View Bookings ({propertyBookingsCount})</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href={`/hosting/faq/${property.id}`}><Edit className="mr-2 h-4 w-4"/> Manage FAQs</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          );
-        })}
+        {hostProperties.map((property) => (
+            <Link key={property.id} href={`/hosting/edit/${property.id}`} className="group block h-full">
+                <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                  <CardHeader className="p-0">
+                     <div className="relative h-48 w-full">
+                      <Image
+                        src={property.thumbnail}
+                        alt={property.title}
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 flex-grow">
+                     <CardTitle className="text-lg font-headline mb-2 group-hover:text-primary">{property.title}</CardTitle>
+                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{property.description}</p>
+                  </CardContent>
+                  <CardFooter className="p-4 bg-muted/50 mt-auto">
+                     <div className="flex items-center justify-center w-full text-sm font-semibold text-primary">
+                        <Edit className="mr-2 h-4 w-4"/>
+                        Manage Listing
+                     </div>
+                  </CardFooter>
+                </Card>
+            </Link>
+        ))}
       </div>
     </div>
   );
