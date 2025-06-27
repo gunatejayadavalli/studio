@@ -96,6 +96,36 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+
+              {/* Mobile Nav & Toggle */}
+              <div className="md:hidden">
+                {navItems.map((item) => (
+                  <DropdownMenuItem key={item.href} onClick={() => router.push(item.href)}>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    <span>{item.label}</span>
+                  </DropdownMenuItem>
+                ))}
+                {user?.isHost && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="focus:bg-transparent cursor-default">
+                      <div className="flex w-full items-center justify-between">
+                        <Label htmlFor="hosting-mode-switch-mobile" className="cursor-pointer font-medium">Guest</Label>
+                        <Switch
+                          id="hosting-mode-switch-mobile"
+                          checked={mode === 'host'}
+                          onCheckedChange={(checked) => setMode(checked ? 'host' : 'guest')}
+                          aria-label="Switch between guest and hosting mode"
+                        />
+                        <Label htmlFor="hosting-mode-switch-mobile" className="cursor-pointer font-medium">Host</Label>
+                      </div>
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+              </div>
+
+              {/* Common Items */}
               <DropdownMenuItem onClick={() => router.push('/profile')}>
                 <UserCircle className="mr-2 h-4 w-4" />
                 <span>Profile</span>
