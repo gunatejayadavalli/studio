@@ -39,6 +39,7 @@ export default function MyTripsPage() {
           if (!property) return null;
 
           const isCancelled = booking.status !== 'confirmed';
+          const cancellationMessage = booking.status === 'cancelled-by-host' ? 'Cancelled by Host' : 'Cancelled by You';
 
           return (
             <Card key={booking.id} className={cn("flex flex-col", isCancelled && "bg-muted/50")}>
@@ -55,7 +56,7 @@ export default function MyTripsPage() {
               <CardContent className="p-4 flex-grow">
                  {isCancelled && (
                    <Badge variant="destructive" className="mb-2 gap-1.5">
-                    <Ban className="w-3.5 h-3.5"/> Booking Cancelled
+                    <Ban className="w-3.5 h-3.5"/> {cancellationMessage}
                    </Badge>
                  )}
                 <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
