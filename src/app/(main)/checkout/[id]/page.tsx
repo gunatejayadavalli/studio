@@ -36,6 +36,7 @@ export default function CheckoutPage() {
   const property = properties.find((p) => p.id === params.id);
   const from = searchParams.get('from');
   const to = searchParams.get('to');
+  const guests = searchParams.get('guests') || '2';
   
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
@@ -72,7 +73,7 @@ export default function CheckoutPage() {
       checkOut: to,
       totalCost: totalCost,
       insurancePlanId: selectedInsurancePlanId ?? undefined,
-      guests: 2, // Hardcoded as there's no guest selector
+      guests: parseInt(guests, 10),
     });
 
     toast({
@@ -120,6 +121,10 @@ export default function CheckoutPage() {
                   <div className="flex justify-between">
                     <p className="font-medium">Dates</p>
                     <p>{format(fromDate, "MMM d")} - {format(toDate, "MMM d, yyyy")}</p>
+                  </div>
+                   <div className="flex justify-between mt-2">
+                    <p className="font-medium">Guests</p>
+                    <p>{guests} guest{parseInt(guests, 10) > 1 ? 's' : ''}</p>
                   </div>
               </div>
               <Separator />

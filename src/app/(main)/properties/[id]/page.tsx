@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { addDays, format } from 'date-fns';
-import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } from 'lucide-react';
 
 import { properties, users } from '@/lib/data';
 import type { Property } from '@/lib/types';
@@ -19,6 +19,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Separator } from '@/components/ui/separator';
 import type { DateRange } from 'react-day-picker';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
@@ -35,6 +42,8 @@ export default function PropertyDetailsPage() {
     from: new Date(),
     to: addDays(new Date(), 5),
   });
+  const [guests, setGuests] = useState(2);
+
 
   if (!property) {
     notFound();
@@ -46,7 +55,7 @@ export default function PropertyDetailsPage() {
     if (date?.from && date?.to) {
       const fromDate = format(date.from, 'yyyy-MM-dd');
       const toDate = format(date.to, 'yyyy-MM-dd');
-      router.push(`/checkout/${property.id}?from=${fromDate}&to=${toDate}`);
+      router.push(`/checkout/${property.id}?from=${fromDate}&to=${toDate}&guests=${guests}`);
     }
   }
 
@@ -163,6 +172,27 @@ export default function PropertyDetailsPage() {
                   </PopoverContent>
                 </Popover>
                </div>
+                <div>
+                  <Label htmlFor="guests">Guests</Label>
+                  <Select
+                    value={guests.toString()}
+                    onValueChange={(value) => setGuests(parseInt(value))}
+                  >
+                    <SelectTrigger id="guests" className="w-full">
+                      <SelectValue placeholder="Select number of guests" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                        <SelectItem key={num} value={num.toString()}>
+                          <div className="flex items-center gap-2">
+                           <Users className="h-4 w-4"/> 
+                           <span>{num} guest{num > 1 ? 's' : ''}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               <Button onClick={handleCheckout} className="w-full text-lg h-12" size="lg" disabled={!date?.from || !date?.to}>
                 Proceed to Checkout
               </Button>
