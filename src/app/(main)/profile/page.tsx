@@ -65,7 +65,7 @@ export default function ProfilePage() {
   }, [user, profileForm]);
 
   const hostProperties = user?.isHost ? properties.filter(p => p.hostId === user.id) : [];
-  const hasActiveBookings = bookings.some(b => hostProperties.some(p => p.id === b.propertyId));
+  const hasActiveBookings = bookings.some(b => b.status === 'confirmed' && hostProperties.some(p => p.id === b.propertyId));
 
   if (isLoading || !user) {
     return (

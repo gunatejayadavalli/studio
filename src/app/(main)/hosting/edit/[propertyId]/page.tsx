@@ -6,6 +6,7 @@ import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { properties, faqs as allFaqs } from '@/lib/data';
+import { useBookings } from '@/hooks/use-bookings';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PropertyForm, type PropertyFormValues } from '@/components/property-form';
@@ -30,9 +31,14 @@ export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { bookings } = useBookings();
   const [property, setProperty] = useState<Property | null | undefined>(undefined);
   const [defaultValues, setDefaultValues] = useState<PropertyFormValues | undefined>(undefined);
   const propertyId = params.propertyId as string;
+
+  const hasActiveBookings = bookings.some(
+    (b) => b.propertyId === propertyId && b.status === 'confirmed'
+  );
 
   useEffect(() => {
     const foundProperty = properties.find((p) => p.id === propertyId);
@@ -104,9 +110,14 @@ export default function EditPropertyPage() {
           <div className="p-4 border border-destructive/50 rounded-lg bg-destructive/5">
              <h3 className="text-lg font-semibold text-destructive">Danger Zone</h3>
               <p className="text-sm text-destructive/80 mb-4">Deleting your property is a permanent action and cannot be undone.</p>
+              {hasActiveBookings && (
+                <p className="text-sm text-destructive font-medium mb-4">
+                  This property cannot be deleted because it has active bookings.
+                </p>
+              )}
                <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">Delete Property</Button>
+                  <Button variant="destructive" disabled={hasActiveBookings}>Delete Property</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
