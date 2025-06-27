@@ -3,6 +3,10 @@ import type { User, Property, Booking, Faq } from './types';
 export const users: User[] = [
   { id: '1', name: 'Alex Doe', email: 'alex@example.com', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', isHost: true },
   { id: '2', name: 'Sam Smith', email: 'sam@example.com', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop', isHost: false },
+  { id: '3', name: 'Casey Jones', email: 'casey@example.com', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', isHost: true },
+  { id: '4', name: 'Riley Brown', email: 'riley@example.com', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', isHost: false },
+  { id: '5', name: 'Jordan Lee', email: 'jordan@example.com', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', isHost: false },
+  { id: '6', name: 'Morgan Taylor', email: 'morgan@example.com', avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop', isHost: true },
 ];
 
 export const properties: Property[] = [
@@ -71,6 +75,58 @@ export const properties: Property[] = [
     description: 'Live like a local in this chic apartment in Le Marais. Beautifully decorated with a mix of modern and vintage furniture. Includes a lovely balcony.',
     amenities: ['WiFi', 'Kitchen', 'Air Conditioning', 'Balcony'],
   },
+  {
+    id: '6',
+    hostId: '3',
+    title: 'Urban Chic Studio',
+    location: 'Chicago, Illinois',
+    pricePerNight: 180,
+    rating: 4.8,
+    thumbnail: 'https://images.unsplash.com/photo-1567684015243-d1c998de4b59?q=80&w=600&h=400&auto=format&fit=crop',
+    data_ai_hint: 'urban studio',
+    images: ['https://images.unsplash.com/photo-1567684015243-d1c998de4b59?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1594563703937-fdc640497dcd?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1628592102751-ba834f691834?q=80&w=1200&h=800&auto=format&fit=crop'],
+    description: 'A stylish and modern studio in the heart of Chicago. Perfect for solo travelers or couples looking to explore the city.',
+    amenities: ['WiFi', 'Kitchen', 'Air Conditioning', 'Gym Access'],
+  },
+  {
+    id: '7',
+    hostId: '1',
+    title: 'Tropical Treehouse',
+    location: 'Bali, Indonesia',
+    pricePerNight: 250,
+    rating: 4.95,
+    thumbnail: 'https://images.unsplash.com/photo-1533599388331-52a13a2631b6?q=80&w=600&h=400&auto=format&fit=crop',
+    data_ai_hint: 'tropical treehouse',
+    images: ['https://images.unsplash.com/photo-1533599388331-52a13a2631b6?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1555855392-465a39648936?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1543644088-bd1c97c17a23?q=80&w=1200&h=800&auto=format&fit=crop'],
+    description: 'An unforgettable experience in a unique bamboo treehouse. Enjoy breathtaking views of the jungle and rice paddies from your private deck.',
+    amenities: ['WiFi', 'Pool', 'Outdoor Shower', 'Breakfast Included'],
+  },
+  {
+    id: '8',
+    hostId: '6',
+    title: 'Historic Townhouse',
+    location: 'Boston, Massachusetts',
+    pricePerNight: 230,
+    rating: 4.75,
+    thumbnail: 'https://images.unsplash.com/photo-1568605117036-5fe5e7185743?q=80&w=600&h=400&auto=format&fit=crop',
+    data_ai_hint: 'historic townhouse',
+    images: ['https://images.unsplash.com/photo-1568605117036-5fe5e7185743?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1613553424172-16a3f168a0a0?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=1200&h=800&auto=format&fit=crop'],
+    description: 'Stay in a beautifully preserved historic townhouse in the charming Beacon Hill neighborhood. Full of character with modern amenities.',
+    amenities: ['WiFi', 'Kitchen', 'Fireplace', 'Air Conditioning'],
+  },
+  {
+    id: '9',
+    hostId: '6',
+    title: 'Desert Oasis with Pool',
+    location: 'Scottsdale, Arizona',
+    pricePerNight: 400,
+    rating: 4.9,
+    thumbnail: 'https://images.unsplash.com/photo-1613977257365-aaae5a9817ff?q=80&w=600&h=400&auto=format&fit=crop',
+    data_ai_hint: 'desert oasis',
+    images: ['https://images.unsplash.com/photo-1613977257365-aaae5a9817ff?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1569348218683-e991410712f2?q=80&w=1200&h=800&auto=format&fit=crop', 'https://images.unsplash.com/photo-1600585152225-357ea66c7e20?q=80&w=1200&h=800&auto=format&fit=crop'],
+    description: 'A luxurious desert oasis perfect for relaxation. This spacious home features a large pool, hot tub, and stunning mountain views.',
+    amenities: ['WiFi', 'Pool', 'Hot Tub', 'Kitchen', 'Air Conditioning'],
+  },
 ];
 
 export const bookings: Booking[] = [
@@ -93,6 +149,26 @@ export const bookings: Booking[] = [
     totalCost: 1100,
     hasInsurance: false,
     guests: 3,
+  },
+  {
+    id: 'booking3',
+    userId: '2',
+    propertyId: '1',
+    checkIn: '2024-10-01',
+    checkOut: '2024-10-07',
+    totalCost: 2450,
+    hasInsurance: true,
+    guests: 4,
+  },
+  {
+    id: 'booking4',
+    userId: '4',
+    propertyId: '7',
+    checkIn: '2024-11-12',
+    checkOut: '2024-11-18',
+    totalCost: 1500,
+    hasInsurance: false,
+    guests: 2,
   },
 ];
 
@@ -120,5 +196,23 @@ export const faqs: Faq[] = [
     propertyId: '3',
     question: 'What is the WiFi password?',
     answer: 'The network is "NYCLoft" and the password is "citydreams".'
-  }
+  },
+  {
+    id: 'faq5',
+    propertyId: '6',
+    question: 'Is there a gym in the building?',
+    answer: 'Yes, guests have full access to the building\'s gym on the ground floor.',
+  },
+  {
+    id: 'faq6',
+    propertyId: '7',
+    question: 'Is breakfast included?',
+    answer: 'Yes, a complimentary tropical breakfast is served daily from 7 AM to 10 AM.',
+  },
+  {
+    id: 'faq7',
+    propertyId: '8',
+    question: 'Is parking available?',
+    answer: 'Street parking is available, but it can be limited. We recommend using public transport or ride-sharing services.',
+  },
 ];
