@@ -80,7 +80,9 @@ export default function TripDetailsPage() {
                     <Ban className="w-16 h-16 mx-auto mb-2 text-destructive" />
                     <h2 className="text-2xl font-bold">Booking Cancelled</h2>
                     <p className="text-sm">
-                      {booking.status === 'cancelled-by-host' ? `Cancelled by host.` : 'You have cancelled this booking.'}
+                      {booking.status === 'cancelled-by-guest'
+                        ? 'This booking was cancelled by you.'
+                        : 'This booking was cancelled by the host.'}
                     </p>
                   </div>
               </div>
