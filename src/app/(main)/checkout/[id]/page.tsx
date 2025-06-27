@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter, useSearchParams, notFound, useParams } from 'next/navigation';
+import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { properties } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,16 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useBookings } from '@/hooks/use-bookings';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CheckoutPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { addBooking } = useBookings();
 
   const property = properties.find((p) => p.id === params.id);
   const from = searchParams.get('from');
@@ -37,14 +41,24 @@ export default function CheckoutPage() {
   const totalCost = basePrice + serviceFee + insuranceCost;
 
   const handleBooking = () => {
-    // In a real app, this would call an API to create a booking.
-    console.log("Booking confirmed for:", {
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Logged In",
+            description: "You must be logged in to make a booking.",
+        });
+        return;
+    }
+
+    addBooking({
       propertyId: property.id,
-      from,
-      to,
-      totalCost,
+      checkIn: from,
+      checkOut: to,
+      totalCost: totalCost,
       hasInsurance: addInsurance,
+      guests: 2, // Hardcoded as there's no guest selector
     });
+
     toast({
       title: "Booking Confirmed!",
       description: `Your trip to ${property.title} is booked.`,

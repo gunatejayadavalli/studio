@@ -4,13 +4,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
-import { properties, bookings } from '@/lib/data';
+import { useBookings } from '@/hooks/use-bookings';
+import { properties } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Edit, Briefcase } from 'lucide-react';
 
 export default function HostingPage() {
   const { user } = useAuth();
+  const { bookings } = useBookings();
   const hostProperties = properties.filter((p) => p.hostId === user?.id);
 
   if (hostProperties.length === 0) {

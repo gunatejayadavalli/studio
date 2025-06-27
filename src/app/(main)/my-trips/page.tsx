@@ -4,7 +4,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
-import { bookings, properties } from '@/lib/data';
+import { useBookings } from '@/hooks/use-bookings';
+import { properties } from '@/lib/data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -12,6 +13,7 @@ import { Calendar, MapPin } from 'lucide-react';
 
 export default function MyTripsPage() {
   const { user } = useAuth();
+  const { bookings } = useBookings();
   const userBookings = bookings.filter((b) => b.userId === user?.id);
 
   if (userBookings.length === 0) {
