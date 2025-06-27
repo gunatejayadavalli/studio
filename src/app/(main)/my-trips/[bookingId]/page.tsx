@@ -1,15 +1,15 @@
+
 // src/app/(main)/my-trips/[bookingId]/page.tsx
 "use client";
 
 import Image from 'next/image';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
-import { properties, users, faqs } from '@/lib/data';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { properties, users, faqs, insurancePlans } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, Shield, ShieldOff } from 'lucide-react';
+import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
 
@@ -25,6 +25,9 @@ export default function TripDetailsPage() {
   const property = properties.find((p) => p.id === booking.propertyId);
   const host = users.find(u => u.id === property?.hostId);
   const propertyFaqs = faqs.filter(f => f.propertyId === property?.id);
+  const insurancePlan = booking.insurancePlanId 
+    ? insurancePlans.find(p => p.id === booking.insurancePlanId) 
+    : undefined;
 
   if (!property || !host) {
     notFound();
@@ -93,32 +96,52 @@ export default function TripDetailsPage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-96">
+        <div className="w-full lg:w-96 space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Booking Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent>
                     <div className="flex justify-between">
                         <span className="text-muted-foreground">Total Cost</span>
                         <span className="font-semibold">${booking.totalCost.toFixed(2)}</span>
                     </div>
-                     <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Travel Insurance</span>
-                        {booking.hasInsurance ? (
-                            <Badge variant="default" className="bg-green-100 text-green-800 hover:bg-green-200">
-                                <Shield className="w-4 h-4 mr-1"/>
-                                Protected
-                            </Badge>
-                        ) : (
-                             <Badge variant="destructive">
-                                <ShieldOff className="w-4 h-4 mr-1"/>
-                                Not Protected
-                            </Badge>
-                        )}
-                    </div>
                 </CardContent>
             </Card>
+             {insurancePlan ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <ShieldCheck className="w-6 h-6 text-green-600"/>
+                            <span>Travel Insurance</span>
+                        </CardTitle>
+                        <CardDescription>{insurancePlan.name}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <p className="font-medium text-sm">Your coverage benefits:</p>
+                        <ul className="space-y-1">
+                            {insurancePlan.benefits.map((benefit, index) => (
+                                <li key={index} className="flex items-start gap-2 text-sm">
+                                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                    <span>{benefit}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </CardContent>
+                </Card>
+             ) : (
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <ShieldAlert className="w-6 h-6 text-amber-600"/>
+                            <span>Travel Insurance</span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">No insurance plan was purchased for this trip.</p>
+                    </CardContent>
+                 </Card>
+             )}
         </div>
       </div>
        <Chatbot booking={booking} property={property} faqs={propertyFaqs} />

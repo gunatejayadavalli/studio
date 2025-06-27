@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
 import { differenceInDays, format, parseISO } from 'date-fns';
-import { properties } from '@/lib/data';
+import { properties, insurancePlans } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -13,6 +14,16 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useBookings } from '@/hooks/use-bookings';
 import { useAuth } from '@/hooks/use-auth';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog"
+import { CheckCircle, Info } from 'lucide-react';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -26,7 +37,8 @@ export default function CheckoutPage() {
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   
-  const [addInsurance, setAddInsurance] = useState(false);
+  const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
+  const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
 
   if (!property || !from || !to) {
     return notFound();
@@ -36,8 +48,12 @@ export default function CheckoutPage() {
   const toDate = parseISO(to);
   const numberOfNights = differenceInDays(toDate, fromDate);
   const basePrice = property.pricePerNight * numberOfNights;
+  
+  const eligiblePlan = insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue);
+  
+  const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
+  
   const serviceFee = basePrice * 0.1;
-  const insuranceCost = addInsurance ? basePrice * 0.05 : 0;
   const totalCost = basePrice + serviceFee + insuranceCost;
 
   const handleBooking = () => {
@@ -55,7 +71,7 @@ export default function CheckoutPage() {
       checkIn: from,
       checkOut: to,
       totalCost: totalCost,
-      hasInsurance: addInsurance,
+      insurancePlanId: selectedInsurancePlanId ?? undefined,
       guests: 2, // Hardcoded as there's no guest selector
     });
 
@@ -66,7 +82,17 @@ export default function CheckoutPage() {
     router.push('/confirmation');
   };
 
+  const handleInsuranceToggle = (checked: boolean) => {
+    if (checked && eligiblePlan) {
+      setSelectedInsurancePlanId(eligiblePlan.id);
+    } else {
+      setSelectedInsurancePlanId(null);
+    }
+  };
+
+
   return (
+    <>
     <div className="container mx-auto max-w-4xl py-8 px-4 md:px-6">
        <h1 className="text-3xl font-bold font-headline mb-6">Confirm and Pay</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -97,20 +123,25 @@ export default function CheckoutPage() {
                   </div>
               </div>
               <Separator />
-               <div>
-                <h3 className="font-semibold mb-2">Travel Insurance</h3>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="insurance-switch">Add Insurance</Label>
-                    <p className="text-sm text-muted-foreground">Protect your trip from the unexpected.</p>
+               {eligiblePlan && (
+                <div>
+                  <h3 className="font-semibold mb-2">Travel Insurance</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <Label htmlFor="insurance-switch" className="font-medium">{eligiblePlan.name}</Label>
+                      <p className="text-sm text-muted-foreground">Protect your trip from the unexpected.</p>
+                      <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
+                        <Info className="mr-1 h-4 w-4"/> View benefits
+                      </Button>
+                    </div>
+                    <Switch
+                      id="insurance-switch"
+                      checked={!!selectedInsurancePlanId}
+                      onCheckedChange={handleInsuranceToggle}
+                    />
                   </div>
-                  <Switch
-                    id="insurance-switch"
-                    checked={addInsurance}
-                    onCheckedChange={setAddInsurance}
-                  />
                 </div>
-              </div>
+               )}
             </CardContent>
           </Card>
         </div>
@@ -128,9 +159,9 @@ export default function CheckoutPage() {
                 <span>Service fee</span>
                 <span>${serviceFee.toFixed(2)}</span>
               </div>
-              {addInsurance && (
+              {selectedInsurancePlanId && eligiblePlan && (
                 <div className="flex justify-between">
-                  <span>Travel Insurance</span>
+                  <span>Travel Insurance ({eligiblePlan.name})</span>
                   <span>${insuranceCost.toFixed(2)}</span>
                 </div>
               )}
@@ -149,5 +180,29 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    {eligiblePlan && (
+        <AlertDialog open={isBenefitDialogOpen} onOpenChange={setIsBenefitDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                <AlertDialogTitle>Coverage benefits for {eligiblePlan.name}</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This plan includes the following benefits for your trip.
+                </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-2 py-4">
+                    {eligiblePlan.benefits.map((benefit, index) => (
+                        <div key={index} className="flex items-start gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                            <p>{benefit}</p>
+                        </div>
+                    ))}
+                </div>
+                <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )}
+    </>
   );
 }

@@ -21,6 +21,15 @@ export interface Property {
   data_ai_hint?: string;
 }
 
+export interface InsurancePlan {
+  id: string;
+  name: string;
+  pricePercent: number;
+  minTripValue: number;
+  maxTripValue: number;
+  benefits: string[];
+}
+
 export interface Booking {
   id: string;
   userId: string;
@@ -28,7 +37,7 @@ export interface Booking {
   checkIn: string;
   checkOut: string;
   totalCost: number;
-  hasInsurance: boolean;
+  insurancePlanId?: string;
   guests: number;
 }
 

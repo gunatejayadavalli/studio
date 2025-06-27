@@ -1,5 +1,5 @@
 
-import type { User, Property, Booking, Faq } from './types';
+import type { User, Property, Booking, Faq, InsurancePlan } from './types';
 
 export const users: User[] = [
   { id: '1', name: 'Alex Doe', email: 'alex@example.com', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', isHost: true },
@@ -12,6 +12,79 @@ export const users: User[] = [
   { id: '8', name: 'Chris Pine', email: 'chris@example.com', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', isHost: false },
   { id: '9', name: 'Pat River', email: 'pat@example.com', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop', isHost: true },
   { id: '10', name: 'Jamie Blue', email: 'jamie@example.com', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop', isHost: false },
+];
+
+export const insurancePlans: InsurancePlan[] = [
+  {
+    id: 'GTI-01',
+    name: 'Basic Guard',
+    pricePercent: 5,
+    minTripValue: 0,
+    maxTripValue: 499,
+    benefits: [
+      'Trip Cancellation: Up to $500',
+      'Trip Interruption: Up to $500',
+      'Medical Emergency: Up to $10,000',
+    ],
+  },
+  {
+    id: 'GTI-02',
+    name: 'Standard Shield',
+    pricePercent: 6,
+    minTripValue: 500,
+    maxTripValue: 1499,
+    benefits: [
+      'Trip Cancellation: Up to $1,500',
+      'Trip Interruption: Up to $1,500',
+      'Medical Emergency: Up to $25,000',
+      'Baggage Loss/Delay: Up to $500',
+    ],
+  },
+  {
+    id: 'GTI-03',
+    name: 'Flexi-Plus',
+    pricePercent: 7,
+    minTripValue: 1500,
+    maxTripValue: 2999,
+    benefits: [
+      'Trip Cancellation: Up to $3,000',
+      'Trip Interruption: Up to $3,000',
+      'Medical Emergency: Up to $50,000',
+      'Baggage Loss/Delay: Up to $1,000',
+      'Cancel for Any Reason: 75% refund (optional add-on)',
+    ],
+  },
+  {
+    id: 'GTI-04',
+    name: 'Premium Protect',
+    pricePercent: 8,
+    minTripValue: 3000,
+    maxTripValue: 5999,
+    benefits: [
+      'Trip Cancellation: Up to $6,000',
+      'Trip Interruption: Up to $6,000',
+      'Medical Emergency: Up to $100,000',
+      'Baggage Loss/Delay: Up to $2,000',
+      'Rental Car Damage: Included',
+      'Cancel for Any Reason: 75% refund',
+    ],
+  },
+  {
+    id: 'GTI-05',
+    name: 'Ultimate Voyager',
+    pricePercent: 10,
+    minTripValue: 6000,
+    maxTripValue: Infinity,
+    benefits: [
+      'Trip Cancellation: Up to $10,000',
+      'Trip Interruption: Up to $10,000',
+      'Medical Emergency: Up to $500,000',
+      'Baggage Loss/Delay: Up to $2,500',
+      'Rental Car Damage: Included',
+      'Cancel for Any Reason: 100% refund',
+      '24/7 Concierge Service',
+    ],
+  },
 ];
 
 export const properties: Property[] = [
@@ -280,62 +353,60 @@ export const properties: Property[] = [
 export const bookings: Booking[] = [
   {
     id: 'booking1',
-    userId: '10', // Changed from user 1 to avoid booking own property
+    userId: '10',
     propertyId: '3',
     checkIn: '2024-08-10',
     checkOut: '2024-08-15',
-    totalCost: 1400,
-    hasInsurance: true,
+    totalCost: 1568,
+    insurancePlanId: 'GTI-02',
     guests: 2,
   },
   {
     id: 'booking2',
     userId: '2',
-    propertyId: '2',
+    propertyId: '7',
     checkIn: '2024-09-05',
     checkOut: '2024-09-10',
     totalCost: 1100,
-    hasInsurance: false,
     guests: 3,
   },
   {
     id: 'booking3',
-    userId: '2',
+    userId: '4',
     propertyId: '1',
     checkIn: '2024-10-01',
     checkOut: '2024-10-07',
     totalCost: 2450,
-    hasInsurance: true,
     guests: 4,
   },
   {
     id: 'booking4',
-    userId: '4',
-    propertyId: '7',
+    userId: '5',
+    propertyId: '13',
     checkIn: '2024-11-12',
     checkOut: '2024-11-18',
-    totalCost: 1500,
-    hasInsurance: false,
+    totalCost: 3024,
+    insurancePlanId: 'GTI-03',
     guests: 2,
   },
   {
     id: 'booking5',
-    userId: '5',
+    userId: '8',
     propertyId: '10',
     checkIn: '2025-05-20',
     checkOut: '2025-05-27',
-    totalCost: 3850,
-    hasInsurance: true,
+    totalCost: 4578.5,
+    insurancePlanId: 'GTI-04',
     guests: 2,
   },
   {
     id: 'booking6',
-    userId: '8',
+    userId: '2',
     propertyId: '13',
     checkIn: '2025-02-10',
     checkOut: '2025-02-17',
-    totalCost: 2940,
-    hasInsurance: true,
+    totalCost: 3234,
+    insurancePlanId: 'GTI-03',
     guests: 4,
   },
 ];

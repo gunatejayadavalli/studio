@@ -14,7 +14,7 @@ type BookingsContextType = {
 const BookingsContext = createContext<BookingsContextType | undefined>(undefined);
 
 export const BookingsProvider = ({ children }: { children: ReactNode }) => {
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // We avoid writing to localStorage on the initial render before state is hydrated
-    if (bookings !== initialBookings) {
+    if (bookings.length > 0) {
       localStorage.setItem('airbnbAllBookings', JSON.stringify(bookings));
     }
   }, [bookings]);

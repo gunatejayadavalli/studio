@@ -1,14 +1,14 @@
+
 "use server";
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import type { Booking, Property, Faq } from './types';
+import { insurancePlans } from './data';
 
 const AnswerTripQuestionInputSchema = z.object({
   question: z.string(),
-  booking: z.object({
-    hasInsurance: z.boolean(),
-  }),
+  booking: z.object({}),
   property: z.object({
     title: z.string(),
     location: z.string(),
@@ -17,6 +17,10 @@ const AnswerTripQuestionInputSchema = z.object({
     question: z.string(),
     answer: z.string(),
   })),
+  insurancePlan: z.object({
+    name: z.string(),
+    benefits: z.array(z.string()),
+  }).optional(),
 });
 
 const AnswerTripQuestionOutputSchema = z.string();
@@ -33,8 +37,15 @@ User's Question: "{{question}}"
 Trip Information:
 - Property: {{property.title}}
 - Location: {{property.location}}
-- Travel Insurance Purchased: {{#if booking.hasInsurance}}Yes{{else}}No{{/if}}
+- Travel Insurance Purchased: {{#if insurancePlan}}{{insurancePlan.name}}{{else}}No{{/if}}
 
+{{#if insurancePlan}}
+Insurance Benefits:
+{{#each insurancePlan.benefits}}
+- {{this}}
+{{/each}}
+
+{{/if}}
 Property FAQs:
 {{#if faqs.length}}
   {{#each faqs}}
@@ -71,11 +82,18 @@ type AnswerTripQuestionArgs = {
 };
 
 export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<string> {
+  const insurancePlan = args.booking.insurancePlanId
+    ? insurancePlans.find((p) => p.id === args.booking.insurancePlanId)
+    : undefined;
+
   const input = {
     question: args.question,
-    booking: { hasInsurance: args.booking.hasInsurance },
+    booking: {},
     property: { title: args.property.title, location: args.property.location },
     faqs: args.faqs,
+    insurancePlan: insurancePlan
+      ? { name: insurancePlan.name, benefits: insurancePlan.benefits }
+      : undefined,
   };
 
   try {
