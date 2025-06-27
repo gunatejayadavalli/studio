@@ -8,7 +8,8 @@
     "checkOut": "2024-08-15",
     "totalCost": 1568,
     "insurancePlanId": "GTI-02",
-    "guests": 2
+    "guests": 2,
+    "status": "confirmed"
   },
   {
     "id": "booking2",
@@ -17,7 +18,8 @@
     "checkIn": "2024-09-05",
     "checkOut": "2024-09-10",
     "totalCost": 1100,
-    "guests": 3
+    "guests": 3,
+    "status": "confirmed"
   },
   {
     "id": "booking3",
@@ -26,7 +28,8 @@
     "checkIn": "2024-10-01",
     "checkOut": "2024-10-07",
     "totalCost": 2450,
-    "guests": 4
+    "guests": 4,
+    "status": "confirmed"
   },
   {
     "id": "booking4",
@@ -36,7 +39,8 @@
     "checkOut": "2024-11-18",
     "totalCost": 3024,
     "insurancePlanId": "GTI-03",
-    "guests": 2
+    "guests": 2,
+    "status": "confirmed"
   },
   {
     "id": "booking5",
@@ -46,7 +50,8 @@
     "checkOut": "2025-05-27",
     "totalCost": 4578.5,
     "insurancePlanId": "GTI-04",
-    "guests": 2
+    "guests": 2,
+    "status": "confirmed"
   },
   {
     "id": "booking6",
@@ -56,6 +61,7 @@
     "checkOut": "2025-02-17",
     "totalCost": 3234,
     "insurancePlanId": "GTI-03",
-    "guests": 4
+    "guests": 4,
+    "status": "confirmed"
   }
 ]

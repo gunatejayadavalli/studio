@@ -9,12 +9,14 @@ import { properties } from '@/lib/data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Ban } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function MyTripsPage() {
   const { user } = useAuth();
   const { bookings } = useBookings();
-  const userBookings = bookings.filter((b) => b.userId === user?.id);
+  const userBookings = bookings.filter((b) => b.userId === user?.id).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
 
   if (userBookings.length === 0) {
     return (
@@ -36,8 +38,10 @@ export default function MyTripsPage() {
           const property = properties.find((p) => p.id === booking.propertyId);
           if (!property) return null;
 
+          const isCancelled = booking.status !== 'confirmed';
+
           return (
-            <Card key={booking.id} className="flex flex-col">
+            <Card key={booking.id} className={cn("flex flex-col", isCancelled && "bg-muted/50")}>
               <CardHeader className="p-0">
                 <div className="relative h-48 w-full">
                   <Image
@@ -45,11 +49,15 @@ export default function MyTripsPage() {
                     alt={property.title}
                     layout="fill"
                     objectFit="cover"
-                    className="rounded-t-lg"
-                  />
+                    className={cn("rounded-t-lg", isCancelled && "grayscale")}/>
                 </div>
               </CardHeader>
               <CardContent className="p-4 flex-grow">
+                 {isCancelled && (
+                   <Badge variant="destructive" className="mb-2 gap-1.5">
+                    <Ban className="w-3.5 h-3.5"/> Booking Cancelled
+                   </Badge>
+                 )}
                 <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
                 <div className="text-sm text-muted-foreground space-y-1">
                   <div className="flex items-center gap-2">

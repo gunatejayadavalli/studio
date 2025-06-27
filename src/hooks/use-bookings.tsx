@@ -8,7 +8,8 @@ import { useAuth } from './use-auth';
 
 type BookingsContextType = {
   bookings: Booking[];
-  addBooking: (newBookingData: Omit<Booking, 'id' | 'userId'>) => void;
+  addBooking: (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => void;
+  cancelBooking: (bookingId: string, cancelledBy: 'guest' | 'host', reason?: string) => void;
 };
 
 const BookingsContext = createContext<BookingsContextType | undefined>(undefined);
@@ -38,19 +39,35 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [bookings]);
 
-  const addBooking = (newBookingData: Omit<Booking, 'id' | 'userId'>) => {
+  const addBooking = (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => {
     if (!user) return;
 
     const newBooking: Booking = {
       ...newBookingData,
       id: `booking${Date.now()}`,
       userId: user.id,
+      status: 'confirmed',
     };
     setBookings(prevBookings => [...prevBookings, newBooking]);
   };
+  
+  const cancelBooking = (bookingId: string, cancelledBy: 'guest' | 'host', reason?: string) => {
+    setBookings(prevBookings =>
+      prevBookings.map(b =>
+        b.id === bookingId
+          ? {
+              ...b,
+              status: `cancelled-by-${cancelledBy}`,
+              cancellationReason: reason,
+            }
+          : b
+      )
+    );
+  };
+
 
   return (
-    <BookingsContext.Provider value={{ bookings, addBooking }}>
+    <BookingsContext.Provider value={{ bookings, addBooking, cancelBooking }}>
       {children}
     </BookingsContext.Provider>
   );

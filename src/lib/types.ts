@@ -1,4 +1,3 @@
-
 // src/lib/types.ts
 export interface User {
   id: string;
@@ -42,6 +41,8 @@ export interface Booking {
   totalCost: number;
   insurancePlanId?: string;
   guests: number;
+  status: 'confirmed' | 'cancelled-by-guest' | 'cancelled-by-host';
+  cancellationReason?: string;
 }
 
 export interface Faq {
