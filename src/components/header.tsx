@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -26,7 +27,7 @@ export function Header() {
   const Logo = () => (
     <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center gap-2 text-2xl font-bold text-destructive font-headline">
       <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="w-8 h-8">
-        <path d="M16 1.11A10.43 10.43 0 0 0 5.57 11.54c0 7.8 8.94 15.35 9.6 16.14a1 1 0 0 0 1.66 0c.66-.79 9.6-8.34 9.6-16.14A10.43 10.43 0 0 0 16 1.11zM16 15.84a4.31 4.31 0 1 1 0-8.62 4.31 4.31 0 0 1 0 8.62z"/>
+        <path d="M16,1.1c-5.4,0-11,4.4-11,10.9C5,17.4,12.1,24.4,16,30.9c3.9-6.5,11-13.5,11-18.9C27,5.5,21.4,1.1,16,1.1z M16,16.8c-3.3,0-6-2.7-6-6s2.7-6,6-6s6,2.7,6,6S19.3,16.8,16,16.8z"/>
       </svg>
       <span className="text-primary-foreground">Airbnb</span>
     </Link>
