@@ -1,0 +1,73 @@
+
+[
+  {
+    "id": "GTI-01",
+    "name": "Basic Guard",
+    "pricePercent": 5,
+    "minTripValue": 0,
+    "maxTripValue": 499,
+    "benefits": [
+      "Trip Cancellation: Up to $500",
+      "Trip Interruption: Up to $500",
+      "Medical Emergency: Up to $10,000"
+    ]
+  },
+  {
+    "id": "GTI-02",
+    "name": "Standard Shield",
+    "pricePercent": 6,
+    "minTripValue": 500,
+    "maxTripValue": 1499,
+    "benefits": [
+      "Trip Cancellation: Up to $1,500",
+      "Trip Interruption: Up to $1,500",
+      "Medical Emergency: Up to $25,000",
+      "Baggage Loss/Delay: Up to $500"
+    ]
+  },
+  {
+    "id": "GTI-03",
+    "name": "Flexi-Plus",
+    "pricePercent": 7,
+    "minTripValue": 1500,
+    "maxTripValue": 2999,
+    "benefits": [
+      "Trip Cancellation: Up to $3,000",
+      "Trip Interruption: Up to $3,000",
+      "Medical Emergency: Up to $50,000",
+      "Baggage Loss/Delay: Up to $1,000",
+      "Cancel for Any Reason: 75% refund (optional add-on)"
+    ]
+  },
+  {
+    "id": "GTI-04",
+    "name": "Premium Protect",
+    "pricePercent": 8,
+    "minTripValue": 3000,
+    "maxTripValue": 5999,
+    "benefits": [
+      "Trip Cancellation: Up to $6,000",
+      "Trip Interruption: Up to $6,000",
+      "Medical Emergency: Up to $100,000",
+      "Baggage Loss/Delay: Up to $2,000",
+      "Rental Car Damage: Included",
+      "Cancel for Any Reason: 75% refund"
+    ]
+  },
+  {
+    "id": "GTI-05",
+    "name": "Ultimate Voyager",
+    "pricePercent": 10,
+    "minTripValue": 6000,
+    "maxTripValue": 999999,
+    "benefits": [
+      "Trip Cancellation: Up to $10,000",
+      "Trip Interruption: Up to $10,000",
+      "Medical Emergency: Up to $500,000",
+      "Baggage Loss/Delay: Up to $2,500",
+      "Rental Car Damage: Included",
+      "Cancel for Any Reason: 100% refund",
+      "24/7 Concierge Service"
+    ]
+  }
+]

@@ -1,0 +1,61 @@
+
+[
+  {
+    "id": "booking1",
+    "userId": "10",
+    "propertyId": "3",
+    "checkIn": "2024-08-10",
+    "checkOut": "2024-08-15",
+    "totalCost": 1568,
+    "insurancePlanId": "GTI-02",
+    "guests": 2
+  },
+  {
+    "id": "booking2",
+    "userId": "2",
+    "propertyId": "7",
+    "checkIn": "2024-09-05",
+    "checkOut": "2024-09-10",
+    "totalCost": 1100,
+    "guests": 3
+  },
+  {
+    "id": "booking3",
+    "userId": "4",
+    "propertyId": "1",
+    "checkIn": "2024-10-01",
+    "checkOut": "2024-10-07",
+    "totalCost": 2450,
+    "guests": 4
+  },
+  {
+    "id": "booking4",
+    "userId": "5",
+    "propertyId": "13",
+    "checkIn": "2024-11-12",
+    "checkOut": "2024-11-18",
+    "totalCost": 3024,
+    "insurancePlanId": "GTI-03",
+    "guests": 2
+  },
+  {
+    "id": "booking5",
+    "userId": "8",
+    "propertyId": "10",
+    "checkIn": "2025-05-20",
+    "checkOut": "2025-05-27",
+    "totalCost": 4578.5,
+    "insurancePlanId": "GTI-04",
+    "guests": 2
+  },
+  {
+    "id": "booking6",
+    "userId": "2",
+    "propertyId": "13",
+    "checkIn": "2025-02-10",
+    "checkOut": "2025-02-17",
+    "totalCost": 3234,
+    "insurancePlanId": "GTI-03",
+    "guests": 4
+  }
+]
