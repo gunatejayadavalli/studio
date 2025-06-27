@@ -158,6 +158,7 @@ export default function PropertyDetailsPage() {
                       selected={date}
                       onSelect={setDate}
                       numberOfMonths={1}
+                      disabled={{ before: new Date() }}
                     />
                   </PopoverContent>
                 </Popover>
