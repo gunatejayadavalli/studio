@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import type { Booking, Property } from './types';
 import { insurancePlans } from './data';
+import { readInsurancePolicy } from '@/ai/tools/insurance-policy-reader';
 
 const AnswerTripQuestionInputSchema = z.object({
   question: z.string(),
@@ -18,6 +19,7 @@ const AnswerTripQuestionInputSchema = z.object({
     name: z.string(),
     benefits: z.array(z.string()),
   }).optional(),
+  insurancePolicyUrl: z.string().optional().describe('The URL to the full insurance policy PDF.'),
 });
 
 const AnswerTripQuestionOutputSchema = z.string();
@@ -27,7 +29,10 @@ const answerTripQuestionPrompt = ai.definePrompt(
     name: "answerTripQuestionPrompt",
     input: { schema: AnswerTripQuestionInputSchema },
     output: { schema: AnswerTripQuestionOutputSchema },
+    tools: [readInsurancePolicy],
     prompt: `You are a helpful assistant for a travel app. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
+
+If the user asks a specific question about insurance coverage that isn't covered by the high-level benefits list (e.g., questions about specific exclusions, claim procedures, or detailed coverage amounts), use the \`readInsurancePolicy\` tool to get the full policy details from the provided URL and answer the question based on that content. Do not make up information.
 
 User's Question: "{{question}}"
 
@@ -37,7 +42,7 @@ Trip Information:
 - Travel Insurance Purchased: {{#if insurancePlan}}{{insurancePlan.name}}{{else}}No{{/if}}
 
 {{#if insurancePlan}}
-Insurance Benefits:
+High-level Insurance Benefits:
 {{#each insurancePlan.benefits}}
 - {{this}}
 {{/each}}
@@ -61,10 +66,10 @@ const answerTripQuestionFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    console.log('AirBot flow received input:', JSON.stringify(input, null, 2));
+    console.log('[AirBot Flow] Received input:', JSON.stringify(input, null, 2));
 
     const llmResponse = await answerTripQuestionPrompt(input);
-    console.log('AirBot flow received response from AI:', llmResponse);
+    console.log('[AirBot Flow] Received response from AI:', JSON.stringify(llmResponse, null, 2));
     
     return llmResponse.output ?? "I'm sorry, I couldn't generate a response at this moment.";
   }
@@ -93,6 +98,7 @@ export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<
     insurancePlan: insurancePlan
       ? { name: insurancePlan.name, benefits: insurancePlan.benefits }
       : undefined,
+    insurancePolicyUrl: insurancePlan?.termsUrl,
   };
 
   try {
