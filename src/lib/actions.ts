@@ -9,7 +9,10 @@ import { readInsurancePolicy } from '@/ai/tools/insurance-policy-reader';
 
 const AnswerTripQuestionInputSchema = z.object({
   question: z.string(),
-  booking: z.object({}),
+  booking: z.object({
+    checkIn: z.string().describe("The check-in date for the trip (YYYY-MM-DD)."),
+    checkOut: z.string().describe("The check-out date for the trip (YYYY-MM-DD)."),
+  }),
   property: z.object({
     title: z.string(),
     location: z.string(),
@@ -39,6 +42,8 @@ User's Question: "{{question}}"
 Trip Information:
 - Property: {{property.title}}
 - Location: {{property.location}}
+- Check-in Date: {{booking.checkIn}}
+- Check-out Date: {{booking.checkOut}}
 - Travel Insurance Purchased: {{#if insurancePlan}}{{insurancePlan.name}}{{else}}No{{/if}}
 
 {{#if insurancePlan}}
@@ -89,7 +94,10 @@ export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<
 
   const input = {
     question: args.question,
-    booking: {},
+    booking: {
+        checkIn: args.booking.checkIn,
+        checkOut: args.booking.checkOut,
+    },
     property: { 
         title: args.property.title, 
         location: args.property.location,
