@@ -12,7 +12,7 @@ const AnswerTripQuestionInputSchema = z.object({
   property: z.object({
     title: z.string(),
     location: z.string(),
-    propertyInfo: z.string(),
+    propertyInfo: z.string().optional(),
   }),
   insurancePlan: z.object({
     name: z.string(),
@@ -62,7 +62,7 @@ const answerTripQuestionFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await answerTripQuestionPrompt(input);
-    return llmResponse.output ?? "I'm sorry, I couldn't generate a response.";
+    return llmResponse.text ?? "I'm sorry, I couldn't generate a response.";
   }
 );
 
