@@ -84,7 +84,7 @@ export function Chatbot({ booking, property, faqs }: ChatbotProps) {
         <CardHeader className="flex flex-row items-center justify-between bg-primary text-primary-foreground p-4">
           <div className="flex items-center gap-3">
             <Bot className="w-6 h-6" />
-            <CardTitle className="text-lg font-headline">Airbnb Assistant</CardTitle>
+            <CardTitle className="text-lg font-headline">AirBot</CardTitle>
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground" onClick={() => setIsOpen(false)}>
             <X className="w-5 h-5" />
