@@ -61,8 +61,12 @@ const answerTripQuestionFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
+    console.log('AirBot flow received input:', JSON.stringify(input, null, 2));
+
     const llmResponse = await answerTripQuestionPrompt(input);
-    return llmResponse.text ?? "I'm sorry, I couldn't generate a response.";
+    console.log('AirBot flow received response from AI:', llmResponse);
+    
+    return llmResponse.output ?? "I'm sorry, I couldn't generate a response at this moment.";
   }
 );
 
@@ -95,7 +99,7 @@ export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<
     const result = await answerTripQuestionFlow(input);
     return result;
   } catch (error) {
-    console.error("Error in answerTripQuestionFlow:", error);
+    console.error("Full error in answerTripQuestion:", error);
     return "I am sorry, but I encountered an error while trying to answer your question.";
   }
 }
