@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { properties, faqs as allFaqs } from '@/lib/data';
+import { properties } from '@/lib/data';
 import { useBookings } from '@/hooks/use-bookings';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -44,11 +44,10 @@ export default function EditPropertyPage() {
     const foundProperty = properties.find((p) => p.id === propertyId);
     setProperty(foundProperty);
     if (foundProperty) {
-      const propertyFaqs = allFaqs.filter(f => f.propertyId === propertyId);
       setDefaultValues({
         ...foundProperty,
         amenities: foundProperty.amenities.join(', '),
-        faqs: propertyFaqs.map(({ question, answer }) => ({ question, answer })),
+        propertyInfo: foundProperty.propertyInfo || '',
       });
     }
   }, [propertyId]);

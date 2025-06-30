@@ -21,7 +21,8 @@
       "Kitchen",
       "Free Parking",
       "Air Conditioning"
-    ]
+    ],
+    "propertyInfo": "WiFi Network: VillaGuest\nWiFi Password: beachlife123\n\nCheck-in: Check-in is via a lockbox. The code will be sent to you on the morning of your arrival."
   },
   {
     "id": "2",
@@ -43,7 +44,8 @@
       "Kitchen",
       "Fireplace",
       "Heating"
-    ]
+    ],
+    "propertyInfo": "Directions: From the main highway, take exit 42 onto Mountain Rd. and follow it for 3 miles. The cabin will be on your left, marked with a wooden sign."
   },
   {
     "id": "3",
@@ -65,7 +67,8 @@
       "Kitchen",
       "Air Conditioning",
       "Elevator"
-    ]
+    ],
+    "propertyInfo": "WiFi Network: NYCLoft\nWiFi Password: citydreams"
   },
   {
     "id": "4",
@@ -87,7 +90,8 @@
       "Kitchen",
       "Waterfront",
       "Patio"
-    ]
+    ],
+    "propertyInfo": "Kayaks and life vests are available for guest use in the boathouse."
   },
   {
     "id": "5",
@@ -109,7 +113,8 @@
       "Kitchen",
       "Air Conditioning",
       "Balcony"
-    ]
+    ],
+    "propertyInfo": "The nearest metro station is Saint-Paul (Line 1), about a 5-minute walk from the apartment."
   },
   {
     "id": "6",
@@ -131,7 +136,8 @@
       "Kitchen",
       "Air Conditioning",
       "Gym Access"
-    ]
+    ],
+    "propertyInfo": "Guests have full access to the building's gym on the ground floor and the rooftop deck."
   },
   {
     "id": "7",
@@ -153,7 +159,8 @@
       "Pool",
       "Outdoor Shower",
       "Breakfast Included"
-    ]
+    ],
+    "propertyInfo": "A complimentary tropical breakfast is served daily from 7 AM to 10 AM on your private deck."
   },
   {
     "id": "8",
@@ -175,7 +182,8 @@
       "Kitchen",
       "Fireplace",
       "Air Conditioning"
-    ]
+    ],
+    "propertyInfo": "Street parking is available, but it can be limited. We recommend using public transport or ride-sharing services as the streets are very narrow."
   },
   {
     "id": "9",
@@ -198,7 +206,8 @@
       "Hot Tub",
       "Kitchen",
       "Air Conditioning"
-    ]
+    ],
+    "propertyInfo": "The pool is professionally serviced every Tuesday and Friday morning."
   },
   {
     "id": "10",
@@ -220,7 +229,8 @@
       "Plunge Pool",
       "Kitchenette",
       "Air Conditioning"
-    ]
+    ],
+    "propertyInfo": "We recommend arranging a transfer from the port or airport. Taxis are available, and the ride takes about 25 minutes. We can also help arrange a private transfer for you."
   },
   {
     "id": "11",
@@ -242,7 +252,8 @@
       "Kitchen",
       "Heating",
       "Garden"
-    ]
+    ],
+    "propertyInfo": "The small tsubo-niwa (courtyard garden) is completely private for your enjoyment. Please remove your shoes at the entrance."
   },
   {
     "id": "12",
@@ -262,7 +273,8 @@
       "Kitchenette",
       "Heating",
       "Kayak Access"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "13",
@@ -285,7 +297,8 @@
       "Fireplace",
       "Sauna",
       "Ski Storage"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "14",
@@ -306,7 +319,8 @@
       "Kitchen",
       "Air Conditioning",
       "Free Parking"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "15",
@@ -327,7 +341,8 @@
       "WiFi",
       "Air Conditioning",
       "Breakfast Included"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "16",
@@ -349,7 +364,8 @@
       "Kitchenette",
       "Heating",
       "Hot Tub"
-    ]
+    ],
+    "propertyInfo": "The best chances of seeing the Northern Lights are from September to April on clear nights. The cabin's remote location away from city lights provides an excellent viewing opportunity, but sightings are not guaranteed."
   },
   {
     "id": "17",
@@ -371,7 +387,8 @@
       "Kitchen",
       "Air Conditioning",
       "Fire Pit"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "18",
@@ -391,7 +408,8 @@
       "Kitchenette",
       "Air Conditioning",
       "Patio"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "19",
@@ -413,7 +431,8 @@
       "Pool",
       "Kitchen",
       "Air Conditioning"
-    ]
+    ],
+    "propertyInfo": ""
   },
   {
     "id": "20",
@@ -433,6 +452,7 @@
       "Kitchen",
       "Air Conditioning",
       "Record Player"
-    ]
+    ],
+    "propertyInfo": "We are about a 15-minute walk or a 5-minute ride-share from the Ryman Auditorium and other downtown attractions."
   }
 ]

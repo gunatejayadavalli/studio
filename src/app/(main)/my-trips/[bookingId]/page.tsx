@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
 import { useAuth } from '@/hooks/use-auth';
-import { properties, faqs, insurancePlans } from '@/lib/data';
+import { properties, insurancePlans } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -42,7 +42,6 @@ export default function TripDetailsPage() {
 
   const property = properties.find((p) => p.id === booking.propertyId);
   const host = users.find(u => u.id === property?.hostId);
-  const propertyFaqs = faqs.filter(f => f.propertyId === property?.id);
   const insurancePlan = booking.insurancePlanId 
     ? insurancePlans.find(p => p.id === booking.insurancePlanId) 
     : undefined;
@@ -241,7 +240,7 @@ export default function TripDetailsPage() {
              )}
         </div>
       </div>
-       {!isCancelled && <Chatbot booking={booking} property={property} faqs={propertyFaqs} />}
+       {!isCancelled && <Chatbot booking={booking} property={property} />}
     </div>
      <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>

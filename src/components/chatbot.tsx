@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Booking, Property, Faq } from '@/lib/types';
+import type { Booking, Property } from '@/lib/types';
 import { answerTripQuestion } from '@/lib/actions';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -21,10 +22,9 @@ type Message = {
 type ChatbotProps = {
   booking: Booking;
   property: Property;
-  faqs: Faq[];
 };
 
-export function Chatbot({ booking, property, faqs }: ChatbotProps) {
+export function Chatbot({ booking, property }: ChatbotProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -54,7 +54,6 @@ export function Chatbot({ booking, property, faqs }: ChatbotProps) {
         question: input,
         booking: booking,
         property: property,
-        faqs: faqs
       });
       const botMessage: Message = { id: (Date.now() + 1).toString(), text: botResponseText, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);

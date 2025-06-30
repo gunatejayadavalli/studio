@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import type { Booking, Property, Faq } from './types';
+import type { Booking, Property } from './types';
 import { insurancePlans } from './data';
 
 const AnswerTripQuestionInputSchema = z.object({
@@ -12,11 +12,8 @@ const AnswerTripQuestionInputSchema = z.object({
   property: z.object({
     title: z.string(),
     location: z.string(),
+    propertyInfo: z.string(),
   }),
-  faqs: z.array(z.object({
-    question: z.string(),
-    answer: z.string(),
-  })),
   insurancePlan: z.object({
     name: z.string(),
     benefits: z.array(z.string()),
@@ -30,7 +27,7 @@ const answerTripQuestionPrompt = ai.definePrompt(
     name: "answerTripQuestionPrompt",
     input: { schema: AnswerTripQuestionInputSchema },
     output: { schema: AnswerTripQuestionOutputSchema },
-    prompt: `You are a helpful assistant for a travel app called Airbnb. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
+    prompt: `You are a helpful assistant for a travel app called Tripsy. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
 
 User's Question: "{{question}}"
 
@@ -44,17 +41,13 @@ Insurance Benefits:
 {{#each insurancePlan.benefits}}
 - {{this}}
 {{/each}}
-
 {{/if}}
-Property FAQs:
-{{#if faqs.length}}
-  {{#each faqs}}
-  Q: {{this.question}}
-  A: {{this.answer}}
-  ---
-  {{/each}}
+
+Property Information from Host:
+{{#if property.propertyInfo}}
+{{property.propertyInfo}}
 {{else}}
-(No FAQs provided for this property)
+(No additional information was provided by the host for this property)
 {{/if}}
 
 Your Answer:`,
@@ -78,7 +71,6 @@ type AnswerTripQuestionArgs = {
   question: string;
   booking: Booking;
   property: Property;
-  faqs: Faq[];
 };
 
 export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<string> {
@@ -89,8 +81,11 @@ export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<
   const input = {
     question: args.question,
     booking: {},
-    property: { title: args.property.title, location: args.property.location },
-    faqs: args.faqs,
+    property: { 
+        title: args.property.title, 
+        location: args.property.location,
+        propertyInfo: args.property.propertyInfo,
+    },
     insurancePlan: insurancePlan
       ? { name: insurancePlan.name, benefits: insurancePlan.benefits }
       : undefined,

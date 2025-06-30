@@ -19,6 +19,7 @@ export interface Property {
   images: string[];
   description: string;
   amenities: string[];
+  propertyInfo: string;
   data_ai_hint?: string;
 }
 
@@ -43,11 +44,4 @@ export interface Booking {
   guests: number;
   status: 'confirmed' | 'cancelled-by-guest' | 'cancelled-by-host';
   cancellationReason?: string;
-}
-
-export interface Faq {
-  id: string;
-  propertyId: string;
-  question: string;
-  answer: string;
 }
