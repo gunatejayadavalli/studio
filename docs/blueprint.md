@@ -1,4 +1,4 @@
-# **App Name**: Tripsy
+# **App Name**: AirbnbLite
 
 ## Core Features:
 
