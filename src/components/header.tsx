@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -128,7 +127,7 @@ export function Header() {
               {/* Common Items */}
               <DropdownMenuItem onClick={() => router.push('/profile')}>
                 <UserCircle className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>My Profile</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
