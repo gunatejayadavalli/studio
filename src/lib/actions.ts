@@ -27,7 +27,7 @@ const answerTripQuestionPrompt = ai.definePrompt(
     name: "answerTripQuestionPrompt",
     input: { schema: AnswerTripQuestionInputSchema },
     output: { schema: AnswerTripQuestionOutputSchema },
-    prompt: `You are a helpful assistant for a travel app called Tripsy. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
+    prompt: `You are a helpful assistant for a travel app. A user is asking a question about their booked trip. Answer the question based ONLY on the information provided below. Be friendly and conversational.
 
 User's Question: "{{question}}"
 
@@ -62,7 +62,7 @@ const answerTripQuestionFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await answerTripQuestionPrompt(input);
-    return llmResponse.output() ?? "I'm sorry, I couldn't generate a response.";
+    return llmResponse.output ?? "I'm sorry, I couldn't generate a response.";
   }
 );
 
