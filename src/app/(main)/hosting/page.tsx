@@ -18,9 +18,7 @@ export default function HostingPage() {
 
   const isLoading = isAuthLoading || isDataLoading;
   
-  const hostProperties = properties.filter((p) => p.hostId === user?.id);
-
-  if (isLoading) {
+  if (isLoading || !user) {
     return (
        <div className="container mx-auto py-8 px-4 md:px-6">
         <div className="flex justify-between items-center mb-8">
@@ -35,6 +33,8 @@ export default function HostingPage() {
       </div>
     )
   }
+
+  const hostProperties = properties.filter((p) => p.hostId === user.id);
 
   if (hostProperties.length === 0) {
     return (
