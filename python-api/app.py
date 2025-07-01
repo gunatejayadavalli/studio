@@ -24,8 +24,8 @@ def get_db_connection():
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
-# More specific CORS configuration to ensure cross-origin requests are allowed
-CORS(app, resources={r"/airbnbliteapi/*": {"origins": "*"}})
+# Allow all origins for any route. The context path is handled by the deployment environment.
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 port = os.getenv('port', 7076)
 
@@ -83,13 +83,12 @@ def insurance_plan_to_dict(plan_tuple):
 
 
 # --- API Routes ---
-# Hardcoding the path prefix to avoid potential issues with environment variables in deployment.
-@app.route('/airbnbliteapi/')
+@app.route('/')
 def index():
     return jsonify({"message": "Welcome to the AirbnbLite API!"})
 
 # --- User Routes ---
-@app.route('/airbnbliteapi/users', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def get_users():
     conn = get_db_connection()
     if not conn:
@@ -101,7 +100,7 @@ def get_users():
     conn.close()
     return jsonify(users)
 
-@app.route('/airbnbliteapi/register', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register_user():
     data = request.json
     if not all(k in data for k in ['name', 'email', 'password']):
@@ -131,7 +130,7 @@ def register_user():
     conn.close()
     return jsonify(new_user), 201
 
-@app.route('/airbnbliteapi/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     data = request.json
     if not all(k in data for k in ['email', 'password']):
@@ -154,7 +153,7 @@ def login():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route('/airbnbliteapi/users/<int:user_id>', methods=['PUT'])
+@app.route('/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     data = request.json
     conn = get_db_connection()
@@ -200,7 +199,7 @@ def update_user(user_id):
 
 
 # --- Property Routes ---
-@app.route('/airbnbliteapi/properties', methods=['GET'])
+@app.route('/properties', methods=['GET'])
 def get_properties():
     conn = get_db_connection()
     if not conn:
@@ -212,7 +211,7 @@ def get_properties():
     conn.close()
     return jsonify(properties)
 
-@app.route('/airbnbliteapi/properties', methods=['POST'])
+@app.route('/properties', methods=['POST'])
 def add_property():
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -242,7 +241,7 @@ def add_property():
     
     return jsonify({"message": "Property added successfully", "id": new_id}), 201
 
-@app.route('/airbnbliteapi/properties/<int:prop_id>', methods=['PUT'])
+@app.route('/properties/<int:prop_id>', methods=['PUT'])
 def update_property(prop_id):
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -273,7 +272,7 @@ def update_property(prop_id):
     else:
         return jsonify({"error": "Property not found"}), 404
 
-@app.route('/airbnbliteapi/properties/<int:prop_id>', methods=['DELETE'])
+@app.route('/properties/<int:prop_id>', methods=['DELETE'])
 def delete_property(prop_id):
     conn = get_db_connection()
     if not conn:
@@ -293,7 +292,7 @@ def delete_property(prop_id):
         return jsonify({"error": "Property not found"}), 404
 
 # --- Booking Routes ---
-@app.route('/airbnbliteapi/bookings', methods=['GET'])
+@app.route('/bookings', methods=['GET'])
 def get_bookings():
     conn = get_db_connection()
     if not conn:
@@ -305,7 +304,7 @@ def get_bookings():
     conn.close()
     return jsonify(bookings)
 
-@app.route('/airbnbliteapi/bookings', methods=['POST'])
+@app.route('/bookings', methods=['POST'])
 def create_booking():
     data = request.json
     query = """
@@ -330,7 +329,7 @@ def create_booking():
 
     return jsonify({"message": "Booking created successfully", "id": new_id}), 201
 
-@app.route('/airbnbliteapi/bookings/<int:booking_id>', methods=['PUT'])
+@app.route('/bookings/<int:booking_id>', methods=['PUT'])
 def update_booking(booking_id):
     data = request.json
     if 'status' not in data:
@@ -356,7 +355,7 @@ def update_booking(booking_id):
         return jsonify({"error": "Booking not found"}), 404
 
 # --- Insurance Plan Routes ---
-@app.route('/airbnbliteapi/insurance-plans', methods=['GET'])
+@app.route('/insurance-plans', methods=['GET'])
 def get_insurance_plans():
     conn = get_db_connection()
     if not conn:
