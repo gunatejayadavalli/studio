@@ -26,25 +26,67 @@ import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PropertyBookingsPage() {
   const params = useParams();
   const propertyId = parseInt(params.propertyId as string, 10);
-  const { bookings, cancelBooking } = useBookings();
-  const { users } = useStaticData();
+  const { bookings, cancelBooking, isLoading: bookingsLoading } = useBookings();
+  const { users, properties, isLoading: staticDataLoading } = useStaticData();
   const { toast } = useToast();
-  const { properties } = useStaticData();
   
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
 
+  const isLoading = bookingsLoading || staticDataLoading;
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto max-w-4xl py-8 px-4 md:px-6">
+        <div className="mb-8">
+          <Skeleton className="h-10 w-48 mb-4" />
+          <Skeleton className="h-8 w-1/2 mb-2" />
+          <Skeleton className="h-5 w-1/3" />
+        </div>
+        <div className="space-y-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between bg-muted/50 p-4">
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+                <div className="text-right space-y-2">
+                  <Skeleton className="h-6 w-20 ml-auto" />
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                 <Skeleton className="h-10 w-full" />
+                 <Skeleton className="h-10 w-full" />
+                 <Skeleton className="h-10 w-full" />
+              </CardContent>
+              <CardFooter className="p-4 border-t">
+                 <Skeleton className="h-9 w-32" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const property = properties.find((p) => p.id === propertyId);
-  const propertyBookings = bookings.filter((b) => b.propertyId === propertyId).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
 
   if (isNaN(propertyId) || !property) {
     notFound();
   }
   
+  const propertyBookings = bookings.filter((b) => b.propertyId === propertyId).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
+
   const handleCancellation = () => {
     if (!bookingToCancel || !cancellationReason.trim()) {
         toast({
@@ -93,7 +135,7 @@ export default function PropertyBookingsPage() {
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src={guest?.avatar} alt={guest?.name} />
-                      <AvatarFallback>{guest?.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{guest?.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
                       <CardTitle className="text-lg">{guest?.name}</CardTitle>
