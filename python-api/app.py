@@ -467,6 +467,13 @@ def chat_with_bot():
     
     system_content = "\n".join(system_content_lines)
 
+    print("\n--- OpenAI Prompt ---")
+    print("System Content:")
+    print(system_content)
+    print("\nUser Question:")
+    print(question)
+    print("----------------------\n")
+
     try:
         completion = client.chat.completions.create(
             model="gpt-3.5-turbo",
