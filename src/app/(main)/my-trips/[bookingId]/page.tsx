@@ -254,22 +254,37 @@ export default function TripDetailsPage() {
       </div>
        {!isCancelled && <Chatbot booking={booking} property={property} />}
     </div>
-     <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+    <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
-            <AlertDialogDescription>
-                This action cannot be undone. You will receive a full refund. Please provide a reason for the cancellation.
-            </AlertDialogDescription>
+                <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. Please provide a reason for the cancellation below.
+                </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="space-y-2 py-2">
-                <Label htmlFor="cancellation-reason">Reason for Cancellation</Label>
-                <Textarea
-                    id="cancellation-reason"
-                    placeholder="e.g., Change of plans, found a different place..."
-                    value={cancellationReason}
-                    onChange={(e) => setCancellationReason(e.target.value)}
-                />
+            <div className="py-2 space-y-4">
+                <div className="p-3 border rounded-md bg-muted/50 text-sm">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Info className="w-5 h-5 text-primary"/>
+                        Refund Summary
+                    </h4>
+                    <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Amount to be refunded</span>
+                        <span className="font-bold text-lg">${booking.totalCost.toFixed(2)}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Your refund will be processed to your original payment method. Please allow 5-7 business days for it to appear on your statement.
+                    </p>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="cancellation-reason">Reason for Cancellation<span className="text-destructive ml-1">*</span></Label>
+                    <Textarea
+                        id="cancellation-reason"
+                        placeholder="e.g., Change of plans, found a different place..."
+                        value={cancellationReason}
+                        onChange={(e) => setCancellationReason(e.target.value)}
+                    />
+                </div>
             </div>
             <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setCancellationReason("")}>Keep Booking</AlertDialogCancel>
