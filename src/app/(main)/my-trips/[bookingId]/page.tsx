@@ -28,16 +28,73 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function TripDetailsPage() {
   const params = useParams();
-  const { bookings, cancelBooking } = useBookings();
-  const { properties, insurancePlans, users } = useStaticData();
+  const { bookings, cancelBooking, isLoading: bookingsLoading } = useBookings();
+  const { properties, insurancePlans, users, isLoading: staticDataLoading } = useStaticData();
   const { toast } = useToast();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
 
+  const isLoading = bookingsLoading || staticDataLoading;
+
   const bookingId = parseInt(params.bookingId as string, 10);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex-1">
+            <Skeleton className="h-80 w-full rounded-lg mb-6" />
+            <Skeleton className="h-10 w-2/3 mb-2" />
+            <Skeleton className="h-6 w-1/3 mb-6" />
+            <Separator className="my-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-1/2" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+          <div className="w-full lg:w-96 space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-6 w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-8 w-1/2" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const booking = bookings.find((b) => b.id === bookingId);
 
   if (isNaN(bookingId) || !booking) {
