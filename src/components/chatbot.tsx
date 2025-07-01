@@ -33,12 +33,10 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,7 +85,7 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
           </Button>
         </CardHeader>
         <CardContent className="p-0 flex-1 flex flex-col">
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+          <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'user' ? 'justify-end' : '')}>
@@ -126,6 +124,7 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
                     </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
           <div className="p-4 border-t">
