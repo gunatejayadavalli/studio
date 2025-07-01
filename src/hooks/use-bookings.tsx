@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -53,7 +52,7 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   useEffect(() => {
-    if (!isLoading && bookings.length > 0 && config.dataSource === 'json') {
+    if (!isLoading && config.dataSource === 'json') {
       localStorage.setItem('airbnbAllBookings', JSON.stringify(bookings));
     }
   }, [bookings, isLoading]);
