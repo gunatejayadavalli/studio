@@ -6,7 +6,6 @@ import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useStaticData } from '@/hooks/use-static-data';
 import { useBookings } from '@/hooks/use-bookings';
-import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,7 @@ export default function PropertyBookingsPage() {
   const params = useParams();
   const propertyId = parseInt(params.propertyId as string, 10);
   const { bookings, cancelBooking } = useBookings();
-  const { allUsers: users } = useAuth();
+  const { users } = useStaticData();
   const { toast } = useToast();
   const { properties } = useStaticData();
   

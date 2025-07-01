@@ -1,3 +1,4 @@
+
 // src/app/(main)/my-trips/[bookingId]/page.tsx
 "use client";
 
@@ -6,7 +7,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
-import { useAuth } from '@/hooks/use-auth';
 import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,8 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 export default function TripDetailsPage() {
   const params = useParams();
   const { bookings, cancelBooking } = useBookings();
-  const { allUsers: users } = useAuth();
-  const { properties, insurancePlans } = useStaticData();
+  const { properties, insurancePlans, users } = useStaticData();
   const { toast } = useToast();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");

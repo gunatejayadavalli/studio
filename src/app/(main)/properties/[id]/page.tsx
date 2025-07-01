@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { addDays, format } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 import { useStaticData } from '@/hooks/use-static-data';
 
 import { cn } from '@/lib/utils';
@@ -27,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from '@/components/ui/skeleton';
-import { User } from '@/lib/types';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
@@ -38,16 +36,13 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { allUsers, isLoading: isAuthLoading } = useAuth();
-  const { properties, isLoading: isPropertiesLoading } = useStaticData();
+  const { properties, users, isLoading } = useStaticData();
   
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 5),
   });
   const [guests, setGuests] = useState(2);
-
-  const isLoading = isAuthLoading || isPropertiesLoading;
   
   if (isLoading) {
     return (
@@ -99,7 +94,7 @@ export default function PropertyDetailsPage() {
     notFound();
   }
   
-  const host = allUsers.find(u => u.id === property.hostId);
+  const host = users.find(u => u.id === property.hostId);
 
   const handleCheckout = () => {
     if (date?.from && date?.to) {

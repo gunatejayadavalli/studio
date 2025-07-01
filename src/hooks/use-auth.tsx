@@ -10,7 +10,6 @@ import * as apiClient from '@/lib/api-client';
 
 type AuthContextType = {
   user: User | null;
-  allUsers: User[];
   mode: 'guest' | 'host';
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -25,32 +24,27 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [mode, setModeState] = useState<'guest' | 'host'>('guest');
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
+  // This state is only for JSON mode to persist user list changes
+  const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
+
   useEffect(() => {
     const loadInitialData = async () => {
       setIsLoading(true);
-      if (config.dataSource === 'api') {
-        try {
-          const apiUsers = await apiClient.getUsers();
-          setAllUsers(apiUsers);
-        } catch (e) {
-          console.error("Failed to fetch users from API", e);
-          setAllUsers([]);
-        }
-      } else {
+      
+      // Load all users list only for JSON mode persistence
+      if (config.dataSource === 'json') {
         const storedAllUsers = localStorage.getItem('airbnbAllUsers');
         if (storedAllUsers) {
           setAllUsers(JSON.parse(storedAllUsers));
-        } else {
-          setAllUsers(initialUsers);
         }
       }
 
+      // Load the currently logged-in user
       try {
         const storedUser = localStorage.getItem('airbnbUser');
         if (storedUser) {
@@ -139,7 +133,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     setUser(updatedUser);
-    setAllUsers(prevUsers => prevUsers.map(u => u.id === user.id ? updatedUser : u));
+    // Persist changes to the user list in JSON mode
+    if (config.dataSource === 'json') {
+      setAllUsers(prevUsers => prevUsers.map(u => u.id === user.id ? updatedUser : u));
+    }
     localStorage.setItem('airbnbUser', JSON.stringify(updatedUser));
   };
   
@@ -163,7 +160,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const contextValue = {
     user,
-    allUsers,
     mode,
     login,
     logout,

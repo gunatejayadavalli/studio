@@ -12,6 +12,7 @@ import insurancePlansData from '@/data/insurancePlans.json';
 
 // These are now primarily used as fallbacks or for 'json' mode.
 export const initialUsers: User[] = usersData as User[];
+export const staticUsers: User[] = usersData as User[];
 export const properties: Property[] = propertiesData as Property[];
 export const bookings: Booking[] = bookingsData as Booking[];
 export const insurancePlans: InsurancePlan[] = insurancePlansData as InsurancePlan[];
