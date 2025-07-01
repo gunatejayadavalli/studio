@@ -84,9 +84,9 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
             <X className="w-5 h-5" />
           </Button>
         </CardHeader>
-        <CardContent className="p-0 flex-1 flex flex-col">
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <ScrollArea className="flex-1">
+            <div className="space-y-4 p-4">
               {messages.map((message) => (
                 <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'user' ? 'justify-end' : '')}>
                   {message.sender === 'bot' && (
