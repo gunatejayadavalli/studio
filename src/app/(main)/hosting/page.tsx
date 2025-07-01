@@ -12,9 +12,11 @@ import { PlusCircle, Edit, Briefcase } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HostingPage() {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { bookings } = useBookings();
-  const { properties, isLoading } = useStaticData();
+  const { properties, isLoading: isDataLoading } = useStaticData();
+
+  const isLoading = isAuthLoading || isDataLoading;
   
   const hostProperties = properties.filter((p) => p.hostId === user?.id);
 
