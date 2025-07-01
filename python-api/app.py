@@ -479,7 +479,6 @@ def chat_with_bot():
                 system_content_lines.append(f"- {benefit}")
         
         if insurance_plan.get('termsUrl'):
-            system_content_lines.append(f"Full Policy URL: {insurance_plan.get('termsUrl')}")
             policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
             if policy_text:
                 system_content_lines.append("\n--- Full Insurance Policy Details ---")
