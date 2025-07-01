@@ -5,6 +5,9 @@ from flask_cors import CORS
 from datetime import date
 import openai
 from dotenv import load_dotenv
+import requests
+import io
+from pypdf import PdfReader
 
 # --- OpenAI Configuration ---
 # Make sure to set your OPENAI_API_KEY in your environment
@@ -94,6 +97,28 @@ def insurance_plan_to_dict(plan_tuple):
         "benefits": plan_tuple[5].split('|') if plan_tuple[5] else [],
         "termsUrl": plan_tuple[6]
     }
+
+def extract_text_from_pdf_url(pdf_url):
+    """Downloads a PDF from a URL and extracts text."""
+    try:
+        response = requests.get(pdf_url, timeout=10)
+        response.raise_for_status()
+        
+        pdf_stream = io.BytesIO(response.content)
+        reader = PdfReader(pdf_stream)
+        text = ""
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n"
+        
+        return text
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching PDF from {pdf_url}: {e}")
+        return None
+    except Exception as e:
+        print(f"Error reading PDF content from {pdf_url}: {e}")
+        return None
 
 
 # --- API Routes ---
@@ -404,8 +429,9 @@ def chat_with_bot():
         return jsonify({"error": "Missing required fields for chat"}), 400
 
     system_content_lines = [
-        "You are a helpful assistant for a travel app named AirBot. A user is asking a question about their booked trip.",
+        "You are a helpful assistant for a travel app. A user is asking a question about their booked trip.",
         "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
+        "If the question is about insurance, refer to both the high-level benefits and the full policy details if available.",
         "Do not make up or invent information.",
         "\n--- Provided Context ---",
         f"Property: {property_data.get('title')}",
@@ -416,9 +442,19 @@ def chat_with_bot():
     if insurance_plan:
         system_content_lines.append(f"Travel Insurance Purchased: {insurance_plan.get('name')}")
         if 'benefits' in insurance_plan and insurance_plan['benefits']:
-            system_content_lines.append("High-level Insurance Benefits:")
+            system_content_lines.append("\nHigh-level Insurance Benefits:")
             for benefit in insurance_plan.get('benefits', []):
                 system_content_lines.append(f"- {benefit}")
+        
+        if insurance_plan.get('termsUrl'):
+            policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
+            if policy_text:
+                system_content_lines.append("\n--- Full Insurance Policy Details ---")
+                system_content_lines.append(policy_text)
+                system_content_lines.append("--- End of Insurance Policy Details ---")
+            else:
+                 system_content_lines.append("\n(Could not load the full insurance policy document.)")
+
     else:
         system_content_lines.append("Travel Insurance Purchased: No")
         
