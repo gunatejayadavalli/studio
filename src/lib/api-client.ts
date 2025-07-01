@@ -89,7 +89,7 @@ export const getChatbotResponse = async (
             amenities: property.amenities,
             propertyInfo: property.propertyInfo,
         },
-        host: {
+        hostInfo: {
             name: host.name,
             email: host.email,
         },

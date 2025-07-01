@@ -435,7 +435,7 @@ def chat_with_bot():
     question = data.get('question')
     booking = data.get('booking')
     property_data = data.get('property')
-    host_data = data.get('host')
+    host_data = data.get('hostInfo')
     insurance_plan = data.get('insurancePlan')
 
     if not all([question, booking, property_data, host_data]):
