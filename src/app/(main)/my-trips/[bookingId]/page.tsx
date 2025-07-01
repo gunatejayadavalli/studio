@@ -26,6 +26,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function TripDetailsPage() {
   const params = useParams();
@@ -33,6 +35,7 @@ export default function TripDetailsPage() {
   const { allUsers: users } = useAuth();
   const { toast } = useToast();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const booking = bookings.find((b) => b.id === params.bookingId);
 
@@ -53,12 +56,21 @@ export default function TripDetailsPage() {
   }
 
   const handleCancellation = () => {
-    cancelBooking(booking.id, 'guest');
+    if (!cancellationReason.trim()) {
+        toast({
+            variant: "destructive",
+            title: "Reason required",
+            description: "Please provide a reason for cancelling your booking.",
+        });
+        return;
+    }
+    cancelBooking(booking.id, 'guest', cancellationReason);
     toast({
         title: "Booking Cancelled",
         description: "Your booking has been successfully cancelled and a refund has been issued.",
     })
     setIsCancelDialogOpen(false);
+    setCancellationReason("");
   }
 
   return (
@@ -109,7 +121,7 @@ export default function TripDetailsPage() {
               </CardHeader>
               {booking.cancellationReason && (
                  <CardContent>
-                    <p className="font-semibold text-sm">Reason from host:</p>
+                    <p className="font-semibold text-sm">Reason for cancellation:</p>
                     <p className="text-muted-foreground italic">"{booking.cancellationReason}"</p>
                 </CardContent>
               )}
@@ -247,23 +259,21 @@ export default function TripDetailsPage() {
             <AlertDialogHeader>
             <AlertDialogTitle>Are you sure you want to cancel?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. You will receive a full refund for this booking.
+                This action cannot be undone. You will receive a full refund. Please provide a reason for the cancellation.
             </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="p-4 my-4 border rounded-md">
-                <h4 className="font-semibold mb-2">Refund Details</h4>
-                <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Total Amount Paid</span>
-                    <span>${booking.totalCost.toFixed(2)}</span>
-                </div>
-                 <div className="flex justify-between text-sm font-semibold text-green-700 mt-1">
-                    <span>Full Refund Amount</span>
-                    <span>${booking.totalCost.toFixed(2)}</span>
-                </div>
+            <div className="space-y-2 py-2">
+                <Label htmlFor="cancellation-reason">Reason for Cancellation</Label>
+                <Textarea
+                    id="cancellation-reason"
+                    placeholder="e.g., Change of plans, found a different place..."
+                    value={cancellationReason}
+                    onChange={(e) => setCancellationReason(e.target.value)}
+                />
             </div>
             <AlertDialogFooter>
-                <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                <AlertDialogAction onClick={handleCancellation} className="bg-destructive hover:bg-destructive/90">
+                <AlertDialogCancel onClick={() => setCancellationReason("")}>Keep Booking</AlertDialogCancel>
+                <AlertDialogAction onClick={handleCancellation} disabled={!cancellationReason.trim()} className="bg-destructive hover:bg-destructive/90">
                     Yes, Cancel Booking
                 </AlertDialogAction>
             </AlertDialogFooter>
