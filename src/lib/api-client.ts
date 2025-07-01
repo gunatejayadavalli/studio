@@ -22,8 +22,13 @@ async function fetchWrapper(endpoint: string, options?: RequestInit) {
       return null;
     }
     return response.json();
-  } catch (error) {
+  } catch (error: any) {
     console.error(`API call to ${endpoint} failed:`, error);
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      const detailedError = `Network request failed. This may be a CORS issue or a mixed content error. If your application is on HTTPS, your API endpoint (${apiBaseUrl}) must also be on HTTPS.`;
+      console.error(detailedError);
+      throw new Error(detailedError);
+    }
     throw error;
   }
 }
