@@ -4,8 +4,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { initialUsers } from '@/lib/data';
-import { config } from '@/lib/config';
 import * as apiClient from '@/lib/api-client';
 
 type AuthContextType = {
@@ -29,22 +27,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // This state is only for JSON mode to persist user list changes
-  const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
-
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadUserFromStorage = () => {
       setIsLoading(true);
-      
-      // Load all users list only for JSON mode persistence
-      if (config.dataSource === 'json') {
-        const storedAllUsers = localStorage.getItem('airbnbAllUsers');
-        if (storedAllUsers) {
-          setAllUsers(JSON.parse(storedAllUsers));
-        }
-      }
-
-      // Load the currently logged-in user
       try {
         const storedUser = localStorage.getItem('airbnbUser');
         if (storedUser) {
@@ -52,18 +37,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error("Failed to parse auth data from localStorage", error);
+        localStorage.removeItem('airbnbUser');
       } finally {
         setIsLoading(false);
       }
     };
-    loadInitialData();
+    loadUserFromStorage();
   }, []);
-
-  useEffect(() => {
-    if(!isLoading && config.dataSource === 'json') {
-      localStorage.setItem('airbnbAllUsers', JSON.stringify(allUsers));
-    }
-  }, [allUsers, isLoading]);
 
   useEffect(() => {
     if (user?.isHost) {
@@ -76,25 +56,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [pathname, user, mode]);
 
   const login = async (email: string, password: string) => {
-    if (config.dataSource === 'api') {
-      try {
-        const loggedInUser = await apiClient.loginUser({ email, password });
-        localStorage.setItem('airbnbUser', JSON.stringify(loggedInUser));
-        setUser(loggedInUser);
-        setModeState('guest');
-        return true;
-      } catch (error) {
-        console.error('API Login failed:', error);
-        return false;
-      }
-    } else {
-      const foundUser = allUsers.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        localStorage.setItem('airbnbUser', JSON.stringify(foundUser));
-        setUser(foundUser);
-        setModeState('guest');
-        return true;
-      }
+    try {
+      const loggedInUser = await apiClient.loginUser({ email, password });
+      localStorage.setItem('airbnbUser', JSON.stringify(loggedInUser));
+      setUser(loggedInUser);
+      setModeState('guest');
+      return true;
+    } catch (error) {
+      console.error('API Login failed:', error);
       return false;
     }
   };
@@ -107,20 +76,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const register = async (data: Omit<User, 'id'>) => {
-    if (config.dataSource === 'api') {
-        try {
-            await apiClient.registerUser(data);
-            return { success: true };
-        } catch (error: any) {
-            return { success: false, message: error.message || 'API registration failed' };
-        }
-    } else {
-        if (allUsers.some(u => u.email === data.email)) {
-          return { success: false, message: 'An account with this email already exists.' };
-        }
-        const newUser: User = { ...data, id: Date.now() }; // Use numeric ID for consistency
-        setAllUsers(prevUsers => [...prevUsers, newUser]);
+    try {
+        await apiClient.registerUser(data);
         return { success: true };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'API registration failed' };
     }
   };
   
@@ -128,26 +88,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     const updatedUser = { ...user, ...data };
     
-    if (config.dataSource === 'api') {
-      await apiClient.updateUser(user.id, data);
-    }
+    await apiClient.updateUser(user.id, data);
     
     setUser(updatedUser);
-    // Persist changes to the user list in JSON mode
-    if (config.dataSource === 'json') {
-      setAllUsers(prevUsers => prevUsers.map(u => u.id === user.id ? updatedUser : u));
-    }
     localStorage.setItem('airbnbUser', JSON.stringify(updatedUser));
   };
   
   const changePassword = async (currentPassword: string, newPassword: string) => {
-     if (!user || (config.dataSource === 'json' && user.password !== currentPassword)) {
-      return { success: false, message: 'The current password you entered is incorrect.' };
+     if (!user) {
+      return { success: false, message: 'You must be logged in to change your password.' };
     }
-    
+    // In a real app, the API would validate the currentPassword.
+    // Here we just update it.
     await updateUser({ password: newPassword });
-    // In API mode, we don't have old password to check on client, server should do it if logic existed
-    // For now, we assume it's successful if API call in updateUser works.
     return { success: true };
   };
 

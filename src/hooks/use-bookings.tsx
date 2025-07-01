@@ -3,9 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Booking } from '@/lib/types';
-import { bookings as initialBookings } from '@/lib/data';
 import { useAuth } from './use-auth';
-import { config } from '@/lib/config';
 import * as apiClient from '@/lib/api-client';
 
 type BookingsContextType = {
@@ -23,65 +21,39 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      if (config.dataSource === 'api') {
-        try {
-          const apiBookings = await apiClient.getBookings();
-          setBookings(apiBookings);
-        } catch (e) {
-          console.error("Failed to fetch bookings from API", e);
-          setBookings([]);
-        }
-      } else {
-        const storedBookings = localStorage.getItem('airbnbAllBookings');
-        if (storedBookings) {
-          setBookings(JSON.parse(storedBookings));
-        } else {
-          setBookings(initialBookings);
-        }
+    const loadBookings = async () => {
+      if (!user) {
+        setBookings([]);
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
+      setIsLoading(true);
+      try {
+        const apiBookings = await apiClient.getBookings();
+        setBookings(apiBookings);
+      } catch (e) {
+        console.error("Failed to fetch bookings from API", e);
+        setBookings([]); // Set to empty on error
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    if(user) { // only load bookings if user is logged in
-      loadInitialData();
-    } else {
-      setBookings([]);
-      setIsLoading(false);
-    }
+    loadBookings();
   }, [user]);
 
-  useEffect(() => {
-    if (!isLoading && config.dataSource === 'json') {
-      localStorage.setItem('airbnbAllBookings', JSON.stringify(bookings));
-    }
-  }, [bookings, isLoading]);
-
   const addBooking = async (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => {
-    if (!user) return;
+    if (!user) throw new Error("User must be logged in to create a booking.");
 
-    if (config.dataSource === 'api') {
-      const apiBookingData = { ...newBookingData, userId: user.id };
-      const newBooking = await apiClient.createBooking(apiBookingData);
-      setBookings(prev => [...prev, newBooking]);
-    } else {
-      const newBooking: Booking = {
-        ...newBookingData,
-        id: Date.now(),
-        userId: user.id,
-        status: 'confirmed',
-      };
-      setBookings(prevBookings => [...prevBookings, newBooking]);
-    }
+    const apiBookingData = { ...newBookingData, userId: user.id };
+    const newBooking = await apiClient.createBooking(apiBookingData);
+    setBookings(prev => [...prev, newBooking]);
   };
   
   const cancelBooking = async (bookingId: number, cancelledBy: 'guest' | 'host', reason?: string) => {
     const updatedStatus = `cancelled-by-${cancelledBy}`;
     
-    if (config.dataSource === 'api') {
-      await apiClient.updateBooking(bookingId, { status: updatedStatus, cancellationReason: reason });
-    }
+    await apiClient.updateBooking(bookingId, { status: updatedStatus, cancellationReason: reason });
 
     setBookings(prevBookings =>
       prevBookings.map(b =>
@@ -89,7 +61,6 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
       )
     );
   };
-
 
   return (
     <BookingsContext.Provider value={{ bookings, addBooking, cancelBooking, isLoading }}>

@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useBookings } from '@/hooks/use-bookings';
-import { properties } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
@@ -40,8 +40,9 @@ type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, updateUser, changePassword, isLoading } = useAuth();
-  const { bookings } = useBookings();
+  const { user, updateUser, changePassword, isLoading: isAuthLoading } = useAuth();
+  const { bookings, isLoading: areBookingsLoading } = useBookings();
+  const { properties, isLoading: arePropertiesLoading } = useStaticData();
   const { toast } = useToast();
 
   const profileForm = useForm<ProfileFormValues>({
@@ -66,6 +67,8 @@ export default function ProfilePage() {
 
   const hostProperties = user?.isHost ? properties.filter(p => p.hostId === user.id) : [];
   const hasActiveBookings = bookings.some(b => b.status === 'confirmed' && hostProperties.some(p => p.id === b.propertyId));
+
+  const isLoading = isAuthLoading || areBookingsLoading || arePropertiesLoading;
 
   if (isLoading || !user) {
     return (

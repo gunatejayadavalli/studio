@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import type { Booking, Property } from './types';
-import { insurancePlans } from './data';
+import * as apiClient from './api-client';
 import { readInsurancePolicy } from '@/ai/tools/insurance-policy-reader';
 
 const AnswerTripQuestionInputSchema = z.object({
@@ -88,6 +88,7 @@ type AnswerTripQuestionArgs = {
 };
 
 export async function answerTripQuestion(args: AnswerTripQuestionArgs): Promise<string> {
+  const insurancePlans = await apiClient.getInsurancePlans();
   const insurancePlan = args.booking.insurancePlanId
     ? insurancePlans.find((p) => p.id === args.booking.insurancePlanId)
     : undefined;

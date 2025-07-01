@@ -1,7 +1,6 @@
 // src/lib/config.ts
 export const config = {
-  // Switch to 'api' to use the backend, or 'json' to use local data files.
-  dataSource: 'json' as 'api' | 'json',
-  apiBaseUrl: 'http://897b80331b4142e0b8e83cb92ee90e59-760212110.us-east-1.elb.amazonaws.com/airbnbliteapi'
-  //apiBaseUrl: 'http://192.168.1.12:7076',
+  // The application now exclusively uses the API for data.
+  dataSource: 'api' as 'api' | 'json',
+  apiBaseUrl: 'http://127.0.0.1:7076'
 };
