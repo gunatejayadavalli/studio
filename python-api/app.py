@@ -12,7 +12,6 @@ from pypdf import PdfReader
 # --- OpenAI Configuration ---
 # Make sure to set your OPENAI_API_KEY in your environment
 load_dotenv()
-print('API key Found : ',os.getenv('OPENAI_API_KEY'))
 openai.api_key = os.getenv('OPENAI_API_KEY')
 if openai.api_key:
     client = openai.OpenAI()
