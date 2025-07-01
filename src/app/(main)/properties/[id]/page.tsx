@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from '@/components/ui/skeleton';
+import { User } from '@/lib/types';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
