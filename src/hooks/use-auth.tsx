@@ -107,10 +107,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     localStorage.removeItem('airbnbUser');
-    if (config.dataSource === 'json') {
-      localStorage.removeItem('airbnbAllUsers');
-      localStorage.removeItem('airbnbAllBookings');
-    }
     setUser(null);
     setModeState('guest');
     router.push('/login');
