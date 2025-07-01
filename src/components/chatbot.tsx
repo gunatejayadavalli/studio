@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Booking, Property, InsurancePlan } from '@/lib/types';
+import type { Booking, Property, InsurancePlan, User as UserType } from '@/lib/types';
 import * as apiClient from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -22,10 +22,11 @@ type Message = {
 type ChatbotProps = {
   booking: Booking;
   property: Property;
+  host: UserType;
   insurancePlan?: InsurancePlan;
 };
 
-export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
+export function Chatbot({ booking, property, host, insurancePlan }: ChatbotProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -49,7 +50,7 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
     setIsLoading(true);
 
     try {
-      const response = await apiClient.getChatbotResponse(input, booking, property, insurancePlan);
+      const response = await apiClient.getChatbotResponse(input, booking, property, host, insurancePlan);
       const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.response, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
@@ -84,7 +85,7 @@ export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
             <X className="w-5 h-5" />
           </Button>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <CardContent className="flex-1 p-0 flex flex-col min-h-0">
           <ScrollArea className="flex-1">
             <div className="space-y-4 p-4">
               {messages.map((message) => (

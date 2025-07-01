@@ -435,9 +435,10 @@ def chat_with_bot():
     question = data.get('question')
     booking = data.get('booking')
     property_data = data.get('property')
+    host_data = data.get('host')
     insurance_plan = data.get('insurancePlan')
 
-    if not all([question, booking, property_data]):
+    if not all([question, booking, property_data, host_data]):
         return jsonify({"error": "Missing required fields for chat"}), 400
 
     system_content_lines = [
@@ -446,11 +447,30 @@ def chat_with_bot():
         "If the question is about insurance, refer to both the high-level benefits and the full policy details if available.",
         "Do not make up or invent information.",
         "\n--- Provided Context ---",
+        
+        "\n== Booking Details ==",
         f"Property: {property_data.get('title')}",
         f"Location: {property_data.get('location')}",
         f"Check-in Date: {booking.get('checkIn')}",
         f"Check-out Date: {booking.get('checkOut')}",
+        f"Number of Guests: {booking.get('guests')}",
+        f"Total Booking Cost: ${booking.get('totalCost'):.2f}",
+        
+        "\n== Host Information ==",
+        f"Host Name: {host_data.get('name')}",
+        f"Host Email: {host_data.get('email')}",
+        
+        "\n== Property Details ==",
+        f"Description: {property_data.get('description')}",
+        f"Amenities: {', '.join(property_data.get('amenities', []))}",
     ]
+    
+    if property_data.get('propertyInfo'):
+        system_content_lines.append(f"\nAdditional Information from Host:\n{property_data.get('propertyInfo')}")
+    else:
+        system_content_lines.append("\nAdditional Information from Host:\n(No additional information was provided by the host for this property)")
+
+    system_content_lines.append("\n== Insurance Details ==")
     if insurance_plan:
         system_content_lines.append(f"Travel Insurance Purchased: {insurance_plan.get('name')}")
         if 'benefits' in insurance_plan and insurance_plan['benefits']:
@@ -459,6 +479,7 @@ def chat_with_bot():
                 system_content_lines.append(f"- {benefit}")
         
         if insurance_plan.get('termsUrl'):
+            system_content_lines.append(f"Full Policy URL: {insurance_plan.get('termsUrl')}")
             policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
             if policy_text:
                 system_content_lines.append("\n--- Full Insurance Policy Details ---")
@@ -466,16 +487,10 @@ def chat_with_bot():
                 system_content_lines.append("--- End of Insurance Policy Details ---")
             else:
                  system_content_lines.append("\n(Could not load the full insurance policy document.)")
-
     else:
         system_content_lines.append("Travel Insurance Purchased: No")
         
-    if property_data.get('propertyInfo'):
-        system_content_lines.append("\nProperty Information from Host:")
-        system_content_lines.append(property_data.get('propertyInfo'))
-    else:
-        system_content_lines.append("\nProperty Information from Host:\n(No additional information was provided by the host for this property)")
-    system_content_lines.append("--- End of Context ---")
+    system_content_lines.append("\n--- End of Context ---")
     
     system_content = "\n".join(system_content_lines)
 

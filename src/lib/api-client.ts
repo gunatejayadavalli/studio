@@ -71,6 +71,7 @@ export const getChatbotResponse = async (
     question: string,
     booking: Booking,
     property: Property,
+    host: User,
     insurancePlan?: InsurancePlan
 ): Promise<{ response: string }> => {
     const payload = {
@@ -78,15 +79,24 @@ export const getChatbotResponse = async (
         booking: {
             checkIn: booking.checkIn,
             checkOut: booking.checkOut,
+            guests: booking.guests,
+            totalCost: booking.totalCost,
         },
         property: {
             title: property.title,
             location: property.location,
+            description: property.description,
+            amenities: property.amenities,
             propertyInfo: property.propertyInfo,
+        },
+        host: {
+            name: host.name,
+            email: host.email,
         },
         insurancePlan: insurancePlan ? {
             name: insurancePlan.name,
             benefits: insurancePlan.benefits,
+            termsUrl: insurancePlan.termsUrl,
         } : undefined
     };
     return fetchWrapper('/chat', { method: 'POST', body: JSON.stringify(payload) });
