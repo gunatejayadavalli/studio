@@ -7,8 +7,8 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { addDays, format } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { useStaticData } from '@/hooks/use-static-data';
 
-import { properties } from '@/lib/data';
 import type { Property } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Skeleton } from '@/components/ui/skeleton';
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
@@ -38,7 +39,8 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { allUsers: users } = useAuth();
+  const { allUsers } = useAuth();
+  const { properties, isLoading } = useStaticData();
   const property = properties.find((p) => p.id === params.id);
   
   const [date, setDate] = useState<DateRange | undefined>({
@@ -46,13 +48,45 @@ export default function PropertyDetailsPage() {
     to: addDays(new Date(), 5),
   });
   const [guests, setGuests] = useState(2);
-
+  
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="mb-6">
+          <Skeleton className="h-12 w-2/3" />
+          <div className="flex items-center gap-4 mt-4">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-48" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <Skeleton className="h-[500px] w-full rounded-lg" />
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-1/3" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-3/4" />
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <Card className="sticky top-24 shadow-xl p-6 space-y-4">
+              <Skeleton className="h-8 w-1/2" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!property) {
     notFound();
   }
   
-  const host = users.find(u => u.id === property.hostId);
+  const host = allUsers.find(u => u.id === property.hostId);
 
   const handleCheckout = () => {
     if (date?.from && date?.to) {

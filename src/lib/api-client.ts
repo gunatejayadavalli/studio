@@ -1,0 +1,65 @@
+// src/lib/api-client.ts
+import { config } from './config';
+import type { User, Property, Booking, InsurancePlan, PropertyFormValues } from './types';
+
+const { apiBaseUrl } = config;
+
+async function fetchWrapper(endpoint: string, options?: RequestInit) {
+  try {
+    const response = await fetch(`${apiBaseUrl}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'An unknown API error occurred' }));
+      throw new Error(errorData.error || `Request failed with status ${response.status}`);
+    }
+    // For DELETE requests, there might not be a body
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return null;
+    }
+    return response.json();
+  } catch (error) {
+    console.error(`API call to ${endpoint} failed:`, error);
+    throw error;
+  }
+}
+
+// User endpoints
+export const getUsers = (): Promise<User[]> => fetchWrapper('/users');
+export const registerUser = (data: Omit<User, 'id'>) => fetchWrapper('/register', { method: 'POST', body: JSON.stringify(data) });
+export const loginUser = (credentials: { email: string, password: string }): Promise<User> => fetchWrapper('/login', { method: 'POST', body: JSON.stringify(credentials) });
+export const updateUser = (userId: string, data: Partial<User>) => fetchWrapper(`/users/${userId}`, { method: 'PUT', body: JSON.stringify(data) });
+
+// Property endpoints
+export const getProperties = (): Promise<Property[]> => fetchWrapper('/properties');
+export const addProperty = (data: PropertyFormValues, hostId: string): Promise<Property> => {
+    const propertyData = {
+        ...data,
+        hostId,
+        amenities: data.amenities.split(',').map(a => a.trim()),
+        images: [], // Image upload is a future feature
+        thumbnail: 'https://placehold.co/600x400.png' // Default thumbnail
+    };
+    return fetchWrapper('/properties', { method: 'POST', body: JSON.stringify(propertyData) });
+};
+export const updateProperty = (propertyId: string, data: PropertyFormValues): Promise<Property> => {
+    const propertyData = {
+        ...data,
+        amenities: data.amenities.split(',').map(a => a.trim()),
+    };
+    return fetchWrapper(`/properties/${propertyId}`, { method: 'PUT', body: JSON.stringify(propertyData) });
+}
+export const deleteProperty = (propertyId: string) => fetchWrapper(`/properties/${propertyId}`, { method: 'DELETE' });
+
+
+// Booking endpoints
+export const getBookings = (): Promise<Booking[]> => fetchWrapper('/bookings');
+export const createBooking = (data: Omit<Booking, 'id'|'status'|'cancellationReason'>) => fetchWrapper('/bookings', { method: 'POST', body: JSON.stringify(data) });
+export const updateBooking = (bookingId: string, data: Partial<Booking>) => fetchWrapper(`/bookings/${bookingId}`, { method: 'PUT', body: JSON.stringify(data) });
+
+// Insurance Plan endpoints
+export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/insurance-plans');

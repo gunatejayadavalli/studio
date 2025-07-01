@@ -10,6 +10,7 @@ import insurancePlansData from '@/data/insurancePlans.json';
 // files for API calls to a real backend in the future without changing
 // the rest of the application code.
 
+// These are now primarily used as fallbacks or for 'json' mode.
 export const initialUsers: User[] = usersData as User[];
 export const properties: Property[] = propertiesData as Property[];
 export const bookings: Booking[] = bookingsData as Booking[];

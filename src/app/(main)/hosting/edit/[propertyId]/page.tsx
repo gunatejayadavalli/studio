@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import { properties } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { useBookings } from '@/hooks/use-bookings';
+import { config } from '@/lib/config';
+import * as apiClient from '@/lib/api-client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PropertyForm, type PropertyFormValues } from '@/components/property-form';
@@ -32,27 +34,28 @@ export default function EditPropertyPage() {
   const params = useParams();
   const { toast } = useToast();
   const { bookings } = useBookings();
-  const [property, setProperty] = useState<Property | null | undefined>(undefined);
-  const [defaultValues, setDefaultValues] = useState<PropertyFormValues | undefined>(undefined);
-  const propertyId = params.propertyId as string;
+  const { properties, isLoading } = useStaticData();
 
+  const propertyId = params.propertyId as string;
+  const property = properties.find((p) => p.id === propertyId);
+  
+  const [defaultValues, setDefaultValues] = useState<PropertyFormValues | undefined>(undefined);
+  
   const hasActiveBookings = bookings.some(
     (b) => b.propertyId === propertyId && b.status === 'confirmed'
   );
 
   useEffect(() => {
-    const foundProperty = properties.find((p) => p.id === propertyId);
-    setProperty(foundProperty);
-    if (foundProperty) {
+    if (property) {
       setDefaultValues({
-        ...foundProperty,
-        amenities: foundProperty.amenities.join(', '),
-        propertyInfo: foundProperty.propertyInfo || '',
+        ...property,
+        amenities: Array.isArray(property.amenities) ? property.amenities.join(', ') : '',
+        propertyInfo: property.propertyInfo || '',
       });
     }
-  }, [propertyId]);
+  }, [property]);
   
-  if (property === undefined) {
+  if (isLoading) {
     return (
         <div className="container mx-auto max-w-3xl py-8 px-4 md:px-6">
             <p>Loading...</p>
@@ -64,24 +67,40 @@ export default function EditPropertyPage() {
     notFound();
   }
 
-  function onSubmit(data: PropertyFormValues) {
-    // In a real app, this would call an API to update the property
-    console.log('Updated property data:', data);
-    toast({
-      title: 'Property Updated!',
-      description: `Your changes to ${data.title} have been saved.`,
-    });
-    router.push('/hosting');
+  async function onSubmit(data: PropertyFormValues) {
+    try {
+      if (config.dataSource === 'api') {
+        await apiClient.updateProperty(propertyId, data);
+      } else {
+        console.log('Updated property data (JSON mode):', data);
+      }
+      toast({
+        title: 'Property Updated!',
+        description: `Your changes to ${data.title} have been saved.`,
+      });
+      router.push('/hosting');
+      router.refresh();
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Update Failed', description: 'Could not save changes to the property.' });
+    }
   }
 
-  function handleDelete() {
-    // In a real app, this would call an API to delete the property
-    console.log('Deleting property:', propertyId);
-     toast({
-      title: 'Property Deleted',
-      description: `${property?.title} has been removed.`,
-    });
-    router.push('/hosting');
+  async function handleDelete() {
+    try {
+      if (config.dataSource === 'api') {
+        await apiClient.deleteProperty(propertyId);
+      } else {
+         console.log('Deleting property (JSON mode):', propertyId);
+      }
+      toast({
+        title: 'Property Deleted',
+        description: `${property?.title} has been removed.`,
+      });
+      router.push('/hosting');
+      router.refresh();
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Delete Failed', description: 'Could not delete the property.' });
+    }
   }
 
   return (

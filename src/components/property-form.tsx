@@ -18,7 +18,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import type { PropertyFormValues } from '@/lib/types';
+import { Loader2 } from 'lucide-react';
 
 export const propertyFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters long'),
@@ -29,15 +31,15 @@ export const propertyFormSchema = z.object({
   propertyInfo: z.string().optional(),
 });
 
-export type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 
 type PropertyFormProps = {
-  onSubmit: (data: PropertyFormValues) => void;
+  onSubmit: (data: PropertyFormValues) => Promise<void>;
   isEditing?: boolean;
   defaultValues?: PropertyFormValues;
 };
 
 export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: PropertyFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<PropertyFormValues>({
     resolver: zodResolver(propertyFormSchema),
     defaultValues: {
@@ -57,9 +59,15 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
     }
   }, [defaultValues, form]);
 
+  const handleFormSubmit = async (data: PropertyFormValues) => {
+    setIsSubmitting(true);
+    await onSubmit(data);
+    setIsSubmitting(false);
+  }
+
   return (
      <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="title"
@@ -67,7 +75,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Property Title</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Sunny Beachside Villa" {...field} />
+                <Input placeholder="e.g., Sunny Beachside Villa" {...field} disabled={isSubmitting}/>
               </FormControl>
               <FormDescription>A catchy and descriptive title.</FormDescription>
               <FormMessage />
@@ -81,7 +89,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea placeholder="Describe your amazing property..." className="min-h-[120px]" {...field} />
+                <Textarea placeholder="Describe your amazing property..." className="min-h-[120px]" {...field} disabled={isSubmitting}/>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -94,7 +102,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Malibu, California" {...field} />
+                <Input placeholder="e.g., Malibu, California" {...field} disabled={isSubmitting}/>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -107,7 +115,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Price per Night (USD)</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="150" {...field} />
+                <Input type="number" placeholder="150" {...field} disabled={isSubmitting}/>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -120,7 +128,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Amenities</FormLabel>
               <FormControl>
-                <Input placeholder="WiFi, Pool, Kitchen..." {...field} />
+                <Input placeholder="WiFi, Pool, Kitchen..." {...field} disabled={isSubmitting}/>
               </FormControl>
                <FormDescription>Comma-separated list of amenities.</FormDescription>
               <FormMessage />
@@ -144,7 +152,7 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
             <FormItem>
               <FormLabel>Property Information</FormLabel>
               <FormControl>
-                <Textarea placeholder="Provide details like WiFi password, check-in instructions, directions, etc." className="min-h-[150px] font-code" {...field} />
+                <Textarea placeholder="Provide details like WiFi password, check-in instructions, directions, etc." className="min-h-[150px] font-code" {...field} disabled={isSubmitting}/>
               </FormControl>
                <FormDescription>This information will be available to guests after booking and used by the AirBot to answer questions.</FormDescription>
               <FormMessage />
@@ -153,7 +161,10 @@ export function PropertyForm({ onSubmit, isEditing = false, defaultValues }: Pro
         />
 
         <Separator className="my-6" />
-        <Button type="submit" size="lg">{isEditing ? 'Save Changes' : 'Create Listing'}</Button>
+        <Button type="submit" size="lg" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="animate-spin mr-2" />}
+          {isEditing ? 'Save Changes' : 'Create Listing'}
+        </Button>
       </form>
     </Form>
   );

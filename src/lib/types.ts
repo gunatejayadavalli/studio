@@ -42,6 +42,15 @@ export interface Booking {
   totalCost: number;
   insurancePlanId?: string;
   guests: number;
-  status: 'confirmed' | 'cancelled-by-guest' | 'cancelled-by-host';
+  status: 'confirmed' | 'cancelled-by-guest' | 'cancelled-by-host' | string;
   cancellationReason?: string;
 }
+
+export type PropertyFormValues = {
+  title: string;
+  description: string;
+  location: string;
+  pricePerNight: number;
+  amenities: string;
+  propertyInfo?: string;
+};

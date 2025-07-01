@@ -5,15 +5,34 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/use-auth';
 import { useBookings } from '@/hooks/use-bookings';
-import { properties } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Edit, Briefcase } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HostingPage() {
   const { user } = useAuth();
   const { bookings } = useBookings();
+  const { properties, isLoading } = useStaticData();
+  
   const hostProperties = properties.filter((p) => p.hostId === user?.id);
+
+  if (isLoading) {
+    return (
+       <div className="container mx-auto py-8 px-4 md:px-6">
+        <div className="flex justify-between items-center mb-8">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}><Skeleton className="h-48 w-full" /><CardContent className="p-4 space-y-2"><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /></CardContent><CardFooter className="p-4 flex gap-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></CardFooter></Card>
+            ))}
+        </div>
+      </div>
+    )
+  }
 
   if (hostProperties.length === 0) {
     return (

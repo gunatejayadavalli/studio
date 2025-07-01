@@ -11,17 +11,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('alex@example.com');
   const [password, setPassword] = useState('password123');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(email, password);
+    setIsLoggingIn(true);
+    const success = await login(email, password);
     if (success) {
       router.push('/home');
     } else {
@@ -31,6 +34,7 @@ export default function LoginPage() {
         description: "Invalid email or password.",
       });
     }
+    setIsLoggingIn(false);
   };
 
   const Logo = () => (
@@ -64,6 +68,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoggingIn}
               />
             </div>
             <div className="space-y-2">
@@ -74,9 +79,11 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoggingIn}
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              {isLoggingIn && <Loader2 className="animate-spin mr-2" />}
               Login
             </Button>
           </form>

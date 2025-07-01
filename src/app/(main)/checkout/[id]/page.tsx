@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
 import { differenceInDays, format, parseISO } from 'date-fns';
-import { properties, insurancePlans } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -25,6 +25,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
 import { CheckCircle, Info, FileText, Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -33,6 +34,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { addBooking } = useBookings();
+  const { properties, insurancePlans, isLoading: isDataLoading } = useStaticData();
 
   const property = properties.find((p) => p.id === params.id);
   const from = searchParams.get('from');
@@ -42,6 +44,44 @@ export default function CheckoutPage() {
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+
+  if (isDataLoading) {
+    return (
+      <div className="container mx-auto max-w-4xl py-8 px-4 md:px-6">
+        <Skeleton className="h-10 w-1/3 mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <Card>
+              <CardHeader className="flex flex-row items-start gap-4 space-y-0">
+                <Skeleton className="h-24 w-24 rounded-lg" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+          <Card className="sticky top-24">
+            <CardHeader><Skeleton className="h-8 w-32" /></CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </CardContent>
+            <CardFooter className="flex justify-between font-bold text-lg">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-32" />
+            </CardFooter>
+             <div className="px-6 pb-6"><Skeleton className="h-12 w-full" /></div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (!property || !from || !to) {
     return notFound();
@@ -59,7 +99,7 @@ export default function CheckoutPage() {
   const serviceFee = basePrice * 0.1;
   const totalCost = basePrice + serviceFee + insuranceCost;
 
-  const handleBooking = () => {
+  const handleBooking = async () => {
     if (!user) {
         toast({
             variant: "destructive",
@@ -70,25 +110,22 @@ export default function CheckoutPage() {
     }
     
     if (isBooking) return;
-
     setIsBooking(true);
 
-    setTimeout(() => {
-        addBooking({
-        propertyId: property.id,
-        checkIn: from,
-        checkOut: to,
-        totalCost: totalCost,
-        insurancePlanId: selectedInsurancePlanId ?? undefined,
-        guests: parseInt(guests, 10),
-        });
+    await addBooking({
+      propertyId: property.id,
+      checkIn: from,
+      checkOut: to,
+      totalCost: totalCost,
+      insurancePlanId: selectedInsurancePlanId ?? undefined,
+      guests: parseInt(guests, 10),
+    });
 
-        toast({
-        title: "Booking Confirmed!",
-        description: `Your trip to ${property.title} is booked.`,
-        });
-        router.push('/confirmation');
-    }, 1000);
+    toast({
+      title: "Booking Confirmed!",
+      description: `Your trip to ${property.title} is booked.`,
+    });
+    router.push('/confirmation');
   };
 
   const handleInsuranceToggle = (checked: boolean) => {
@@ -192,7 +229,7 @@ export default function CheckoutPage() {
                             Processing...
                         </>
                     ) : (
-                        'Proceed to Book'
+                        'Confirm and Pay'
                     )}
                 </Button>
             </div>

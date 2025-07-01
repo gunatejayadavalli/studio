@@ -5,18 +5,35 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useBookings } from '@/hooks/use-bookings';
-import { properties } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Calendar, MapPin, Ban } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function MyTripsPage() {
   const { user } = useAuth();
-  const { bookings } = useBookings();
+  const { bookings, isLoading: bookingsLoading } = useBookings();
+  const { properties, isLoading: propertiesLoading } = useStaticData();
+  
   const userBookings = bookings.filter((b) => b.userId === user?.id).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
+  const isLoading = bookingsLoading || propertiesLoading;
+  
+  if (isLoading) {
+    return (
+       <div className="container mx-auto py-8 px-4 md:px-6">
+        <h1 className="text-3xl font-bold font-headline mb-8">My Trips</h1>
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {Array.from({ length: 3 }).map((_, i) => (
+             <Card key={i} className="space-y-2"><Skeleton className="h-48 w-full" /><CardContent className="p-4 space-y-2"><Skeleton className="h-6 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-2/3" /></CardContent><CardFooter className="p-4"><Skeleton className="h-10 w-full" /></CardFooter></Card>
+            ))}
+         </div>
+       </div>
+    )
+  }
 
   if (userBookings.length === 0) {
     return (

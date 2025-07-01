@@ -15,6 +15,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { User } from '@/lib/types';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 const registerFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -34,6 +36,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerFormSchema),
@@ -47,7 +50,8 @@ export default function RegisterPage() {
     },
   });
 
-  function onSubmit(data: RegisterFormValues) {
+  async function onSubmit(data: RegisterFormValues) {
+    setIsSubmitting(true);
     const newUserData: Omit<User, 'id'> = {
         name: data.name,
         email: data.email,
@@ -56,7 +60,7 @@ export default function RegisterPage() {
         isHost: data.isHost || false,
     };
 
-    const result = register(newUserData);
+    const result = await register(newUserData);
 
     if (result.success) {
       toast({
@@ -71,6 +75,7 @@ export default function RegisterPage() {
         description: result.message,
       });
     }
+    setIsSubmitting(false);
   }
 
   const Logo = () => (
@@ -97,34 +102,37 @@ export default function RegisterPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Full Name<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Full Name<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                <FormItem><FormLabel>Confirm Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Confirm Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="avatar" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Avatar URL</FormLabel>
-                  <FormControl><Input placeholder="https://your-image-url.com" {...field} /></FormControl>
+                  <FormControl><Input placeholder="https://your-image-url.com" {...field} disabled={isSubmitting} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="isHost" render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting} /></FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Sign up as a host</FormLabel>
                       <FormDescription>Check this box if you want to be able to list properties.</FormDescription>
                     </div>
                   </FormItem>
               )} />
-              <Button type="submit" className="w-full">Create Account</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="animate-spin mr-2" />}
+                Create Account
+              </Button>
             </form>
           </Form>
         </CardContent>
