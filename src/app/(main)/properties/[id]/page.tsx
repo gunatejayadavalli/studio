@@ -38,17 +38,16 @@ const amenityIcons: { [key: string]: React.ReactNode } = {
 export default function PropertyDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const { allUsers } = useAuth();
-  const { properties, isLoading } = useStaticData();
-  
-  const propertyId = parseInt(params.id as string, 10);
-  const property = properties.find((p) => p.id === propertyId);
+  const { allUsers, isLoading: isAuthLoading } = useAuth();
+  const { properties, isLoading: isPropertiesLoading } = useStaticData();
   
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
     to: addDays(new Date(), 5),
   });
   const [guests, setGuests] = useState(2);
+
+  const isLoading = isAuthLoading || isPropertiesLoading;
   
   if (isLoading) {
     return (
@@ -69,13 +68,23 @@ export default function PropertyDetailsPage() {
               <Skeleton className="h-5 w-full" />
               <Skeleton className="h-5 w-3/4" />
             </div>
+             <Separator className="my-8" />
+             <div className="space-y-4">
+                <Skeleton className="h-8 w-1/4" />
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-16 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-1/2" />
+                </div>
+            </div>
           </div>
           <div className="lg:col-span-1">
-            <Card className="sticky top-24 shadow-xl p-6 space-y-4">
-              <Skeleton className="h-8 w-1/2" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-12 w-full" />
+            <Card className="sticky top-24 shadow-xl p-0">
+              <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-12 w-full mt-4" />
+              </CardContent>
             </Card>
           </div>
         </div>
@@ -83,6 +92,9 @@ export default function PropertyDetailsPage() {
     );
   }
 
+  const propertyId = parseInt(params.id as string, 10);
+  const property = properties.find((p) => p.id === propertyId);
+  
   if (isNaN(propertyId) || !property) {
     notFound();
   }
