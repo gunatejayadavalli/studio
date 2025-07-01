@@ -224,7 +224,7 @@ def add_property():
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     values = (
-        data['hostId'], data['title'], data['location'], data['pricePerNight'],
+        int(data['hostId']), data['title'], data['location'], data['pricePerNight'],
         data.get('rating', 0), data.get('thumbnail', ''), images_str,
         data['description'], amenities_str, data.get('propertyInfo', ''),
         data.get('data_ai_hint', '')
@@ -314,7 +314,7 @@ def create_booking():
     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
     """
     values = (
-        data['userId'], data['propertyId'], data['checkIn'], data['checkOut'],
+        int(data['userId']), int(data['propertyId']), data['checkIn'], data['checkOut'],
         data['totalCost'], data.get('insurancePlanId'), data['guests'], 'confirmed'
     )
     
