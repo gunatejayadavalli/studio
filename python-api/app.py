@@ -6,10 +6,11 @@ from datetime import date
 
 # --- Database Configuration ---
 db_config = {
-    'host': '34.47.199.230',
+    # 'host': '34.47.199.230',
+    'host': 'localhost',
     'port': '3306',
     'user': 'root',
-    'password': 'password',
+    'password': 'mypass100',
     'database': 'airbnb-db'
 }
 
