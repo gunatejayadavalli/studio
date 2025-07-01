@@ -99,31 +99,19 @@ def insurance_plan_to_dict(plan_tuple):
 
 def extract_text_from_pdf_url(pdf_url):
     """Downloads a PDF from a URL and extracts text."""
-    print(f"--- Attempting to extract text from PDF URL: {pdf_url} ---")
     try:
         response = requests.get(pdf_url, timeout=10)
-        print(f"PDF download response status: {response.status_code}")
         response.raise_for_status()
         
         pdf_stream = io.BytesIO(response.content)
         reader = PdfReader(pdf_stream)
-        num_pages = len(reader.pages)
-        print(f"PDF has {num_pages} pages.")
 
         text = ""
-        for i, page in enumerate(reader.pages):
+        for page in reader.pages:
             page_text = page.extract_text()
             if page_text:
-                print(f"  - Extracted text from page {i+1} (length: {len(page_text)})")
                 text += page_text + "\n"
-            else:
-                print(f"  - No text found on page {i+1}")
         
-        if not text:
-            print("Warning: No text was extracted from the PDF.")
-        else:
-            print(f"--- Successfully extracted text (total length: {len(text)}) ---")
-
         return text
     except requests.exceptions.RequestException as e:
         print(f"Error fetching PDF from {pdf_url}: {e}")
@@ -492,13 +480,6 @@ def chat_with_bot():
     system_content_lines.append("\n--- End of Context ---")
     
     system_content = "\n".join(system_content_lines)
-
-    print("\n--- OpenAI Prompt ---")
-    print("System Content:")
-    print(system_content)
-    print("\nUser Question:")
-    print(question)
-    print("----------------------\n")
 
     try:
         completion = client.chat.completions.create(
