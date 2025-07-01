@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Booking, Property } from '@/lib/types';
-import { answerTripQuestion } from '@/lib/actions';
+import type { Booking, Property, InsurancePlan } from '@/lib/types';
+import * as apiClient from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -22,9 +22,10 @@ type Message = {
 type ChatbotProps = {
   booking: Booking;
   property: Property;
+  insurancePlan?: InsurancePlan;
 };
 
-export function Chatbot({ booking, property }: ChatbotProps) {
+export function Chatbot({ booking, property, insurancePlan }: ChatbotProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -50,15 +51,11 @@ export function Chatbot({ booking, property }: ChatbotProps) {
     setIsLoading(true);
 
     try {
-      const botResponseText = await answerTripQuestion({
-        question: input,
-        booking: booking,
-        property: property,
-      });
-      const botMessage: Message = { id: (Date.now() + 1).toString(), text: botResponseText, sender: 'bot' };
+      const response = await apiClient.getChatbotResponse(input, booking, property, insurancePlan);
+      const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.response, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
-      const errorMessage: Message = { id: (Date.now() + 1).toString(), text: "Sorry, I'm having trouble connecting. Please try again later.", sender: 'bot' };
+      const errorMessage: Message = { id: (Date.now() + 1).toString(), text: "Sorry, I'm having trouble connecting to my brain. Please try again later.", sender: 'bot' };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);

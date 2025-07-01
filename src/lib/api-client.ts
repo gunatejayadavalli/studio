@@ -66,5 +66,31 @@ export const getBookings = (): Promise<Booking[]> => fetchWrapper('/bookings');
 export const createBooking = (data: Omit<Booking, 'id'|'status'|'cancellationReason'>): Promise<Booking> => fetchWrapper('/bookings', { method: 'POST', body: JSON.stringify(data) });
 export const updateBooking = (bookingId: number, data: Partial<Booking>) => fetchWrapper(`/bookings/${bookingId}`, { method: 'PUT', body: JSON.stringify(data) });
 
+// Chatbot endpoint
+export const getChatbotResponse = async (
+    question: string,
+    booking: Booking,
+    property: Property,
+    insurancePlan?: InsurancePlan
+): Promise<{ response: string }> => {
+    const payload = {
+        question,
+        booking: {
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+        },
+        property: {
+            title: property.title,
+            location: property.location,
+            propertyInfo: property.propertyInfo,
+        },
+        insurancePlan: insurancePlan ? {
+            name: insurancePlan.name,
+            benefits: insurancePlan.benefits,
+        } : undefined
+    };
+    return fetchWrapper('/chat', { method: 'POST', body: JSON.stringify(payload) });
+};
+
 // Insurance Plan endpoints
 export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/insurance-plans');

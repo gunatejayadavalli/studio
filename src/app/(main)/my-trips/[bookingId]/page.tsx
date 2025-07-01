@@ -310,7 +310,7 @@ export default function TripDetailsPage() {
              )}
         </div>
       </div>
-       {!isCancelled && <Chatbot booking={booking} property={property} />}
+       {!isCancelled && <Chatbot booking={booking} property={property} insurancePlan={insurancePlan} />}
     </div>
     <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>

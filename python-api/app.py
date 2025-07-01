@@ -3,6 +3,16 @@ import mysql.connector,os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import date
+import openai
+
+# --- OpenAI Configuration ---
+# Make sure to set your OPENAI_API_KEY in your environment
+openai.api_key = os.getenv('OPENAI_API_KEY')
+if openai.api_key:
+    client = openai.OpenAI()
+else:
+    print("Warning: OPENAI_API_KEY not found. The /chat endpoint will not work.")
+    client = None
 
 # --- Database Configuration ---
 db_config = {
@@ -373,6 +383,64 @@ def get_insurance_plans():
     cursor.close()
     conn.close()
     return jsonify(plans)
+
+
+# --- AI Chatbot Route ---
+@app.route('/chat', methods=['POST'])
+def chat_with_bot():
+    if not client:
+        return jsonify({"error": "OpenAI API key not configured on the server"}), 500
+        
+    data = request.json
+    question = data.get('question')
+    booking = data.get('booking')
+    property_data = data.get('property')
+    insurance_plan = data.get('insurancePlan')
+
+    if not all([question, booking, property_data]):
+        return jsonify({"error": "Missing required fields for chat"}), 400
+
+    system_content_lines = [
+        "You are a helpful assistant for a travel app named AirBot. A user is asking a question about their booked trip.",
+        "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
+        "Do not make up or invent information.",
+        "\n--- Provided Context ---",
+        f"Property: {property_data.get('title')}",
+        f"Location: {property_data.get('location')}",
+        f"Check-in Date: {booking.get('checkIn')}",
+        f"Check-out Date: {booking.get('checkOut')}",
+    ]
+    if insurance_plan:
+        system_content_lines.append(f"Travel Insurance Purchased: {insurance_plan.get('name')}")
+        if 'benefits' in insurance_plan and insurance_plan['benefits']:
+            system_content_lines.append("High-level Insurance Benefits:")
+            for benefit in insurance_plan.get('benefits', []):
+                system_content_lines.append(f"- {benefit}")
+    else:
+        system_content_lines.append("Travel Insurance Purchased: No")
+        
+    if property_data.get('propertyInfo'):
+        system_content_lines.append("\nProperty Information from Host:")
+        system_content_lines.append(property_data.get('propertyInfo'))
+    else:
+        system_content_lines.append("\nProperty Information from Host:\n(No additional information was provided by the host for this property)")
+    system_content_lines.append("--- End of Context ---")
+    
+    system_content = "\n".join(system_content_lines)
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": question}
+            ]
+        )
+        response_text = completion.choices[0].message.content
+        return jsonify({"response": response_text})
+    except Exception as e:
+        print(f"Error calling OpenAI: {e}")
+        return jsonify({"error": "Failed to get response from AI"}), 500
 
 
 if __name__ == '__main__':
