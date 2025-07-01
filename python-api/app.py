@@ -25,7 +25,7 @@ def get_db_connection():
 # --- Flask App Initialization ---
 app = Flask(__name__)
 # Allow all origins for any route. The context path is handled by the deployment environment.
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7076)
 context = os.getenv('context','/')
