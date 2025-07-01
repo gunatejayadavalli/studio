@@ -1,6 +1,6 @@
 // src/lib/types.ts
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
   password?: string; // Made optional for safety, but will be present
@@ -9,8 +9,8 @@ export interface User {
 }
 
 export interface Property {
-  id: string;
-  hostId: string;
+  id: number;
+  hostId: number;
   title: string;
   location: string;
   pricePerNight: number;
@@ -34,9 +34,9 @@ export interface InsurancePlan {
 }
 
 export interface Booking {
-  id: string;
-  userId: string;
-  propertyId: string;
+  id: number;
+  userId: number;
+  propertyId: number;
   checkIn: string;
   checkOut: string;
   totalCost: number;

@@ -9,11 +9,9 @@ import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } f
 import { useAuth } from '@/hooks/use-auth';
 import { useStaticData } from '@/hooks/use-static-data';
 
-import type { Property } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +39,9 @@ export default function PropertyDetailsPage() {
   const router = useRouter();
   const { allUsers } = useAuth();
   const { properties, isLoading } = useStaticData();
-  const property = properties.find((p) => p.id === params.id);
+  
+  const propertyId = parseInt(params.id as string, 10);
+  const property = properties.find((p) => p.id === propertyId);
   
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
@@ -82,7 +82,7 @@ export default function PropertyDetailsPage() {
     );
   }
 
-  if (!property) {
+  if (isNaN(propertyId) || !property) {
     notFound();
   }
   

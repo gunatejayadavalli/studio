@@ -37,11 +37,11 @@ async function fetchWrapper(endpoint: string, options?: RequestInit) {
 export const getUsers = (): Promise<User[]> => fetchWrapper('/users');
 export const registerUser = (data: Omit<User, 'id'>) => fetchWrapper('/register', { method: 'POST', body: JSON.stringify(data) });
 export const loginUser = (credentials: { email: string, password: string }): Promise<User> => fetchWrapper('/login', { method: 'POST', body: JSON.stringify(credentials) });
-export const updateUser = (userId: string, data: Partial<User>) => fetchWrapper(`/users/${userId}`, { method: 'PUT', body: JSON.stringify(data) });
+export const updateUser = (userId: number, data: Partial<User>) => fetchWrapper(`/users/${userId}`, { method: 'PUT', body: JSON.stringify(data) });
 
 // Property endpoints
 export const getProperties = (): Promise<Property[]> => fetchWrapper('/properties');
-export const addProperty = (data: PropertyFormValues, hostId: string): Promise<Property> => {
+export const addProperty = (data: PropertyFormValues, hostId: number): Promise<Property> => {
     const propertyData = {
         ...data,
         hostId,
@@ -51,20 +51,20 @@ export const addProperty = (data: PropertyFormValues, hostId: string): Promise<P
     };
     return fetchWrapper('/properties', { method: 'POST', body: JSON.stringify(propertyData) });
 };
-export const updateProperty = (propertyId: string, data: PropertyFormValues): Promise<Property> => {
+export const updateProperty = (propertyId: number, data: PropertyFormValues): Promise<Property> => {
     const propertyData = {
         ...data,
         amenities: data.amenities.split(',').map(a => a.trim()),
     };
     return fetchWrapper(`/properties/${propertyId}`, { method: 'PUT', body: JSON.stringify(propertyData) });
 }
-export const deleteProperty = (propertyId: string) => fetchWrapper(`/properties/${propertyId}`, { method: 'DELETE' });
+export const deleteProperty = (propertyId: number) => fetchWrapper(`/properties/${propertyId}`, { method: 'DELETE' });
 
 
 // Booking endpoints
 export const getBookings = (): Promise<Booking[]> => fetchWrapper('/bookings');
-export const createBooking = (data: Omit<Booking, 'id'|'status'|'cancellationReason'>) => fetchWrapper('/bookings', { method: 'POST', body: JSON.stringify(data) });
-export const updateBooking = (bookingId: string, data: Partial<Booking>) => fetchWrapper(`/bookings/${bookingId}`, { method: 'PUT', body: JSON.stringify(data) });
+export const createBooking = (data: Omit<Booking, 'id'|'status'|'cancellationReason'>): Promise<Booking> => fetchWrapper('/bookings', { method: 'POST', body: JSON.stringify(data) });
+export const updateBooking = (bookingId: number, data: Partial<Booking>) => fetchWrapper(`/bookings/${bookingId}`, { method: 'PUT', body: JSON.stringify(data) });
 
 // Insurance Plan endpoints
 export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/insurance-plans');

@@ -124,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (allUsers.some(u => u.email === data.email)) {
           return { success: false, message: 'An account with this email already exists.' };
         }
-        const newUser: User = { ...data, id: `user${Date.now()}` };
+        const newUser: User = { ...data, id: Date.now() }; // Use numeric ID for consistency
         setAllUsers(prevUsers => [...prevUsers, newUser]);
         return { success: true };
     }

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
 import { useAuth } from '@/hooks/use-auth';
-import { properties, insurancePlans } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -33,13 +33,15 @@ export default function TripDetailsPage() {
   const params = useParams();
   const { bookings, cancelBooking } = useBookings();
   const { allUsers: users } = useAuth();
+  const { properties, insurancePlans } = useStaticData();
   const { toast } = useToast();
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
 
-  const booking = bookings.find((b) => b.id === params.bookingId);
+  const bookingId = parseInt(params.bookingId as string, 10);
+  const booking = bookings.find((b) => b.id === bookingId);
 
-  if (!booking) {
+  if (isNaN(bookingId) || !booking) {
     notFound();
   }
 

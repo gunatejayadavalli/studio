@@ -28,13 +28,12 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7076)
-context = os.getenv('context','/')
 
 # --- Helper functions for data transformation ---
 def property_to_dict(prop_tuple):
     return {
-        "id": str(prop_tuple[0]),
-        "hostId": str(prop_tuple[1]),
+        "id": prop_tuple[0],
+        "hostId": prop_tuple[1],
         "title": prop_tuple[2],
         "location": prop_tuple[3],
         "pricePerNight": float(prop_tuple[4]),
@@ -49,13 +48,13 @@ def property_to_dict(prop_tuple):
 
 def booking_to_dict(booking_tuple):
     return {
-        "id": str(booking_tuple[0]),
-        "userId": str(booking_tuple[1]),
-        "propertyId": str(booking_tuple[2]),
+        "id": booking_tuple[0],
+        "userId": booking_tuple[1],
+        "propertyId": booking_tuple[2],
         "checkIn": booking_tuple[3].strftime('%Y-%m-%d') if isinstance(booking_tuple[3], date) else booking_tuple[3],
         "checkOut": booking_tuple[4].strftime('%Y-%m-%d') if isinstance(booking_tuple[4], date) else booking_tuple[4],
         "totalCost": float(booking_tuple[5]),
-        "insurancePlanId": str(booking_tuple[6]) if booking_tuple[6] else None,
+        "insurancePlanId": booking_tuple[6] if booking_tuple[6] else None,
         "guests": int(booking_tuple[7]),
         "status": booking_tuple[8],
         "cancellationReason": booking_tuple[9]
@@ -64,7 +63,7 @@ def booking_to_dict(booking_tuple):
 def user_to_dict(user_tuple):
     # This function assumes the password is at index 3 and will not be returned
     return {
-        "id": str(user_tuple[0]),
+        "id": user_tuple[0],
         "name": user_tuple[1],
         "email": user_tuple[2],
         "avatar": user_tuple[4],
@@ -73,7 +72,7 @@ def user_to_dict(user_tuple):
 
 def insurance_plan_to_dict(plan_tuple):
     return {
-        "id": str(plan_tuple[0]),
+        "id": plan_tuple[0],
         "name": plan_tuple[1],
         "pricePercent": float(plan_tuple[2]),
         "minTripValue": float(plan_tuple[3]),
@@ -84,12 +83,12 @@ def insurance_plan_to_dict(plan_tuple):
 
 
 # --- API Routes ---
-@app.route(context+'/')
+@app.route('/')
 def index():
     return jsonify({"message": "Welcome to the AirbnbLite API!"})
 
 # --- User Routes ---
-@app.route(context+'/users', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def get_users():
     conn = get_db_connection()
     if not conn:
@@ -101,7 +100,7 @@ def get_users():
     conn.close()
     return jsonify(users)
 
-@app.route(context+'/register', methods=['POST'])
+@app.route('/register', methods=['POST'])
 def register_user():
     data = request.json
     if not all(k in data for k in ['name', 'email', 'password']):
@@ -131,7 +130,7 @@ def register_user():
     conn.close()
     return jsonify(new_user), 201
 
-@app.route(context+'/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     data = request.json
     if not all(k in data for k in ['email', 'password']):
@@ -154,7 +153,7 @@ def login():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route(context+'/users/<int:user_id>', methods=['PUT'])
+@app.route('/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     data = request.json
     conn = get_db_connection()
@@ -200,7 +199,7 @@ def update_user(user_id):
 
 
 # --- Property Routes ---
-@app.route(context+'/properties', methods=['GET'])
+@app.route('/properties', methods=['GET'])
 def get_properties():
     conn = get_db_connection()
     if not conn:
@@ -212,7 +211,7 @@ def get_properties():
     conn.close()
     return jsonify(properties)
 
-@app.route(context+'/properties', methods=['POST'])
+@app.route('/properties', methods=['POST'])
 def add_property():
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -242,7 +241,7 @@ def add_property():
     
     return jsonify({"message": "Property added successfully", "id": new_id}), 201
 
-@app.route(context+'/properties/<int:prop_id>', methods=['PUT'])
+@app.route('/properties/<int:prop_id>', methods=['PUT'])
 def update_property(prop_id):
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -273,7 +272,7 @@ def update_property(prop_id):
     else:
         return jsonify({"error": "Property not found"}), 404
 
-@app.route(context+'/properties/<int:prop_id>', methods=['DELETE'])
+@app.route('/properties/<int:prop_id>', methods=['DELETE'])
 def delete_property(prop_id):
     conn = get_db_connection()
     if not conn:
@@ -293,7 +292,7 @@ def delete_property(prop_id):
         return jsonify({"error": "Property not found"}), 404
 
 # --- Booking Routes ---
-@app.route(context+'/bookings', methods=['GET'])
+@app.route('/bookings', methods=['GET'])
 def get_bookings():
     conn = get_db_connection()
     if not conn:
@@ -305,7 +304,7 @@ def get_bookings():
     conn.close()
     return jsonify(bookings)
 
-@app.route(context+'/bookings', methods=['POST'])
+@app.route('/bookings', methods=['POST'])
 def create_booking():
     data = request.json
     query = """
@@ -325,12 +324,18 @@ def create_booking():
     cursor.execute(query, values)
     conn.commit()
     new_id = cursor.lastrowid
+    
+    cursor.execute("SELECT * FROM bookings WHERE id = %s", (new_id,))
+    new_booking_tuple = cursor.fetchone()
+    new_booking = booking_to_dict(new_booking_tuple)
+
     cursor.close()
     conn.close()
 
-    return jsonify({"message": "Booking created successfully", "id": new_id}), 201
+    return jsonify(new_booking), 201
 
-@app.route(context+'/bookings/<int:booking_id>', methods=['PUT'])
+
+@app.route('/bookings/<int:booking_id>', methods=['PUT'])
 def update_booking(booking_id):
     data = request.json
     if 'status' not in data:
@@ -356,7 +361,7 @@ def update_booking(booking_id):
         return jsonify({"error": "Booking not found"}), 404
 
 # --- Insurance Plan Routes ---
-@app.route(context+'/insurance-plans', methods=['GET'])
+@app.route('/insurance-plans', methods=['GET'])
 def get_insurance_plans():
     conn = get_db_connection()
     if not conn:

@@ -26,8 +26,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Separator } from '@/components/ui/separator';
 import { Briefcase, ArrowLeft } from 'lucide-react';
-import type { Property } from '@/lib/types';
-
 
 export default function EditPropertyPage() {
   const router = useRouter();
@@ -36,7 +34,7 @@ export default function EditPropertyPage() {
   const { bookings } = useBookings();
   const { properties, isLoading } = useStaticData();
 
-  const propertyId = params.propertyId as string;
+  const propertyId = parseInt(params.propertyId as string, 10);
   const property = properties.find((p) => p.id === propertyId);
   
   const [defaultValues, setDefaultValues] = useState<PropertyFormValues | undefined>(undefined);
@@ -63,7 +61,7 @@ export default function EditPropertyPage() {
     );
   }
   
-  if (!property) {
+  if (isNaN(propertyId) || !property) {
     notFound();
   }
 

@@ -36,7 +36,9 @@ export default function CheckoutPage() {
   const { addBooking } = useBookings();
   const { properties, insurancePlans, isLoading: isDataLoading } = useStaticData();
 
-  const property = properties.find((p) => p.id === params.id);
+  const propertyId = parseInt(params.id as string, 10);
+  const property = properties.find((p) => p.id === propertyId);
+
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   const guests = searchParams.get('guests') || '2';
@@ -83,7 +85,7 @@ export default function CheckoutPage() {
     );
   }
 
-  if (!property || !from || !to) {
+  if (isNaN(propertyId) || !property || !from || !to) {
     return notFound();
   }
 

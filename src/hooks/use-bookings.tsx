@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -10,7 +11,7 @@ import * as apiClient from '@/lib/api-client';
 type BookingsContextType = {
   bookings: Booking[];
   addBooking: (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => Promise<void>;
-  cancelBooking: (bookingId: string, cancelledBy: 'guest' | 'host', reason?: string) => Promise<void>;
+  cancelBooking: (bookingId: number, cancelledBy: 'guest' | 'host', reason?: string) => Promise<void>;
   isLoading: boolean;
 };
 
@@ -67,7 +68,7 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
     } else {
       const newBooking: Booking = {
         ...newBookingData,
-        id: `booking${Date.now()}`,
+        id: Date.now(),
         userId: user.id,
         status: 'confirmed',
       };
@@ -75,7 +76,7 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  const cancelBooking = async (bookingId: string, cancelledBy: 'guest' | 'host', reason?: string) => {
+  const cancelBooking = async (bookingId: number, cancelledBy: 'guest' | 'host', reason?: string) => {
     const updatedStatus = `cancelled-by-${cancelledBy}`;
     
     if (config.dataSource === 'api') {

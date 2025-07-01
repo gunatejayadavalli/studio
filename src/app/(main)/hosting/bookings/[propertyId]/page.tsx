@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useParams, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { properties } from '@/lib/data';
+import { useStaticData } from '@/hooks/use-static-data';
 import { useBookings } from '@/hooks/use-bookings';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -30,10 +30,11 @@ import { cn } from '@/lib/utils';
 
 export default function PropertyBookingsPage() {
   const params = useParams();
-  const propertyId = params.propertyId as string;
+  const propertyId = parseInt(params.propertyId as string, 10);
   const { bookings, cancelBooking } = useBookings();
   const { allUsers: users } = useAuth();
   const { toast } = useToast();
+  const { properties } = useStaticData();
   
   const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
   const [cancellationReason, setCancellationReason] = useState("");
@@ -41,7 +42,7 @@ export default function PropertyBookingsPage() {
   const property = properties.find((p) => p.id === propertyId);
   const propertyBookings = bookings.filter((b) => b.propertyId === propertyId).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
 
-  if (!property) {
+  if (isNaN(propertyId) || !property) {
     notFound();
   }
   

@@ -1,7 +1,7 @@
 
 [
   {
-    "id": "1",
+    "id": 1,
     "name": "Alex Doe",
     "email": "alex@example.com",
     "password": "password123",
@@ -9,7 +9,7 @@
     "isHost": true
   },
   {
-    "id": "2",
+    "id": 2,
     "name": "Sam Smith",
     "email": "sam@example.com",
     "password": "password123",
@@ -17,7 +17,7 @@
     "isHost": false
   },
   {
-    "id": "3",
+    "id": 3,
     "name": "Casey Jones",
     "email": "casey@example.com",
     "password": "password123",
@@ -25,7 +25,7 @@
     "isHost": true
   },
   {
-    "id": "4",
+    "id": 4,
     "name": "Riley Brown",
     "email": "riley@example.com",
     "password": "password123",
@@ -33,7 +33,7 @@
     "isHost": false
   },
   {
-    "id": "5",
+    "id": 5,
     "name": "Jordan Lee",
     "email": "jordan@example.com",
     "password": "password123",
@@ -41,7 +41,7 @@
     "isHost": false
   },
   {
-    "id": "6",
+    "id": 6,
     "name": "Morgan Taylor",
     "email": "morgan@example.com",
     "password": "password123",
@@ -49,7 +49,7 @@
     "isHost": true
   },
   {
-    "id": "7",
+    "id": 7,
     "name": "Taylor Green",
     "email": "taylor@example.com",
     "password": "password123",
@@ -57,7 +57,7 @@
     "isHost": true
   },
   {
-    "id": "8",
+    "id": 8,
     "name": "Chris Pine",
     "email": "chris@example.com",
     "password": "password123",
@@ -65,7 +65,7 @@
     "isHost": false
   },
   {
-    "id": "9",
+    "id": 9,
     "name": "Pat River",
     "email": "pat@example.com",
     "password": "password123",
@@ -73,7 +73,7 @@
     "isHost": true
   },
   {
-    "id": "10",
+    "id": 10,
     "name": "Jamie Blue",
     "email": "jamie@example.com",
     "password": "password123",
