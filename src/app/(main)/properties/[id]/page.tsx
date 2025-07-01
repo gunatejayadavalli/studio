@@ -26,6 +26,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const amenityIcons: { [key: string]: React.ReactNode } = {
   'WiFi': <Wifi className="w-5 h-5 text-primary" />,
@@ -123,14 +130,25 @@ export default function PropertyDetailsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
-          <div className="relative h-[500px] w-full rounded-lg overflow-hidden shadow-lg mb-8">
-             <Image
-                src={property.images[0]}
-                alt={property.title}
-                layout="fill"
-                objectFit="cover"
-              />
-          </div>
+           <Carousel className="w-full rounded-lg overflow-hidden shadow-lg mb-8" opts={{ loop: true }}>
+            <CarouselContent className="h-[500px]">
+              {property.images.map((img, index) => (
+                <CarouselItem key={index}>
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={img}
+                      alt={`${property.title} image ${index + 1}`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-lg"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
+          </Carousel>
 
           <div className="prose max-w-none text-foreground/90">
             <h2 className="text-2xl font-bold font-headline mb-4">About this place</h2>
