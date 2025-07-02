@@ -67,15 +67,13 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) throw new Error("Booking not found.");
 
-    // This logic assumes service fee is 10% and was included in original total cost.
-    const serviceFeePercent = 0.1; 
-    const originalCostWithoutFee = booking.totalCost / (1 + serviceFeePercent);
-    const insuranceCost = (originalCostWithoutFee * insurancePlan.pricePercent) / 100;
+    const insuranceCost = (booking.reservationCost * insurancePlan.pricePercent) / 100;
     const newTotalCost = booking.totalCost + insuranceCost;
 
     const updatedData = {
         insurancePlanId: insurancePlan.id,
         totalCost: newTotalCost,
+        insuranceCost: insuranceCost,
     };
     
     await apiClient.updateBooking(bookingId, updatedData);

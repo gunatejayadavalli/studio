@@ -44,6 +44,9 @@ export interface Booking {
   guests: number;
   status: 'confirmed' | 'cancelled-by-guest' | 'cancelled-by-host' | string;
   cancellationReason?: string;
+  reservationCost: number;
+  serviceFee: number;
+  insuranceCost: number;
 }
 
 export type PropertyFormValues = {

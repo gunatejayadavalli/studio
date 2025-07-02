@@ -73,7 +73,10 @@ def booking_to_dict(booking_tuple):
         "insurancePlanId": booking_tuple[6] if booking_tuple[6] else None,
         "guests": int(booking_tuple[7]),
         "status": booking_tuple[8],
-        "cancellationReason": booking_tuple[9]
+        "cancellationReason": booking_tuple[9],
+        "reservationCost": float(booking_tuple[10]),
+        "serviceFee": float(booking_tuple[11]),
+        "insuranceCost": float(booking_tuple[12])
     }
 
 def user_to_dict(user_tuple):
@@ -348,12 +351,13 @@ def create_booking():
     data = request.json
     query = """
     INSERT INTO bookings 
-    (userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status) 
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    (userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, reservationCost, serviceFee, insuranceCost) 
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
     values = (
         int(data['userId']), int(data['propertyId']), data['checkIn'], data['checkOut'],
-        data['totalCost'], data.get('insurancePlanId'), data['guests'], 'confirmed'
+        data['totalCost'], data.get('insurancePlanId'), data['guests'], 'confirmed',
+        data['reservationCost'], data['serviceFee'], data['insuranceCost']
     )
     
     conn = get_db_connection()
@@ -398,6 +402,9 @@ def update_booking(booking_id):
     if 'totalCost' in data:
         fields.append("totalCost = %s")
         values.append(data['totalCost'])
+    if 'insuranceCost' in data:
+        fields.append("insuranceCost = %s")
+        values.append(data['insuranceCost'])
 
     if not fields:
         return jsonify({"error": "No fields to update"}), 400

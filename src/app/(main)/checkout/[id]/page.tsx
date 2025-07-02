@@ -92,14 +92,14 @@ export default function CheckoutPage() {
   const fromDate = parseISO(from);
   const toDate = parseISO(to);
   const numberOfNights = differenceInDays(toDate, fromDate);
-  const basePrice = property.pricePerNight * numberOfNights;
+  const reservationCost = property.pricePerNight * numberOfNights;
   
-  const eligiblePlan = insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue);
+  const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
   
-  const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
+  const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (reservationCost * eligiblePlan.pricePercent) / 100 : 0;
   
-  const serviceFee = basePrice * 0.1;
-  const totalCost = basePrice + serviceFee + insuranceCost;
+  const serviceFee = reservationCost * 0.1;
+  const totalCost = reservationCost + serviceFee + insuranceCost;
 
   const handleBooking = async () => {
     if (!user) {
@@ -121,6 +121,9 @@ export default function CheckoutPage() {
       totalCost: totalCost,
       insurancePlanId: selectedInsurancePlanId ?? undefined,
       guests: parseInt(guests, 10),
+      reservationCost: reservationCost,
+      serviceFee: serviceFee,
+      insuranceCost: insuranceCost,
     });
 
     toast({
@@ -205,7 +208,7 @@ export default function CheckoutPage() {
             <CardContent className="space-y-2">
               <div className="flex justify-between">
                 <span>${property.pricePerNight} x {numberOfNights} nights</span>
-                <span>${basePrice.toFixed(2)}</span>
+                <span>${reservationCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Service fee</span>

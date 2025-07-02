@@ -145,10 +145,9 @@ export default function TripDetailsPage() {
   // Insurance purchase logic
   const deadline = startOfDay(new Date(booking.checkIn));
   const canAddInsurance = !isCancelled && !isCompleted && !booking.insurancePlanId && isBefore(new Date(), deadline);
-  const serviceFeePercent = 0.1;
-  const basePrice = booking.totalCost / (1 + serviceFeePercent);
-  const eligiblePlan = canAddInsurance ? insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue) : undefined;
-  const insuranceCost = eligiblePlan ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
+
+  const eligiblePlan = canAddInsurance ? insurancePlans.find(plan => booking.reservationCost >= plan.minTripValue && booking.reservationCost < plan.maxTripValue) : undefined;
+  const insuranceCost = eligiblePlan ? (booking.reservationCost * eligiblePlan.pricePercent) / 100 : 0;
   
   const lastDayToBuy = subDays(deadline, 1);
   const daysLeft = eligiblePlan ? differenceInDays(lastDayToBuy, startOfDay(new Date())) : 0;
@@ -156,13 +155,16 @@ export default function TripDetailsPage() {
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
-  
-    const delayPromise = new Promise(resolve => setTimeout(resolve, 1000));
-    const addInsurancePromise = addInsuranceToBooking(booking.id, eligiblePlan);
-  
+    const startTime = Date.now();
+
     try {
-      await Promise.all([delayPromise, addInsurancePromise]);
-  
+      await addInsuranceToBooking(booking.id, eligiblePlan);
+
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 1000) {
+        await new Promise(resolve => setTimeout(resolve, 1000 - elapsedTime));
+      }
+
       toast({
         title: 'Insurance Added!',
         description: `You are now covered by ${eligiblePlan.name}.`,
@@ -302,12 +304,27 @@ export default function TripDetailsPage() {
                 <CardHeader>
                     <CardTitle>{isCancelled || isCompleted ? "Final Booking Cost" : "Booking Summary"}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Cost</span>
-                        <span className="font-semibold">${booking.totalCost.toFixed(2)}</span>
+                <CardContent className="space-y-2 text-sm">
+                   <div className="flex justify-between">
+                        <span className="text-muted-foreground">Reservation cost</span>
+                        <span>${booking.reservationCost.toFixed(2)}</span>
                     </div>
+                    <div className="flex justify-between">
+                        <span className="text-muted-foreground">Service fee</span>
+                        <span>${booking.serviceFee.toFixed(2)}</span>
+                    </div>
+                    {booking.insuranceCost > 0 && (
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Travel insurance</span>
+                            <span>${booking.insuranceCost.toFixed(2)}</span>
+                        </div>
+                    )}
                 </CardContent>
+                <Separator className="my-4"/>
+                <CardFooter className="flex justify-between font-bold text-lg">
+                    <span>Total (USD)</span>
+                    <span>${booking.totalCost.toFixed(2)}</span>
+                </CardFooter>
             </Card>
             {isCancelled && (
                  <Card className="border-green-600 bg-green-50/50">
