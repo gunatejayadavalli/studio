@@ -261,7 +261,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="pt-2">
                   <Button variant="link" asChild className="p-0 text-sm h-auto">
-                      <Link href={eligiblePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                      <Link href={`https://docs.google.com/gview?url=${eligiblePlan.termsUrl}&embedded=true`} target="_blank" rel="noopener noreferrer">
                           <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
                       </Link>
                   </Button>
@@ -275,5 +275,3 @@ export default function CheckoutPage() {
     </>
   );
 }
-
-    
