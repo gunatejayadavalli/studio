@@ -155,29 +155,26 @@ export default function TripDetailsPage() {
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
-    const startTime = Date.now();
-
+    
     try {
-      await addInsuranceToBooking(booking.id, eligiblePlan);
+        await Promise.all([
+            addInsuranceToBooking(booking.id, eligiblePlan),
+            new Promise(resolve => setTimeout(resolve, 1000))
+        ]);
 
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < 1000) {
-        await new Promise(resolve => setTimeout(resolve, 1000 - elapsedTime));
-      }
-
-      toast({
-        title: 'Insurance Added!',
-        description: `You are now covered by ${eligiblePlan.name}.`,
-      });
-      setIsAddInsuranceDialogOpen(false);
+        toast({
+            title: 'Insurance Added!',
+            description: `You are now covered by ${eligiblePlan.name}.`,
+        });
+        setIsAddInsuranceDialogOpen(false);
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Add Insurance',
-        description: 'An error occurred while adding insurance to your booking.',
-      });
+        toast({
+            variant: 'destructive',
+            title: 'Failed to Add Insurance',
+            description: 'An error occurred while adding insurance to your booking.',
+        });
     } finally {
-      setIsAddingInsurance(false);
+        setIsAddingInsurance(false);
     }
   };
 
@@ -545,3 +542,5 @@ export default function TripDetailsPage() {
     </>
   );
 }
+
+    

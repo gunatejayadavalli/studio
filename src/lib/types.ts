@@ -1,3 +1,4 @@
+
 // src/lib/types.ts
 export interface User {
   id: number;
@@ -57,3 +58,5 @@ export type PropertyFormValues = {
   amenities: string;
   propertyInfo?: string;
 };
+
+    
