@@ -105,7 +105,7 @@ export default function RegisterPage() {
                 <FormItem><FormLabel>Full Name<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@gmail.com" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem><FormLabel>Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>

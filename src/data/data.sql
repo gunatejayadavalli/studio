@@ -65,16 +65,16 @@ CREATE TABLE bookings (
 
 -- Insert data into Users table
 INSERT INTO users (name, email, password, avatar, isHost) VALUES
-('Alex Doe', 'alex@example.com', 'password123', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', TRUE),
-('Sam Smith', 'sam@example.com', 'password123', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop', FALSE),
-('Casey Jones', 'casey@example.com', 'password123', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', TRUE),
-('Riley Brown', 'riley@example.com', 'password123', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', FALSE),
-('Jordan Lee', 'jordan@example.com', 'password123', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', FALSE),
-('Morgan Taylor', 'morgan@example.com', 'password123', 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop', TRUE),
-('Taylor Green', 'taylor@example.com', 'password123', 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', TRUE),
-('Chris Pine', 'chris@example.com', 'password123', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', FALSE),
-('Pat River', 'pat@example.com', 'password123', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop', TRUE),
-('Jamie Blue', 'jamie@example.com', 'password123', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop', FALSE);
+('Alex Doe', 'alex@gmail.com', 'password123', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop', TRUE),
+('Sam Smith', 'sam@gmail.com', 'password123', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop', FALSE),
+('Casey Jones', 'casey@gmail.com', 'password123', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', TRUE),
+('Riley Brown', 'riley@gmail.com', 'password123', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', FALSE),
+('Jordan Lee', 'jordan@gmail.com', 'password123', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop', FALSE),
+('Morgan Taylor', 'morgan@gmail.com', 'password123', 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop', TRUE),
+('Taylor Green', 'taylor@gmail.com', 'password123', 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', TRUE),
+('Chris Pine', 'chris@gmail.com', 'password123', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', FALSE),
+('Pat River', 'pat@gmail.com', 'password123', 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop', TRUE),
+('Jamie Blue', 'jamie@gmail.com', 'password123', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop', FALSE);
 
 -- Insert data into Properties table
 INSERT INTO properties (hostId, title, location, pricePerNight, rating, thumbnail, images, description, amenities, propertyInfo, data_ai_hint) VALUES
