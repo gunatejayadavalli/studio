@@ -109,14 +109,3 @@ INSERT INTO insurance_plans (id, name, pricePercent, minTripValue, maxTripValue,
 ('GTI-03', 'Flexi-Plus', 7.00, 1500.00, 2999.00, 'Trip Cancellation: Up to $3,000|Trip Interruption: Up to $3,000|Medical Emergency: Up to $50,000|Baggage Loss/Delay: Up to $1,000|Cancel for Any Reason: 75% refund (optional add-on)', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'),
 ('GTI-04', 'Premium Protect', 8.00, 3000.00, 5999.00, 'Trip Cancellation: Up to $6,000|Trip Interruption: Up to $6,000|Medical Emergency: Up to $100,000|Baggage Loss/Delay: Up to $2,000|Rental Car Damage: Included|Cancel for Any Reason: 75% refund', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'),
 ('GTI-05', 'Ultimate Voyager', 10.00, 6000.00, 999999.00, 'Trip Cancellation: Up to $10,000|Trip Interruption: Up to $10,000|Medical Emergency: Up to $500,000|Baggage Loss/Delay: Up to $2,500|Rental Car Damage: Included|Cancel for Any Reason: 100% refund|24/7 Concierge Service', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
-
--- Insert data into Bookings table
-INSERT INTO bookings (userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, cancellationReason) VALUES
-(10, 3, '2024-08-10', '2024-08-15', 1568.00, 'GTI-02', 2, 'confirmed', NULL),
-(2, 7, '2024-09-05', '2024-09-10', 1100.00, NULL, 3, 'cancelled-by-guest', 'Change of plans'),
-(4, 1, '2024-10-01', '2024-10-07', 2450.00, NULL, 4, 'cancelled-by-host', 'Property is undergoing unexpected maintenance.'),
-(5, 13, '2024-11-12', '2024-11-18', 3024.00, 'GTI-03', 2, 'confirmed', NULL),
-(8, 10, '2025-05-20', '2025-05-27', 4578.50, 'GTI-04', 2, 'confirmed', NULL),
-(2, 13, '2025-02-10', '2025-02-17', 3234.00, 'GTI-03', 4, 'confirmed', NULL),
-(1, 5, '2024-07-20', '2024-07-25', 1207.50, NULL, 2, 'cancelled-by-host', 'Host had a family emergency.'),
-(1, 8, '2024-12-01', '2024-12-05', 920.00, NULL, 1, 'confirmed', NULL);
