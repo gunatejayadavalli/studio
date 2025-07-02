@@ -77,7 +77,7 @@ export default function MyTripsPage() {
                    </Badge>
                  )}
                  {isCompleted && (
-                   <Badge variant="secondary" className="mb-2 gap-1.5">
+                   <Badge variant="default" className="mb-2 gap-1.5">
                     <CheckCircle className="w-3.5 h-3.5"/> Completed
                    </Badge>
                  )}

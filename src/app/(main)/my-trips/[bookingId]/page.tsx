@@ -154,7 +154,7 @@ export default function TripDetailsPage() {
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="w-16 h-16 mx-auto mb-2 text-green-400" />
+                        <CheckCircle className="w-16 h-16 mx-auto mb-2 text-primary" />
                         <h2 className="text-2xl font-bold">Trip Completed</h2>
                       </>
                     )}
@@ -192,12 +192,12 @@ export default function TripDetailsPage() {
           )}
 
            {isCompleted && (
-            <Card className="mb-6 bg-green-50 border-green-200">
+            <Card className="mb-6 bg-primary/10 border-primary/20">
               <CardHeader className="flex-row gap-4 items-center">
-                 <CheckCircle className="w-8 h-8 text-green-600"/>
+                 <CheckCircle className="w-8 h-8 text-primary"/>
                  <div>
                     <CardTitle className="text-xl">Trip Completed</CardTitle>
-                    <CardDescription className="text-green-700">
+                    <CardDescription className="text-primary/90">
                        This trip was completed on {format(new Date(booking.checkOut), 'MMM d, yyyy')}.
                     </CardDescription>
                  </div>
