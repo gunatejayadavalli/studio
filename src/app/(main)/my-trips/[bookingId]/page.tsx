@@ -174,7 +174,7 @@ export default function TripDetailsPage() {
         description: 'An error occurred while adding insurance to your booking.',
       });
     } finally {
-      setIsAddingInsurance(false);
+      setIsAddingInsurance(false); // Stop the loader animation
     }
   };
 
@@ -480,7 +480,7 @@ export default function TripDetailsPage() {
                     </div>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Back</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleAddInsurance} disabled={isAddingInsurance}>
+                        <Button onClick={handleAddInsurance} disabled={isAddingInsurance}>
                             {isAddingInsurance ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -489,7 +489,7 @@ export default function TripDetailsPage() {
                             ) : (
                                 'Confirm and Pay'
                             )}
-                        </AlertDialogAction>
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -527,5 +527,3 @@ export default function TripDetailsPage() {
     </>
   );
 }
-
-    
