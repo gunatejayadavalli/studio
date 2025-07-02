@@ -116,7 +116,9 @@ export default function TripDetailsPage() {
     : undefined;
     
   const isCancelled = booking.status !== 'confirmed';
-  const isCompleted = !isCancelled && isBefore(new Date(booking.checkOut), new Date());
+  const today = startOfDay(new Date());
+  const checkOutDate = startOfDay(new Date(booking.checkOut));
+  const isCompleted = !isCancelled && isBefore(checkOutDate, today);
 
   if (!property || !host) {
     notFound();
@@ -154,19 +156,13 @@ export default function TripDetailsPage() {
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
-
-    const startTime = Date.now();
-
+  
+    const delayPromise = new Promise(resolve => setTimeout(resolve, 1000));
+    const addInsurancePromise = addInsuranceToBooking(booking.id, eligiblePlan);
+  
     try {
-      await addInsuranceToBooking(booking.id, eligiblePlan);
-
-      const duration = Date.now() - startTime;
-      const remainingTime = 1000 - duration;
-
-      if (remainingTime > 0) {
-        await new Promise((resolve) => setTimeout(resolve, remainingTime));
-      }
-
+      await Promise.all([delayPromise, addInsurancePromise]);
+  
       toast({
         title: 'Insurance Added!',
         description: `You are now covered by ${eligiblePlan.name}.`,
