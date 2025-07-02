@@ -340,7 +340,13 @@ def get_bookings():
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM bookings")
+    # Select columns explicitly to guarantee order
+    query = """
+    SELECT id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, 
+           status, cancellationReason, reservationCost, serviceFee, insuranceCost
+    FROM bookings
+    """
+    cursor.execute(query)
     bookings = [booking_to_dict(booking) for booking in cursor.fetchall()]
     cursor.close()
     conn.close()
@@ -368,7 +374,13 @@ def create_booking():
     conn.commit()
     new_id = cursor.lastrowid
     
-    cursor.execute("SELECT * FROM bookings WHERE id = %s", (new_id,))
+    # Select columns explicitly to guarantee order
+    fetch_query = """
+    SELECT id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, 
+           status, cancellationReason, reservationCost, serviceFee, insuranceCost
+    FROM bookings WHERE id = %s
+    """
+    cursor.execute(fetch_query, (new_id,))
     new_booking_tuple = cursor.fetchone()
     new_booking = booking_to_dict(new_booking_tuple)
 
