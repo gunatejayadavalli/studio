@@ -1,4 +1,3 @@
-
 // src/app/(main)/my-trips/[bookingId]/page.tsx
 "use client";
 
@@ -8,11 +7,11 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useBookings } from '@/hooks/use-bookings';
 import { useStaticData } from '@/hooks/use-static-data';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle, FileText, Ban, Info, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
+import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle, FileText, Ban, Info, AlertTriangle, Loader2 } from 'lucide-react';
+import { format, subDays, isBefore } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,14 +28,20 @@ import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { InsurancePlan } from '@/lib/types';
+
 
 export default function TripDetailsPage() {
   const params = useParams();
-  const { bookings, cancelBooking, isLoading: bookingsLoading } = useBookings();
+  const { bookings, cancelBooking, addInsuranceToBooking, isLoading: bookingsLoading } = useBookings();
   const { properties, insurancePlans, users, isLoading: staticDataLoading } = useStaticData();
   const { toast } = useToast();
+  
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
+
+  const [isAddInsuranceDialogOpen, setIsAddInsuranceDialogOpen] = useState(false);
+  const [isAddingInsurance, setIsAddingInsurance] = useState(false);
 
   const isLoading = bookingsLoading || staticDataLoading;
 
@@ -131,6 +136,34 @@ export default function TripDetailsPage() {
     setIsCancelDialogOpen(false);
     setCancellationReason("");
   }
+  
+  // Insurance purchase logic
+  const canAddInsurance = !isCancelled && !isCompleted && !booking.insurancePlanId && isBefore(new Date(), subDays(new Date(booking.checkIn), 1));
+  const serviceFeePercent = 0.1;
+  const basePrice = booking.totalCost / (1 + serviceFeePercent);
+  const eligiblePlan = canAddInsurance ? insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue) : undefined;
+  const insuranceCost = eligiblePlan ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
+
+  const handleAddInsurance = async () => {
+    if (!eligiblePlan) return;
+    setIsAddingInsurance(true);
+    try {
+        await addInsuranceToBooking(booking.id, eligiblePlan);
+        toast({
+            title: "Insurance Added!",
+            description: `You are now covered by ${eligiblePlan.name}.`,
+        });
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Failed to Add Insurance",
+            description: "An error occurred while adding insurance to your booking.",
+        });
+    } finally {
+        setIsAddingInsurance(false);
+        setIsAddInsuranceDialogOpen(false);
+    }
+  };
 
   return (
     <>
@@ -244,7 +277,7 @@ export default function TripDetailsPage() {
                 </Avatar>
                 <div>
                     <p className="font-semibold">{host.name}</p>
-                    <p className="text-muted-foreground">Your host for this trip.</p>
+                    <p className="text-muted-foreground">Contact host for any inquiries about your stay.</p>
                 </div>
             </div>
           </div>
@@ -280,54 +313,84 @@ export default function TripDetailsPage() {
                  </Card>
             )}
 
-             {insurancePlan ? (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ShieldCheck className="w-6 h-6 text-green-600"/>
-                            <span>Travel Insurance</span>
-                        </CardTitle>
-                        <CardDescription>{insurancePlan.name}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        <p className="font-medium text-sm">Your coverage benefits:</p>
-                        <ul className="space-y-1">
-                            {insurancePlan.benefits.map((benefit, index) => (
-                                <li key={index} className="flex items-start gap-2 text-sm">
-                                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                    <span>{benefit}</span>
-                                </li>
-                            ))}
-                        </ul>
-                        <Separator className="!mt-4"/>
-                        <Button variant="link" asChild className="p-0 text-sm h-auto -ml-1">
-                            <Link href={insurancePlan.termsUrl} target="_blank" rel="noopener noreferrer">
-                                <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
-                            </Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-             ) : (
-                 <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ShieldAlert className="w-6 h-6 text-amber-600"/>
-                            <span>Travel Insurance</span>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">No insurance plan was purchased for this trip.</p>
-                    </CardContent>
-                 </Card>
-             )}
-              {!isCancelled && !isCompleted && (
-                <Card>
-                    <CardHeader><CardTitle>Need to make a change?</CardTitle></CardHeader>
-                    <CardContent>
-                        <Button variant="destructive" className="w-full" onClick={() => setIsCancelDialogOpen(true)}>Cancel Booking</Button>
-                    </CardContent>
-                </Card>
-             )}
+            {insurancePlan ? (
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                          <ShieldCheck className="w-6 h-6 text-green-600"/>
+                          <span>Travel Insurance</span>
+                      </CardTitle>
+                      <CardDescription>{insurancePlan.name}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                      <p className="font-medium text-sm">Your coverage benefits:</p>
+                      <ul className="space-y-1">
+                          {insurancePlan.benefits.map((benefit, index) => (
+                              <li key={index} className="flex items-start gap-2 text-sm">
+                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                  <span>{benefit}</span>
+                              </li>
+                          ))}
+                      </ul>
+                      <Separator className="!mt-4"/>
+                      <Button variant="link" asChild className="p-0 text-sm h-auto -ml-1">
+                          <Link href={insurancePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                              <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
+                          </Link>
+                      </Button>
+                  </CardContent>
+              </Card>
+            ) : eligiblePlan ? (
+              <Card className="border-primary/50 bg-primary/5">
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                          <ShieldCheck className="w-6 h-6 text-primary"/>
+                          <span>Add Travel Insurance</span>
+                      </CardTitle>
+                      <CardDescription>Protect your trip for just <span className="font-bold text-primary">${insuranceCost.toFixed(2)}</span>.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                      <h4 className="font-semibold mb-2">{eligiblePlan.name}</h4>
+                      <ul className="space-y-1 mb-4">
+                          {eligiblePlan.benefits.map((benefit, index) => (
+                              <li key={index} className="flex items-start gap-2 text-sm">
+                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                  <span>{benefit}</span>
+                              </li>
+                          ))}
+                      </ul>
+                       <Button variant="link" asChild className="p-0 text-sm h-auto -ml-1">
+                          <Link href={eligiblePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                              <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
+                          </Link>
+                      </Button>
+                  </CardContent>
+                  <CardFooter>
+                      <Button className="w-full" onClick={() => setIsAddInsuranceDialogOpen(true)}>Add Insurance & Pay</Button>
+                  </CardFooter>
+              </Card>
+            ) : (
+               <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                          <ShieldAlert className="w-6 h-6 text-amber-600"/>
+                          <span>Travel Insurance</span>
+                      </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <p className="text-muted-foreground">No insurance plan was purchased for this trip.</p>
+                  </CardContent>
+               </Card>
+            )}
+
+            {!isCancelled && !isCompleted && (
+              <Card>
+                  <CardHeader><CardTitle>Need to make a change?</CardTitle></CardHeader>
+                  <CardContent>
+                      <Button variant="destructive" className="w-full" onClick={() => setIsCancelDialogOpen(true)}>Cancel Booking</Button>
+                  </CardContent>
+              </Card>
+            )}
         </div>
       </div>
        {!isCancelled && !isCompleted && <Chatbot booking={booking} property={property} host={host} insurancePlan={insurancePlan} />}
@@ -372,6 +435,45 @@ export default function TripDetailsPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+    {eligiblePlan && (
+        <AlertDialog open={isAddInsuranceDialogOpen} onOpenChange={setIsAddInsuranceDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Insurance Purchase</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You are about to add the "{eligiblePlan.name}" plan to your trip.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="py-2 space-y-4">
+                    <div className="p-3 border rounded-md bg-muted/50 text-sm">
+                        <h4 className="font-semibold mb-2 flex items-center gap-2">
+                            <Info className="w-5 h-5 text-primary"/>
+                            Payment Summary
+                        </h4>
+                        <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Insurance Cost</span>
+                            <span className="font-bold text-lg">${insuranceCost.toFixed(2)}</span>
+                        </div>
+                         <Separator className="my-2"/>
+                         <div className="flex justify-between items-center font-semibold">
+                            <span>New Total Trip Cost</span>
+                            <span>${(booking.totalCost + insuranceCost).toFixed(2)}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                            This amount will be charged to your original payment method.
+                        </p>
+                    </div>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Back</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleAddInsurance} disabled={isAddingInsurance}>
+                        {isAddingInsurance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Confirm and Pay
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )}
     </>
   );
 }
