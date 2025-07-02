@@ -377,17 +377,35 @@ def create_booking():
 @app.route('/bookings/<int:booking_id>', methods=['PUT'])
 def update_booking(booking_id):
     data = request.json
-    if 'status' not in data:
-        return jsonify({"error": "Missing 'status' field for update"}), 400
-        
-    query = "UPDATE bookings SET status = %s, cancellationReason = %s WHERE id = %s"
-    values = (data['status'], data.get('cancellationReason'), booking_id)
-
+    
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
     cursor = conn.cursor()
-    cursor.execute(query, values)
+
+    fields = []
+    values = []
+
+    if 'status' in data:
+        fields.append("status = %s")
+        values.append(data['status'])
+    if 'cancellationReason' in data:
+        fields.append("cancellationReason = %s")
+        values.append(data.get('cancellationReason'))
+    if 'insurancePlanId' in data:
+        fields.append("insurancePlanId = %s")
+        values.append(data['insurancePlanId'])
+    if 'totalCost' in data:
+        fields.append("totalCost = %s")
+        values.append(data['totalCost'])
+
+    if not fields:
+        return jsonify({"error": "No fields to update"}), 400
+
+    query = f"UPDATE bookings SET {', '.join(fields)} WHERE id = %s"
+    values.append(booking_id)
+
+    cursor.execute(query, tuple(values))
     conn.commit()
 
     rowcount = cursor.rowcount
@@ -397,7 +415,7 @@ def update_booking(booking_id):
     if rowcount > 0:
         return jsonify({"message": "Booking updated successfully"}), 200
     else:
-        return jsonify({"error": "Booking not found"}), 404
+        return jsonify({"error": "Booking not found or no changes made"}), 404
 
 # --- Insurance Plan Routes ---
 @app.route('/insurance-plans', methods=['GET'])
