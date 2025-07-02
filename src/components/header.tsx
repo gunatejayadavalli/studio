@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import logo from '@/data/airbnblite_logo-trans-bg.png';
 
 export function Header() {
@@ -48,9 +49,10 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-primary shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4">
           <Logo />
-          <nav className="hidden items-center gap-6 md:flex">
+          <Separator orientation="vertical" className="h-6 hidden md:block" />
+          <nav className="hidden items-center gap-4 md:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
