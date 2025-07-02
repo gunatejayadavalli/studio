@@ -462,6 +462,7 @@ def chat_with_bot():
     property_data = data.get('property')
     host_data = data.get('hostInfo')
     insurance_plan = data.get('insurancePlan')
+    eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
     if not all([question, booking, property_data, host_data]):
         return jsonify({"error": "Missing required fields for chat"}), 400
@@ -520,9 +521,27 @@ def chat_with_bot():
                 system_content_lines.append("--- End of Insurance Policy Details ---")
             else:
                  system_content_lines.append("\n(Could not load the full insurance policy document.)")
+    elif eligible_insurance_plan:
+        system_content_lines.append("Travel Insurance Purchased: No")
+        system_content_lines.append("\nThe user is eligible to purchase the following travel insurance plan. Answer any questions they have about it to help them decide.")
+        system_content_lines.append(f"Eligible Plan Name: {eligible_insurance_plan.get('name')}")
+        if 'benefits' in eligible_insurance_plan and eligible_insurance_plan['benefits']:
+            system_content_lines.append("\nHigh-level Benefits of Eligible Plan:")
+            for benefit in eligible_insurance_plan.get('benefits', []):
+                system_content_lines.append(f"- {benefit}")
+        
+        if eligible_insurance_plan.get('termsUrl'):
+            policy_text = extract_text_from_pdf_url(eligible_insurance_plan['termsUrl'])
+            if policy_text:
+                system_content_lines.append("\n--- Full Policy Details for Eligible Plan ---")
+                system_content_lines.append(policy_text)
+                system_content_lines.append("--- End of Policy Details for Eligible Plan ---")
+            else:
+                 system_content_lines.append("\n(Could not load the full policy document for the eligible plan.)")
     else:
         system_content_lines.append("Travel Insurance Purchased: No")
-        
+        system_content_lines.append("It is no longer possible to add travel insurance to this booking.")
+
     system_content_lines.append("\n--- End of Context ---")
     
     system_content = "\n".join(system_content_lines)
@@ -549,5 +568,6 @@ if __name__ == '__main__':
     
 
     
+
 
 

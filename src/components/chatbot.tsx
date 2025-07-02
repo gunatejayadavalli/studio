@@ -24,9 +24,10 @@ type ChatbotProps = {
   property: Property;
   host: UserType;
   insurancePlan?: InsurancePlan;
+  eligiblePlan?: InsurancePlan;
 };
 
-export function Chatbot({ booking, property, host, insurancePlan }: ChatbotProps) {
+export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }: ChatbotProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -50,7 +51,7 @@ export function Chatbot({ booking, property, host, insurancePlan }: ChatbotProps
     setIsLoading(true);
 
     try {
-      const response = await apiClient.getChatbotResponse(input, booking, property, host, insurancePlan);
+      const response = await apiClient.getChatbotResponse(input, booking, property, host, insurancePlan, eligiblePlan);
       const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.response, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

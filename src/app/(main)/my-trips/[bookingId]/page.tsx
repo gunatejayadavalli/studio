@@ -304,7 +304,7 @@ export default function TripDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Reservation cost (${property.pricePerNight.toFixed(2)} x {numberOfNights} {numberOfNights === 1 ? 'night' : 'nights'})</span>
+                        <span className="text-muted-foreground">Reservation Cost (${property.pricePerNight.toFixed(2)} x {numberOfNights} {numberOfNights === 1 ? 'night' : 'nights'})</span>
                         <span>${booking.reservationCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -422,7 +422,7 @@ export default function TripDetailsPage() {
             )}
         </div>
       </div>
-       {!isCancelled && !isCompleted && <Chatbot booking={booking} property={property} host={host} insurancePlan={insurancePlan} />}
+       {!isCancelled && !isCompleted && <Chatbot booking={booking} property={property} host={host} insurancePlan={insurancePlan} eligiblePlan={eligiblePlan} />}
     </div>
     <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>

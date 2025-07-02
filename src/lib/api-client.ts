@@ -72,7 +72,8 @@ export const getChatbotResponse = async (
     booking: Booking,
     property: Property,
     host: User,
-    insurancePlan?: InsurancePlan
+    insurancePlan?: InsurancePlan,
+    eligibleInsurancePlan?: InsurancePlan
 ): Promise<{ response: string }> => {
     const payload = {
         question,
@@ -100,6 +101,11 @@ export const getChatbotResponse = async (
             name: insurancePlan.name,
             benefits: insurancePlan.benefits,
             termsUrl: insurancePlan.termsUrl,
+        } : undefined,
+        eligibleInsurancePlan: eligibleInsurancePlan ? {
+            name: eligibleInsurancePlan.name,
+            benefits: eligibleInsurancePlan.benefits,
+            termsUrl: eligibleInsurancePlan.termsUrl,
         } : undefined
     };
     return fetchWrapper('/chat', { method: 'POST', body: JSON.stringify(payload) });
