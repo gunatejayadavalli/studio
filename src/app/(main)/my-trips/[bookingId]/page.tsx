@@ -155,7 +155,10 @@ export default function TripDetailsPage() {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
     try {
-        await addInsuranceToBooking(booking.id, eligiblePlan);
+        await Promise.all([
+          addInsuranceToBooking(booking.id, eligiblePlan),
+          new Promise(resolve => setTimeout(resolve, 1000))
+        ]);
         toast({
             title: "Insurance Added!",
             description: `You are now covered by ${eligiblePlan.name}.`,
@@ -475,8 +478,14 @@ export default function TripDetailsPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel>Back</AlertDialogCancel>
                         <AlertDialogAction onClick={handleAddInsurance} disabled={isAddingInsurance}>
-                            {isAddingInsurance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Confirm and Pay
+                            {isAddingInsurance ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Processing...
+                                </>
+                            ) : (
+                                'Confirm and Pay'
+                            )}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
