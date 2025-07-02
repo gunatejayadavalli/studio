@@ -483,7 +483,7 @@ def chat_with_bot():
 
     try:
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": question}
@@ -498,3 +498,6 @@ def chat_with_bot():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
+
+
+    
