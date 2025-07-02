@@ -108,6 +108,7 @@ export default function TripDetailsPage() {
     : undefined;
     
   const isCancelled = booking.status !== 'confirmed';
+  const isCompleted = !isCancelled && new Date(booking.checkOut) < new Date();
 
   if (!property || !host) {
     notFound();
@@ -143,16 +144,20 @@ export default function TripDetailsPage() {
               layout="fill"
               objectFit="cover"
             />
-             {isCancelled && (
+             {(isCancelled || isCompleted) && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                   <div className="text-center text-white p-4 bg-black/50 rounded-lg">
-                    <Ban className="w-16 h-16 mx-auto mb-2 text-destructive" />
-                    <h2 className="text-2xl font-bold">Booking Cancelled</h2>
-                    <p className="text-sm">
-                      {booking.status === 'cancelled-by-guest'
-                        ? 'This booking was cancelled by you.'
-                        : 'This booking was cancelled by the host.'}
-                    </p>
+                    {isCancelled ? (
+                       <>
+                        <Ban className="w-16 h-16 mx-auto mb-2 text-destructive" />
+                        <h2 className="text-2xl font-bold">Booking Cancelled</h2>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="w-16 h-16 mx-auto mb-2 text-green-400" />
+                        <h2 className="text-2xl font-bold">Trip Completed</h2>
+                      </>
+                    )}
                   </div>
               </div>
              )}
@@ -185,6 +190,21 @@ export default function TripDetailsPage() {
               )}
             </Card>
           )}
+
+           {isCompleted && (
+            <Card className="mb-6 bg-green-50 border-green-200">
+              <CardHeader className="flex-row gap-4 items-center">
+                 <CheckCircle className="w-8 h-8 text-green-600"/>
+                 <div>
+                    <CardTitle className="text-xl">Trip Completed</CardTitle>
+                    <CardDescription className="text-green-700">
+                       This trip was completed on {format(new Date(booking.checkOut), 'MMM d, yyyy')}.
+                    </CardDescription>
+                 </div>
+              </CardHeader>
+            </Card>
+          )}
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
              <Card>
@@ -233,7 +253,7 @@ export default function TripDetailsPage() {
         <div className="w-full lg:w-96 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>{isCancelled ? "Original Booking Cost" : "Booking Summary"}</CardTitle>
+                    <CardTitle>{isCancelled || isCompleted ? "Final Booking Cost" : "Booking Summary"}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-between">
@@ -300,7 +320,7 @@ export default function TripDetailsPage() {
                     </CardContent>
                  </Card>
              )}
-              {!isCancelled && (
+              {!isCancelled && !isCompleted && (
                 <Card>
                     <CardHeader><CardTitle>Need to make a change?</CardTitle></CardHeader>
                     <CardContent>
@@ -310,7 +330,7 @@ export default function TripDetailsPage() {
              )}
         </div>
       </div>
-       {!isCancelled && <Chatbot booking={booking} property={property} host={host} insurancePlan={insurancePlan} />}
+       {!isCancelled && !isCompleted && <Chatbot booking={booking} property={property} host={host} insurancePlan={insurancePlan} />}
     </div>
     <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
         <AlertDialogContent>

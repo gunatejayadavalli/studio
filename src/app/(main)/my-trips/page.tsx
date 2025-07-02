@@ -9,7 +9,7 @@ import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Calendar, MapPin, Ban } from 'lucide-react';
+import { Calendar, MapPin, Ban, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -56,9 +56,10 @@ export default function MyTripsPage() {
           if (!property) return null;
 
           const isCancelled = booking.status !== 'confirmed';
+          const isCompleted = !isCancelled && new Date(booking.checkOut) < new Date();
 
           return (
-            <Card key={booking.id} className={cn("flex flex-col", isCancelled && "bg-muted/50")}>
+            <Card key={booking.id} className={cn("flex flex-col", (isCancelled || isCompleted) && "bg-muted/50")}>
               <CardHeader className="p-0">
                 <div className="relative h-48 w-full">
                   <Image
@@ -66,13 +67,18 @@ export default function MyTripsPage() {
                     alt={property.title}
                     layout="fill"
                     objectFit="cover"
-                    className={cn("rounded-t-lg", isCancelled && "grayscale")}/>
+                    className={cn("rounded-t-lg", (isCancelled || isCompleted) && "grayscale")}/>
                 </div>
               </CardHeader>
               <CardContent className="p-4 flex-grow">
                  {isCancelled && (
                    <Badge variant="destructive" className="mb-2 gap-1.5">
                     <Ban className="w-3.5 h-3.5"/> Cancelled
+                   </Badge>
+                 )}
+                 {isCompleted && (
+                   <Badge variant="secondary" className="mb-2 gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5"/> Completed
                    </Badge>
                  )}
                 <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
