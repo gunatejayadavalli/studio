@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import logo from '@/data/airbnblite_logo-trans-bg.png';
 
 export function Header() {
   const { user, logout, mode, setMode } = useAuth();
@@ -27,7 +28,7 @@ export function Header() {
   const Logo = () => (
     <Link href={mode === 'host' ? '/hosting' : '/home'} className="flex items-center text-2xl font-bold text-primary-foreground font-headline">
       <Image
-        src="/airbnblite_logo-trans-bg.png"
+        src={logo}
         alt="Airbnb logo"
         width={102}
         height={32}

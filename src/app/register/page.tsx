@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import logo from '@/data/airbnblite_logo-trans-bg.png';
 
 const registerFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -80,11 +81,12 @@ export default function RegisterPage() {
   const Logo = () => (
     <div className="flex justify-center mb-2">
       <Image
-        src="/airbnblite_logo-trans-bg.png"
+        src={logo}
         alt="Airbnb logo"
         width={120}
         height={38}
         className="h-10 w-auto"
+        priority
       />
     </div>
   );

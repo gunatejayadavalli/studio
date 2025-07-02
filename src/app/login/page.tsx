@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import logo from '@/data/airbnblite_logo-trans-bg.png';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('alex@gmail.com');
@@ -39,11 +40,12 @@ export default function LoginPage() {
   const Logo = () => (
     <div className="flex justify-center mb-2">
       <Image
-        src="/airbnblite_logo-trans-bg.png"
+        src={logo}
         alt="Airbnb logo"
         width={120}
         height={38}
         className="h-10 w-auto"
+        priority
       />
     </div>
   );
