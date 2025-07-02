@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle, FileText, Ban, Info, AlertTriangle, Loader2 } from 'lucide-react';
-import { format, subDays, isBefore, differenceInDays } from 'date-fns';
+import { format, subDays, isBefore, differenceInDays, startOfDay } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
 import { Button } from '@/components/ui/button';
 import {
@@ -141,13 +141,15 @@ export default function TripDetailsPage() {
   }
   
   // Insurance purchase logic
-  const deadline = subDays(new Date(booking.checkIn), 1);
+  const deadline = startOfDay(new Date(booking.checkIn));
   const canAddInsurance = !isCancelled && !isCompleted && !booking.insurancePlanId && isBefore(new Date(), deadline);
   const serviceFeePercent = 0.1;
   const basePrice = booking.totalCost / (1 + serviceFeePercent);
   const eligiblePlan = canAddInsurance ? insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue) : undefined;
   const insuranceCost = eligiblePlan ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
-  const daysLeft = eligiblePlan ? differenceInDays(deadline, new Date()) : 0;
+  
+  const lastDayToBuy = subDays(deadline, 1);
+  const daysLeft = eligiblePlan ? differenceInDays(lastDayToBuy, startOfDay(new Date())) : 0;
 
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
@@ -510,4 +512,3 @@ export default function TripDetailsPage() {
     </>
   );
 }
-
