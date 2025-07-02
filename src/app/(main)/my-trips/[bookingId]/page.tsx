@@ -1,3 +1,4 @@
+
 // src/app/(main)/my-trips/[bookingId]/page.tsx
 "use client";
 
@@ -11,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, MapPin, Users, ShieldCheck, ShieldAlert, CheckCircle, FileText, Ban, Info, AlertTriangle, Loader2 } from 'lucide-react';
-import { format, subDays, isBefore } from 'date-fns';
+import { format, subDays, isBefore, differenceInDays } from 'date-fns';
 import { Chatbot } from '@/components/chatbot';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +43,8 @@ export default function TripDetailsPage() {
 
   const [isAddInsuranceDialogOpen, setIsAddInsuranceDialogOpen] = useState(false);
   const [isAddingInsurance, setIsAddingInsurance] = useState(false);
+  
+  const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
 
   const isLoading = bookingsLoading || staticDataLoading;
 
@@ -138,11 +141,13 @@ export default function TripDetailsPage() {
   }
   
   // Insurance purchase logic
-  const canAddInsurance = !isCancelled && !isCompleted && !booking.insurancePlanId && isBefore(new Date(), subDays(new Date(booking.checkIn), 1));
+  const deadline = subDays(new Date(booking.checkIn), 1);
+  const canAddInsurance = !isCancelled && !isCompleted && !booking.insurancePlanId && isBefore(new Date(), deadline);
   const serviceFeePercent = 0.1;
   const basePrice = booking.totalCost / (1 + serviceFeePercent);
   const eligiblePlan = canAddInsurance ? insurancePlans.find(plan => basePrice >= plan.minTripValue && basePrice < plan.maxTripValue) : undefined;
   const insuranceCost = eligiblePlan ? (basePrice * eligiblePlan.pricePercent) / 100 : 0;
+  const daysLeft = eligiblePlan ? differenceInDays(deadline, new Date()) : 0;
 
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
@@ -347,23 +352,20 @@ export default function TripDetailsPage() {
                           <ShieldCheck className="w-6 h-6 text-primary"/>
                           <span>Add Travel Insurance</span>
                       </CardTitle>
-                      <CardDescription>Protect your trip for just <span className="font-bold text-primary">${insuranceCost.toFixed(2)}</span>.</CardDescription>
+                      <CardDescription>Protect your trip with "{eligiblePlan.name}" for just <span className="font-bold text-primary">${insuranceCost.toFixed(2)}</span>.</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                      <h4 className="font-semibold mb-2">{eligiblePlan.name}</h4>
-                      <ul className="space-y-1 mb-4">
-                          {eligiblePlan.benefits.map((benefit, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                  <span>{benefit}</span>
-                              </li>
-                          ))}
-                      </ul>
-                       <Button variant="link" asChild className="p-0 text-sm h-auto -ml-1">
-                          <Link href={eligiblePlan.termsUrl} target="_blank" rel="noopener noreferrer">
-                              <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
-                          </Link>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Get peace of mind with comprehensive coverage.</p>
+                      <Button variant="link" size="sm" className="p-0 h-auto -ml-1" onClick={() => setIsBenefitDialogOpen(true)}>
+                        <Info className="mr-1 h-4 w-4"/> View benefits & coverage
                       </Button>
+                    </div>
+                    {daysLeft >= 0 && (
+                      <div className="text-xs text-center font-medium text-amber-700 bg-amber-500/20 p-2 rounded-md">
+                        You have {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left to add protection to your trip.
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter>
                       <Button className="w-full" onClick={() => setIsAddInsuranceDialogOpen(true)}>Add Insurance & Pay</Button>
@@ -436,44 +438,76 @@ export default function TripDetailsPage() {
         </AlertDialogContent>
     </AlertDialog>
     {eligiblePlan && (
-        <AlertDialog open={isAddInsuranceDialogOpen} onOpenChange={setIsAddInsuranceDialogOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Confirm Insurance Purchase</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        You are about to add the "{eligiblePlan.name}" plan to your trip.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="py-2 space-y-4">
-                    <div className="p-3 border rounded-md bg-muted/50 text-sm">
-                        <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <Info className="w-5 h-5 text-primary"/>
-                            Payment Summary
-                        </h4>
-                        <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Insurance Cost</span>
-                            <span className="font-bold text-lg">${insuranceCost.toFixed(2)}</span>
+        <>
+            <AlertDialog open={isAddInsuranceDialogOpen} onOpenChange={setIsAddInsuranceDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Insurance Purchase</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You are about to add the "{eligiblePlan.name}" plan to your trip.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-2 space-y-4">
+                        <div className="p-3 border rounded-md bg-muted/50 text-sm">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                <Info className="w-5 h-5 text-primary"/>
+                                Payment Summary
+                            </h4>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Insurance Cost</span>
+                                <span className="font-bold text-lg">${insuranceCost.toFixed(2)}</span>
+                            </div>
+                            <Separator className="my-2"/>
+                            <div className="flex justify-between items-center font-semibold">
+                                <span>New Total Trip Cost</span>
+                                <span>${(booking.totalCost + insuranceCost).toFixed(2)}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                                This amount will be charged to your original payment method.
+                            </p>
                         </div>
-                         <Separator className="my-2"/>
-                         <div className="flex justify-between items-center font-semibold">
-                            <span>New Total Trip Cost</span>
-                            <span>${(booking.totalCost + insuranceCost).toFixed(2)}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                            This amount will be charged to your original payment method.
-                        </p>
                     </div>
-                </div>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Back</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleAddInsurance} disabled={isAddingInsurance}>
-                        {isAddingInsurance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Confirm and Pay
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Back</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleAddInsurance} disabled={isAddingInsurance}>
+                            {isAddingInsurance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Confirm and Pay
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            
+            <AlertDialog open={isBenefitDialogOpen} onOpenChange={setIsBenefitDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Coverage benefits for {eligiblePlan.name}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This plan includes the following benefits for your trip.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="space-y-2 py-4">
+                        {eligiblePlan.benefits.map((benefit, index) => (
+                            <div key={index} className="flex items-start gap-2">
+                                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
+                                <p>{benefit}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="pt-2">
+                    <Button variant="link" asChild className="p-0 text-sm h-auto">
+                        <Link href={eligiblePlan.termsUrl} target="_blank" rel="noopener noreferrer">
+                            <FileText className="mr-1 h-4 w-4"/> View full policy details (PDF)
+                        </Link>
+                    </Button>
+                    </div>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Close</AlertDialogCancel>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     )}
     </>
   );
 }
+
