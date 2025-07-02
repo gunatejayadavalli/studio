@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -32,7 +33,7 @@ export function Header() {
         alt="Airbnb logo"
         width={120}
         height={38}
-        className="h-10 w-auto"
+        className="h-11 w-auto"
       />
     </Link>
   );
