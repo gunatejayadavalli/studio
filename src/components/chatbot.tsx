@@ -70,6 +70,15 @@ export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // When the chatbot is opened, scroll to the bottom.
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+      }, 0);
+    }
+  }, [isOpen]);
+
   const handleReset = () => {
     setMessages([getInitialMessage()]);
     setInput('');
