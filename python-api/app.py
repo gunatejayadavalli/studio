@@ -469,6 +469,7 @@ def chat_with_bot():
     system_content_lines = [
         "You are a helpful assistant for a travel app. A user is asking a question about their booked trip.",
         "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
+        "Format your response as plain text only. Do not use markdown, such as bolding (`**text**`), italics, or lists.",
         "If the question is about insurance, refer to both the high-level benefits and the full policy details if available.",
         "Do not make up or invent information.",
         "\n--- Provided Context ---",
@@ -548,4 +549,5 @@ if __name__ == '__main__':
     
 
     
+
 
