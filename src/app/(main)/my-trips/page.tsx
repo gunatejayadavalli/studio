@@ -1,3 +1,4 @@
+
 // src/app/(main)/my-trips/page.tsx
 "use client";
 
@@ -8,18 +9,57 @@ import { useBookings } from '@/hooks/use-bookings';
 import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format, isBefore, startOfDay } from 'date-fns';
 import { Calendar, MapPin, Ban, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Booking } from '@/lib/types';
 
 export default function MyTripsPage() {
   const { user } = useAuth();
   const { bookings, isLoading: bookingsLoading } = useBookings();
   const { properties, isLoading: propertiesLoading } = useStaticData();
   
-  const userBookings = bookings.filter((b) => b.userId === user?.id).sort((a,b) => new Date(b.checkIn).getTime() - new Date(a.checkIn).getTime());
+  const getSortCategory = (booking: Booking) => {
+    const today = startOfDay(new Date());
+
+    if (booking.status !== 'confirmed') {
+      return 2; // Cancelled
+    }
+    
+    // A booking is completed if its checkout date is in the past.
+    if (isBefore(startOfDay(new Date(booking.checkOut)), today)) {
+      return 1; // Completed
+    }
+    
+    return 0; // Upcoming or Active
+  };
+
+  const userBookings = bookings
+    .filter((b) => b.userId === user?.id)
+    .sort((a, b) => {
+      const categoryA = getSortCategory(a);
+      const categoryB = getSortCategory(b);
+      
+      if (categoryA !== categoryB) {
+        return categoryA - categoryB;
+      }
+      
+      const checkInA = new Date(a.checkIn).getTime();
+      const checkInB = new Date(b.checkIn).getTime();
+
+      switch(categoryA) {
+        case 0: // Upcoming/Active: sort by check-in date ascending (soonest first)
+          return checkInA - checkInB;
+        case 1: // Completed: sort by check-in date descending (most recent first)
+        case 2: // Cancelled: sort by check-in date descending (most recent first)
+          return checkInB - checkInA;
+        default:
+          return 0;
+      }
+    });
+
   const isLoading = bookingsLoading || propertiesLoading;
   
   if (isLoading) {
@@ -56,7 +96,7 @@ export default function MyTripsPage() {
           if (!property) return null;
 
           const isCancelled = booking.status !== 'confirmed';
-          const isCompleted = !isCancelled && new Date(booking.checkOut) < new Date();
+          const isCompleted = !isCancelled && isBefore(startOfDay(new Date(booking.checkOut)), startOfDay(new Date()));
 
           return (
             <Card key={booking.id} className={cn("flex flex-col", (isCancelled || isCompleted) && "bg-muted/50")}>
