@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -85,7 +86,7 @@ export default function RegisterPage() {
         alt="Airbnb logo"
         width={120}
         height={38}
-        className="h-10 w-auto"
+        className="h-12 w-auto"
         priority
       />
     </div>
