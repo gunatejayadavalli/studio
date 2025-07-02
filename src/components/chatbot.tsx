@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, CornerDownLeft, X, MessageSquarePlus } from 'lucide-react';
+import { Send, Bot, User, X, MessageSquarePlus, RefreshCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,16 +49,32 @@ const ChatMessageContent = ({ text }: { text: string }) => {
 export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }: ChatbotProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: `Hi ${user?.name?.split(' ')[0]}! How can I help you with your trip to ${property.title}?`, sender: 'bot' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const getInitialMessage = () => ({
+    id: '1',
+    text: `Hi ${user?.name?.split(' ')[0]}! How can I help you with your trip to ${property.title}?`,
+    sender: 'bot' as const
+  });
+  
+  // Set initial message when component mounts or user changes
+  useEffect(() => {
+      setMessages([getInitialMessage()]);
+  }, []);
+
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleReset = () => {
+    setMessages([getInitialMessage()]);
+    setInput('');
+    setIsLoading(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,9 +118,21 @@ export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }
             <Bot className="w-6 h-6" />
             <CardTitle className="text-lg font-headline">AirBot</CardTitle>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground" onClick={() => setIsOpen(false)}>
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center">
+             <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-primary-foreground"
+                onClick={handleReset}
+                title="Reset Chat"
+                aria-label="Reset Chat"
+            >
+                <RefreshCcw className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary-foreground" onClick={() => setIsOpen(false)}>
+                <X className="w-5 h-5" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex-1 p-0 flex flex-col min-h-0">
           <ScrollArea className="flex-1">
