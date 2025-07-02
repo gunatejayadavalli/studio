@@ -1,11 +1,11 @@
 -- Drop database if it exists to start clean
-DROP DATABASE IF EXISTS `airbnb-db`;
+DROP DATABASE IF EXISTS `airbnblite-db`;
 
 -- Create the database
-CREATE DATABASE `airbnb-db`;
+CREATE DATABASE `airbnblite-db`;
 
 -- Use the database
-USE `airbnb-db`;
+USE `airbnblite-db`;
 
 -- Create Users table with INT primary key
 CREATE TABLE users (

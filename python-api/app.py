@@ -26,7 +26,7 @@ db_config = {
     'port': '3306',
     'user': 'root',
     'password': 'mypass100',
-    'database': 'airbnb-db'
+    'database': 'airbnblite-db'
 }
 
 # --- Helper function to get database connection ---
