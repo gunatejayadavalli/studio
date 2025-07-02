@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -81,7 +80,7 @@ export default function RegisterPage() {
   const Logo = () => (
     <div className="flex justify-center mb-2">
       <Image
-        src="https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg"
+        src="/airbnblite_logo-trans-bg.png"
         alt="Airbnb logo"
         width={120}
         height={38}
