@@ -552,13 +552,26 @@ def chat_with_bot():
         role = "assistant" if msg["sender"] == "bot" else "user"
         openai_messages.append({"role": role, "content": msg["text"]})
 
+    messages_to_send = [
+        {"role": "system", "content": system_content},
+        *openai_messages
+    ]
+
+    # Log the prompt for debugging
+    print("\n--- Prompt sent to OpenAI ---")
+    try:
+        # Use json for pretty printing if available
+        import json
+        print(json.dumps(messages_to_send, indent=2))
+    except (ImportError, TypeError):
+        # Fallback to regular print if json is not available or data is not serializable
+        print(messages_to_send)
+    print("---------------------------\n")
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_content},
-                *openai_messages
-            ]
+            messages=messages_to_send
         )
         response_text = completion.choices[0].message.content
         return jsonify({"response": response_text})
@@ -578,3 +591,6 @@ if __name__ == '__main__':
 
 
 
+
+
+    
