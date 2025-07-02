@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { addDays, format } from 'date-fns';
+import { addDays, format, isSameDay } from 'date-fns';
 import { Calendar as CalendarIcon, MapPin, Wifi, Wind, Utensils, Star, Users } from 'lucide-react';
 import { useStaticData } from '@/hooks/use-static-data';
 
@@ -110,6 +110,14 @@ export default function PropertyDetailsPage() {
       router.push(`/checkout/${property.id}?from=${fromDate}&to=${toDate}&guests=${guests}`);
     }
   }
+
+  const handleDateSelect = (range: DateRange | undefined) => {
+    if (range?.from && range.to && isSameDay(range.from, range.to)) {
+      setDate({ from: range.from, to: undefined });
+    } else {
+      setDate(range);
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
@@ -228,7 +236,7 @@ export default function PropertyDetailsPage() {
                       mode="range"
                       defaultMonth={date?.from}
                       selected={date}
-                      onSelect={setDate}
+                      onSelect={handleDateSelect}
                       numberOfMonths={1}
                       disabled={{ before: new Date() }}
                     />
