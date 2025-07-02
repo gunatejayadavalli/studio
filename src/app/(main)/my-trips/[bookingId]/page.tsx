@@ -2,7 +2,7 @@
 // src/app/(main)/my-trips/[bookingId]/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
@@ -160,7 +160,7 @@ export default function TripDetailsPage() {
     try {
       await Promise.all([
         addInsuranceToBooking(booking.id, eligiblePlan),
-        new Promise(resolve => setTimeout(resolve, 1000))
+        new Promise(resolve => setTimeout(resolve, 1000)) 
       ]);
       
       toast({
@@ -304,7 +304,7 @@ export default function TripDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">${property.pricePerNight.toFixed(2)} x {numberOfNights} {numberOfNights === 1 ? 'night' : 'nights'}</span>
+                        <span className="text-muted-foreground">Reservation Cost (${property.pricePerNight.toFixed(2)} x {numberOfNights} {numberOfNights === 1 ? 'night' : 'nights'})</span>
                         <span>${booking.reservationCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
