@@ -155,13 +155,18 @@ export default function TripDetailsPage() {
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
-    
-    try {
-        await Promise.all([
-            addInsuranceToBooking(booking.id, eligiblePlan),
-            new Promise(resolve => setTimeout(resolve, 1000))
-        ]);
 
+    const startTime = Date.now();
+    try {
+        await addInsuranceToBooking(booking.id, eligiblePlan);
+
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = 1000 - elapsedTime;
+
+        if (remainingTime > 0) {
+            await new Promise(resolve => setTimeout(resolve, remainingTime));
+        }
+        
         toast({
             title: 'Insurance Added!',
             description: `You are now covered by ${eligiblePlan.name}.`,

@@ -1,79 +1,102 @@
-CREATE DATABASE IF NOT EXISTS `airbnblite-db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `airbnblite-db`;
+-- Complete schema and mock data for AirbnbLite
 
-DROP TABLE IF EXISTS `users`;
-CREATE TABLE `users` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `avatar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `isHost` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Drop tables if they exist to start fresh
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS properties;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS insurance_plans;
 
-LOCK TABLES `users` WRITE;
-INSERT INTO `users` VALUES (1,'Alex Johnson','alex@gmail.com','password123','https://i.pravatar.cc/150?u=alex',1),(2,'Maria Garcia','maria@gmail.com','password123','https://i.pravatar.cc/150?u=maria',0),(3,'Sam Lee','sam@gmail.com','password456','https://i.pravatar.cc/150?u=sam',1);
-UNLOCK TABLES;
+-- Users table
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    avatar VARCHAR(255),
+    isHost BOOLEAN DEFAULT FALSE
+);
 
-DROP TABLE IF EXISTS `properties`;
-CREATE TABLE `properties` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `hostId` int NOT NULL,
-  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `pricePerNight` decimal(10,2) NOT NULL,
-  `rating` decimal(3,2) NOT NULL,
-  `thumbnail` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `images` text COLLATE utf8mb4_unicode_ci,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `amenities` text COLLATE utf8mb4_unicode_ci,
-  `propertyInfo` text COLLATE utf8mb4_unicode_ci,
-  `data_ai_hint` varchar(255) COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Properties table
+CREATE TABLE properties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hostId INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    pricePerNight DECIMAL(10, 2) NOT NULL,
+    rating DECIMAL(3, 2) NOT NULL,
+    thumbnail VARCHAR(255),
+    images TEXT,
+    description TEXT,
+    amenities TEXT,
+    propertyInfo TEXT,
+    data_ai_hint VARCHAR(255),
+    FOREIGN KEY (hostId) REFERENCES users(id)
+);
 
-LOCK TABLES `properties` WRITE;
-INSERT INTO `properties` VALUES 
-(1,1,'Cozy Beachside Cottage','Malibu, California',350.00,4.80,'https://images.unsplash.com/photo-1588806488534-395f33a5b331?q=80&w=2070&auto=format&fit=crop','https://images.unsplash.com/photo-1588806488534-395f33a5b331?q=80&w=2070&auto=format&fit=crop|https://images.unsplash.com/photo-1560200353-ce0a1b8e64a1?q=80&w=2070&auto=format&fit=crop','A charming cottage right on the beach, perfect for a romantic getaway.','WiFi,Kitchen,Air Conditioning','Check-in is at 3 PM. WiFi password is \'beachlife\'.','beach house'),
-(2,1,'Modern Downtown Loft','New York, New York',500.00,4.90,'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2070&auto=format&fit=crop|https://images.unsplash.com/photo-1628592102751-ba834f697244?q=80&w=2070&auto=format&fit=crop','Stylish loft in the heart of the city with stunning skyline views.','WiFi,Air Conditioning','The key is in the lockbox, code 1234. Enjoy the city!','city apartment'),
-(3,3,'Secluded Mountain Cabin','Aspen, Colorado',280.00,4.70,'https://images.unsplash.com/photo-1559708479-62e1c7c93459?q=80&w=1925&auto=format&fit=crop','https://images.unsplash.com/photo-1559708479-62e1c7c93459?q=80&w=1925&auto=format&fit=crop|https://images.unsplash.com/photo-1594741148362-9e6a77cd53e2?q=80&w=2070&auto=format&fit=crop','Escape to this peaceful cabin surrounded by nature.','WiFi,Kitchen','Beware of bears! Store food securely. The fireplace is ready to use.','mountain cabin');
-UNLOCK TABLES;
+-- Insurance Plans table
+CREATE TABLE insurance_plans (
+    id VARCHAR(50) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    pricePercent DECIMAL(5, 2) NOT NULL,
+    minTripValue DECIMAL(10, 2) NOT NULL,
+    maxTripValue DECIMAL(10, 2) NOT NULL,
+    benefits TEXT,
+    termsUrl VARCHAR(255)
+);
 
+-- Bookings table with cost breakdown
+CREATE TABLE bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userId INT NOT NULL,
+    propertyId INT NOT NULL,
+    checkIn DATE NOT NULL,
+    checkOut DATE NOT NULL,
+    totalCost DECIMAL(10, 2) NOT NULL,
+    insurancePlanId VARCHAR(50),
+    guests INT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    cancellationReason TEXT,
+    reservationCost DECIMAL(10, 2) NOT NULL,
+    serviceFee DECIMAL(10, 2) NOT NULL,
+    insuranceCost DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (userId) REFERENCES users(id),
+    FOREIGN KEY (propertyId) REFERENCES properties(id),
+    FOREIGN KEY (insurancePlanId) REFERENCES insurance_plans(id)
+);
 
-DROP TABLE IF EXISTS `bookings`;
-CREATE TABLE `bookings` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `userId` int NOT NULL,
-  `propertyId` int NOT NULL,
-  `checkIn` date NOT NULL,
-  `checkOut` date NOT NULL,
-  `totalCost` decimal(10,2) NOT NULL,
-  `insurancePlanId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `guests` int NOT NULL,
-  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'confirmed',
-  `cancellationReason` text COLLATE utf8mb4_unicode_ci,
-  `reservationCost` decimal(10,2) NOT NULL,
-  `serviceFee` decimal(10,2) NOT NULL,
-  `insuranceCost` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Mock Data Insertion
 
-DROP TABLE IF EXISTS `insurance_plans`;
-CREATE TABLE `insurance_plans` (
-  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `pricePercent` decimal(5,2) NOT NULL,
-  `minTripValue` decimal(10,2) NOT NULL,
-  `maxTripValue` decimal(10,2) NOT NULL,
-  `benefits` text COLLATE utf8mb4_unicode_ci,
-  `termsUrl` varchar(1024) COLLATE utf8mb4_unicode_ci,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Insert Users
+INSERT INTO users (id, name, email, password, avatar, isHost) VALUES
+(1, 'Alex Johnson', 'alex@gmail.com', 'password123', 'https://i.pravatar.cc/150?u=alex', TRUE),
+(2, 'Maria Garcia', 'maria@gmail.com', 'password456', 'https://i.pravatar.cc/150?u=maria', TRUE),
+(3, 'Sam Taylor', 'sam@gmail.com', 'password789', 'https://i.pravatar.cc/150?u=sam', FALSE);
 
-LOCK TABLES `insurance_plans` WRITE;
-INSERT INTO `insurance_plans` VALUES 
-('plan-basic','Basic Wanderer Protection',5.00,0.00,1000.00,'Trip Cancellation up to $500|Lost Baggage up to $250','https://example.com/basic-terms.pdf'),
-('plan-premium','Adventure-Ready Coverage',7.50,1000.00,5000.00,'Trip Cancellation up to $2,500|Medical Emergency up to $10,000|Lost Baggage up to $1,000','https://example.com/premium-terms.pdf');
-UNLOCK TABLES;
+-- Insert Properties
+INSERT INTO properties (id, hostId, title, location, pricePerNight, rating, thumbnail, images, description, amenities, propertyInfo, data_ai_hint) VALUES
+(1, 1, 'Cozy Downtown Loft', 'New York, NY', 250.00, 4.8, 'https://placehold.co/600x400.png', 'https://placehold.co/1200x800.png|https://placehold.co/1200x800.png', 'A beautiful and modern loft in the heart of the city.', 'WiFi,Air Conditioning,Kitchen', 'WiFi: aabbcc, Door code: 1234', 'apartment city'),
+(2, 1, 'Oceanview Villa with Pool', 'Malibu, CA', 320.00, 4.9, 'https://placehold.co/600x400.png', 'https://placehold.co/1200x800.png|https://placehold.co/1200x800.png', 'Stunning villa with breathtaking ocean views and a private pool.', 'WiFi,Kitchen,Pool', 'Pool is heated. Grill is available for use.', 'villa ocean'),
+(3, 2, 'Rustic Mountain Cabin', 'Aspen, CO', 295.00, 4.7, 'https://placehold.co/600x400.png', 'https://placehold.co/1200x800.png|https://placehold.co/1200x800.png', 'Charming cabin perfect for a mountain getaway.', 'WiFi,Fireplace', 'Firewood is stocked on the porch.', 'cabin mountain'),
+(4, 2, 'Chic Urban Apartment', 'Paris, France', 180.00, 4.6, 'https://placehold.co/600x400.png', 'https://placehold.co/1200x800.png|https://placehold.co/1200x800.png', 'Elegant apartment in a historic Parisian building.', 'WiFi,Kitchen,Elevator', 'Metro station is a 2-minute walk away.', 'apartment paris');
+
+-- Insert Insurance Plans
+INSERT INTO insurance_plans (id, name, pricePercent, minTripValue, maxTripValue, benefits, termsUrl) VALUES
+('basic-plan', 'Standard Protection', 4.0, 0, 5000, 'Trip Cancellation|Medical Emergency|Lost Baggage', 'https://example.com/basic-terms.pdf'),
+('premium-plan', 'Premium Coverage', 6.5, 5000, 20000, 'Trip Cancellation|Medical Emergency|Lost Baggage|Rental Car Damage', 'https://example.com/premium-terms.pdf');
+
+-- Insert Bookings (with calculated cost breakdown)
+-- Booking 1: Prop 3, 5 nights. reservation=295*5=1475. service=147.5. insurance=0. total=1622.5
+INSERT INTO bookings (id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, cancellationReason, reservationCost, serviceFee, insuranceCost) VALUES
+(1, 3, 3, '2025-08-10', '2025-08-15', 1622.50, NULL, 2, 'confirmed', NULL, 1475.00, 147.50, 0.00);
+
+-- Booking 2: Prop 4, 5 nights. reservation=180*5=900. service=90. insurance=0. total=990
+INSERT INTO bookings (id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, cancellationReason, reservationCost, serviceFee, insuranceCost) VALUES
+(2, 1, 4, '2025-09-01', '2025-09-06', 990.00, NULL, 1, 'confirmed', NULL, 900.00, 90.00, 0.00);
+
+-- Booking 3: Prop 2, 10 nights. reservation=320*10=3200. service=320. insurance=3200*0.04=128. total=3648
+INSERT INTO bookings (id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, cancellationReason, reservationCost, serviceFee, insuranceCost) VALUES
+(3, 3, 2, '2025-07-20', '2025-07-30', 3648.00, 'basic-plan', 4, 'confirmed', NULL, 3200.00, 320.00, 128.00);
+
+-- Booking 4: Same as booking 1 but cancelled
+INSERT INTO bookings (id, userId, propertyId, checkIn, checkOut, totalCost, insurancePlanId, guests, status, cancellationReason, reservationCost, serviceFee, insuranceCost) VALUES
+(4, 3, 1, '2025-10-01', '2025-10-05', 1375.00, NULL, 2, 'cancelled-by-guest', 'Change of plans', 1250.00, 125.00, 0.00);

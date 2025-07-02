@@ -207,7 +207,7 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span>${property.pricePerNight} x {numberOfNights} nights</span>
+                <span>${property.pricePerNight.toFixed(2)} x {numberOfNights} nights</span>
                 <span>${reservationCost.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
