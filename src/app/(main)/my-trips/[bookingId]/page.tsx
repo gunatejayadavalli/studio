@@ -116,7 +116,7 @@ export default function TripDetailsPage() {
     : undefined;
     
   const isCancelled = booking.status !== 'confirmed';
-  const isCompleted = !isCancelled && new Date(booking.checkOut) < new Date();
+  const isCompleted = !isCancelled && isBefore(new Date(booking.checkOut), new Date());
 
   if (!property || !host) {
     notFound();
@@ -154,24 +154,27 @@ export default function TripDetailsPage() {
   const handleAddInsurance = async () => {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
+
     try {
-        await Promise.all([
-          addInsuranceToBooking(booking.id, eligiblePlan),
-          new Promise(resolve => setTimeout(resolve, 1000))
-        ]);
-        toast({
-            title: "Insurance Added!",
-            description: `You are now covered by ${eligiblePlan.name}.`,
-        });
+      // Use Promise.all to run API call and a minimum delay in parallel
+      await Promise.all([
+        addInsuranceToBooking(booking.id, eligiblePlan),
+        new Promise((resolve) => setTimeout(resolve, 1000)), // Ensures animation runs for at least 1s
+      ]);
+
+      toast({
+        title: 'Insurance Added!',
+        description: `You are now covered by ${eligiblePlan.name}.`,
+      });
+      setIsAddInsuranceDialogOpen(false); // Close dialog on success
     } catch (error) {
-        toast({
-            variant: "destructive",
-            title: "Failed to Add Insurance",
-            description: "An error occurred while adding insurance to your booking.",
-        });
+      toast({
+        variant: 'destructive',
+        title: 'Failed to Add Insurance',
+        description: 'An error occurred while adding insurance to your booking.',
+      });
     } finally {
-        setIsAddingInsurance(false);
-        setIsAddInsuranceDialogOpen(false);
+      setIsAddingInsurance(false);
     }
   };
 
@@ -524,3 +527,5 @@ export default function TripDetailsPage() {
     </>
   );
 }
+
+    
