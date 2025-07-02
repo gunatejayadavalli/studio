@@ -479,8 +479,16 @@ def chat_with_bot():
         f"Check-in Date: {booking.get('checkIn')}",
         f"Check-out Date: {booking.get('checkOut')}",
         f"Number of Guests: {booking.get('guests')}",
-        f"Total Booking Cost: ${booking.get('totalCost'):.2f}",
         
+        "\n-- Cost Breakdown --",
+        f"Reservation Cost: ${booking.get('reservationCost', 0):.2f}",
+        f"Service Fee: ${booking.get('serviceFee', 0):.2f}",
+    ]
+    if booking.get('insuranceCost', 0) > 0:
+        system_content_lines.append(f"Insurance Cost: ${booking.get('insuranceCost', 0):.2f}")
+    system_content_lines.extend([
+        "--------------------",
+        f"Total Cost: ${booking.get('totalCost', 0):.2f}",
         "\n== Host Information ==",
         f"Host Name: {host_data.get('name')}",
         f"Host Email: {host_data.get('email')}",
@@ -488,7 +496,7 @@ def chat_with_bot():
         "\n== Property Details ==",
         f"Description: {property_data.get('description')}",
         f"Amenities: {', '.join(property_data.get('amenities', []))}",
-    ]
+    ])
     
     if property_data.get('propertyInfo'):
         system_content_lines.append(f"\nAdditional Information from Host:\n{property_data.get('propertyInfo')}")
@@ -540,3 +548,4 @@ if __name__ == '__main__':
     
 
     
+

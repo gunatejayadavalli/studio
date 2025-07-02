@@ -81,6 +81,9 @@ export const getChatbotResponse = async (
             checkOut: booking.checkOut,
             guests: booking.guests,
             totalCost: booking.totalCost,
+            reservationCost: booking.reservationCost,
+            serviceFee: booking.serviceFee,
+            insuranceCost: booking.insuranceCost,
         },
         property: {
             title: property.title,
