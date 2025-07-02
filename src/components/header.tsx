@@ -30,9 +30,9 @@ export function Header() {
       <Image
         src={logo}
         alt="Airbnb logo"
-        width={102}
-        height={32}
-        className="h-8 w-auto"
+        width={120}
+        height={38}
+        className="h-10 w-auto"
       />
     </Link>
   );
