@@ -365,7 +365,10 @@ export default function TripDetailsPage() {
                     </div>
                     {daysLeft >= 0 && (
                       <div className="text-xs text-center font-medium text-amber-700 bg-amber-500/20 p-2 rounded-md">
-                        You have {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left to add protection to your trip.
+                        {daysLeft === 0
+                          ? 'You have less than 1 day left to add protection to your trip.'
+                          : `You have ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left to add protection to your trip.`
+                        }
                       </div>
                     )}
                   </CardContent>
