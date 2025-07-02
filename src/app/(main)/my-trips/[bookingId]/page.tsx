@@ -17,7 +17,6 @@ import { Chatbot } from '@/components/chatbot';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -124,6 +123,8 @@ export default function TripDetailsPage() {
     notFound();
   }
 
+  const numberOfNights = differenceInDays(new Date(booking.checkOut), new Date(booking.checkIn));
+
   const handleCancellation = () => {
     if (!cancellationReason.trim()) {
         toast({
@@ -156,22 +157,17 @@ export default function TripDetailsPage() {
     if (!eligiblePlan) return;
     setIsAddingInsurance(true);
 
-    const startTime = Date.now();
     try {
-        await addInsuranceToBooking(booking.id, eligiblePlan);
-
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = 1000 - elapsedTime;
-
-        if (remainingTime > 0) {
-            await new Promise(resolve => setTimeout(resolve, remainingTime));
-        }
-        
-        toast({
-            title: 'Insurance Added!',
-            description: `You are now covered by ${eligiblePlan.name}.`,
-        });
-        setIsAddInsuranceDialogOpen(false);
+      await Promise.all([
+        addInsuranceToBooking(booking.id, eligiblePlan),
+        new Promise(resolve => setTimeout(resolve, 1000))
+      ]);
+      
+      toast({
+          title: 'Insurance Added!',
+          description: `You are now covered by ${eligiblePlan.name}.`,
+      });
+      setIsAddInsuranceDialogOpen(false);
     } catch (error) {
         toast({
             variant: 'destructive',
@@ -308,7 +304,7 @@ export default function TripDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Reservation cost</span>
+                        <span className="text-muted-foreground">${property.pricePerNight.toFixed(2)} x {numberOfNights} {numberOfNights === 1 ? 'night' : 'nights'}</span>
                         <span>${booking.reservationCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
@@ -462,9 +458,9 @@ export default function TripDetailsPage() {
             </div>
             <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setCancellationReason("")}>Keep Booking</AlertDialogCancel>
-                <AlertDialogAction onClick={handleCancellation} disabled={!cancellationReason.trim()} className="bg-destructive hover:bg-destructive/90">
+                <Button onClick={handleCancellation} disabled={!cancellationReason.trim()} className="bg-destructive hover:bg-destructive/90">
                     Yes, Cancel Booking
-                </AlertDialogAction>
+                </Button>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
@@ -547,5 +543,3 @@ export default function TripDetailsPage() {
     </>
   );
 }
-
-    
