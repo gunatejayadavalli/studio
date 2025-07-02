@@ -472,6 +472,8 @@ def chat_with_bot():
         "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
         "Format your response as plain text only. Do not use markdown, such as bolding (`**text**`), italics, or lists.",
         "If the question is about insurance, refer to both the high-level benefits and the full policy details if available.",
+        "For any questions related to the property itself (e.g., how to use an appliance, specific directions not in the property info), direct the user to contact the host via their email address.",
+        "For any questions about the platform, booking modifications not covered here, or a desire to speak to a human representative, direct the user to contact support at support@airbnblite.com.",
         "Do not make up or invent information.",
         "\n--- Provided Context ---",
         

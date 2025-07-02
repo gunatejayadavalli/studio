@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, CornerDownLeft, X, MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,27 @@ type ChatbotProps = {
   host: UserType;
   insurancePlan?: InsurancePlan;
   eligiblePlan?: InsurancePlan;
+};
+
+const ChatMessageContent = ({ text }: { text: string }) => {
+  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
+  const parts = text.split(emailRegex);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        // The email addresses will be at odd indices because of the capturing group in split().
+        if (index % 2 === 1) {
+          return (
+            <a key={index} href={`mailto:${part}`} className="text-primary underline hover:text-primary/80">
+              {part}
+            </a>
+          );
+        }
+        return <React.Fragment key={index}>{part}</React.Fragment>;
+      })}
+    </>
+  );
 };
 
 export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }: ChatbotProps) {
@@ -101,7 +122,7 @@ export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }
                       message.sender === 'user' ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'
                     )}
                   >
-                    {message.text}
+                    {message.sender === 'bot' ? <ChatMessageContent text={message.text} /> : message.text}
                   </div>
                    {message.sender === 'user' && user && (
                     <Avatar className="w-8 h-8">
