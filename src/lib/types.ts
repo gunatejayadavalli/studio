@@ -59,4 +59,8 @@ export type PropertyFormValues = {
   propertyInfo?: string;
 };
 
+export interface ChatMessage {
+  text: string;
+  sender: 'user' | 'bot';
+}
     

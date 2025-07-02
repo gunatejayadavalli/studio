@@ -457,14 +457,14 @@ def chat_with_bot():
         return jsonify({"error": "OpenAI API key not configured on the server"}), 500
         
     data = request.json
-    question = data.get('question')
+    chat_messages = data.get('messages')
     booking = data.get('booking')
     property_data = data.get('property')
     host_data = data.get('hostInfo')
     insurance_plan = data.get('insurancePlan')
     eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
-    if not all([question, booking, property_data, host_data]):
+    if not all([chat_messages, booking, property_data, host_data]):
         return jsonify({"error": "Missing required fields for chat"}), 400
 
     system_content_lines = [
@@ -546,12 +546,18 @@ def chat_with_bot():
     
     system_content = "\n".join(system_content_lines)
 
+    # Convert frontend messages to OpenAI format
+    openai_messages = []
+    for msg in chat_messages:
+        role = "assistant" if msg["sender"] == "bot" else "user"
+        openai_messages.append({"role": role, "content": msg["text"]})
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_content},
-                {"role": "user", "content": question}
+                *openai_messages
             ]
         )
         response_text = completion.choices[0].message.content
@@ -568,6 +574,7 @@ if __name__ == '__main__':
     
 
     
+
 
 
 

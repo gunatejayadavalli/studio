@@ -8,15 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import type { Booking, Property, InsurancePlan, User as UserType } from '@/lib/types';
+import type { Booking, Property, InsurancePlan, User as UserType, ChatMessage as ApiChatMessage } from '@/lib/types';
 import * as apiClient from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
-type Message = {
+type Message = ApiChatMessage & {
   id: string;
-  text: string;
-  sender: 'user' | 'bot';
 };
 
 type ChatbotProps = {
@@ -46,12 +44,13 @@ export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = { id: Date.now().toString(), text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await apiClient.getChatbotResponse(input, booking, property, host, insurancePlan, eligiblePlan);
+      const response = await apiClient.getChatbotResponse(newMessages, booking, property, host, insurancePlan, eligiblePlan);
       const botMessage: Message = { id: (Date.now() + 1).toString(), text: response.response, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {

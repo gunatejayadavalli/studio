@@ -1,6 +1,7 @@
+
 // src/lib/api-client.ts
 import { config } from './config';
-import type { User, Property, Booking, InsurancePlan, PropertyFormValues } from './types';
+import type { User, Property, Booking, InsurancePlan, PropertyFormValues, ChatMessage } from './types';
 
 const { apiBaseUrl } = config;
 
@@ -68,7 +69,7 @@ export const updateBooking = (bookingId: number, data: Partial<Booking>) => fetc
 
 // Chatbot endpoint
 export const getChatbotResponse = async (
-    question: string,
+    messages: ChatMessage[],
     booking: Booking,
     property: Property,
     host: User,
@@ -76,7 +77,7 @@ export const getChatbotResponse = async (
     eligibleInsurancePlan?: InsurancePlan
 ): Promise<{ response: string }> => {
     const payload = {
-        question,
+        messages,
         booking: {
             checkIn: booking.checkIn,
             checkOut: booking.checkOut,
