@@ -116,8 +116,10 @@ export default function TripDetailsPage() {
     
   const isCancelled = booking.status !== 'confirmed';
   const today = startOfDay(new Date());
+  const checkInDate = startOfDay(new Date(booking.checkIn));
   const checkOutDate = startOfDay(new Date(booking.checkOut));
   const isCompleted = !isCancelled && isBefore(checkOutDate, today);
+  const isTripStarted = !isBefore(today, checkInDate);
 
   if (!property || !host) {
     notFound();
@@ -412,7 +414,7 @@ export default function TripDetailsPage() {
                </Card>
             )}
 
-            {!isCancelled && !isCompleted && (
+            {!isCancelled && !isCompleted && !isTripStarted && (
               <Card>
                   <CardHeader><CardTitle>Need to make a change?</CardTitle></CardHeader>
                   <CardContent>
