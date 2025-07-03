@@ -10,7 +10,7 @@ import { useStaticData } from '@/hooks/use-static-data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { format, isBefore, startOfDay } from 'date-fns';
-import { Calendar, MapPin, Ban, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Ban, CheckCircle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -130,8 +130,14 @@ export default function MyTripsPage() {
             const property = properties.find((p) => p.id === booking.propertyId);
             if (!property) return null;
 
+            const today = startOfDay(new Date());
+            const checkInDate = startOfDay(new Date(booking.checkIn));
+            const checkOutDate = startOfDay(new Date(booking.checkOut));
+            
             const isCancelled = booking.status !== 'confirmed';
-            const isCompleted = !isCancelled && isBefore(startOfDay(new Date(booking.checkOut)), startOfDay(new Date()));
+            const isCompleted = !isCancelled && isBefore(checkOutDate, today);
+            const isTripStarted = !isBefore(today, checkInDate);
+            const isOngoing = !isCancelled && !isCompleted && isTripStarted;
 
             return (
               <Card key={booking.id} className={cn("flex flex-col", (isCancelled || isCompleted) && "bg-muted/50")}>
@@ -156,6 +162,11 @@ export default function MyTripsPage() {
                       <CheckCircle className="w-3.5 h-3.5"/> Completed
                      </Badge>
                    )}
+                   {isOngoing && (
+                      <Badge className="mb-2 gap-1.5 border-transparent bg-green-600 text-white hover:bg-green-700">
+                        <Clock className="w-3.5 h-3.5" /> Ongoing
+                      </Badge>
+                    )}
                   <CardTitle className="text-lg font-headline mb-2">{property.title}</CardTitle>
                   <div className="text-sm text-muted-foreground space-y-1">
                     <div className="flex items-center gap-2">
