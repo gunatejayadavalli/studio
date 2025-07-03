@@ -1,4 +1,3 @@
-
 import mysql.connector,os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -589,18 +588,3 @@ def chat_with_bot():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
-
-
-    
-
-    
-
-
-
-
-
-
-    
-
-
-    
