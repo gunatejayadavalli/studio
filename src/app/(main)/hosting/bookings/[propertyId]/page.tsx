@@ -9,7 +9,7 @@ import { useBookings } from '@/hooks/use-bookings';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, User, BedDouble, Ban, Info, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, User, BedDouble, Ban, Info, CheckCircle, AlertTriangle } from 'lucide-react';
 import { format, isBefore, startOfDay } from 'date-fns';
 import type { Booking } from '@/lib/types';
 import {
@@ -129,7 +129,13 @@ export default function PropertyBookingsPage() {
           {propertyBookings.map((booking) => {
             const guest = users.find((u) => u.id === booking.userId);
             const isCancelled = booking.status !== 'confirmed';
-            const isCompleted = !isCancelled && isBefore(startOfDay(new Date(booking.checkOut)), startOfDay(new Date()));
+            
+            const today = startOfDay(new Date());
+            const checkInDate = startOfDay(new Date(booking.checkIn));
+            const checkOutDate = startOfDay(new Date(booking.checkOut));
+            
+            const isCompleted = !isCancelled && isBefore(checkOutDate, today);
+            const isOngoing = !isCancelled && !isCompleted && !isBefore(today, checkInDate);
 
             return (
               <Card key={booking.id} className={cn("overflow-hidden", (isCancelled || isCompleted) && "bg-muted/50")}>
@@ -199,10 +205,16 @@ export default function PropertyBookingsPage() {
                         </div>
                     </CardFooter>
                 ) : (
-                    <CardFooter className="p-4 border-t">
+                    <CardFooter className="p-4 border-t flex items-center justify-between gap-4">
                         <Button variant="destructive" size="sm" onClick={() => setBookingToCancel(booking)}>
                             Cancel Booking
                         </Button>
+                        {isOngoing && (
+                            <div className="flex items-center gap-2 text-sm text-amber-700 p-2 bg-amber-50 rounded-md">
+                               <AlertTriangle className="w-5 h-5 shrink-0"/>
+                               <p className="font-medium">Caution: Trip is ongoing.</p>
+                            </div>
+                        )}
                     </CardFooter>
                 )}
               </Card>
