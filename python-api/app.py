@@ -467,7 +467,7 @@ def chat_with_bot():
     if not all([chat_messages, booking, property_data, host_data]):
         return jsonify({"error": "Missing required fields for chat"}), 400
     
-    todays_date_str = date.today().strftime('%Y-%m-%d')
+    todays_date_str = date.today().strftime('%B %d, %Y')
 
     system_content_lines = [
         "You are a helpful assistant for a travel app. A user is asking a question about their booked trip.",
