@@ -476,7 +476,7 @@ def chat_with_bot():
         f"\nIMPORTANT CONTEXT: Today's date is {todays_date_str}. Use this date to determine if a trip is in the past, ongoing, or in the future.",
 
         "\n== Key Policies & How to Respond ==",
-        "Guest Cancellation: A guest is allowed to cancel their reservation from the Booking details page. The deadline to cancel is one day before the check-in date. Use today's date to check if this deadline has passed. If today is the check-in date or later, the user CANNOT cancel their booking, and you must inform them of this. When a reservation is cancelled before the deadline, the guest receives a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
+        "Guest Cancellation: A guest is allowed to cancel their reservation from the Booking details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as the check-in date or later, it is too late to cancel. When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
         "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
         "General Insurance Questions: For questions about what insurance covers (not how to cancel), refer to the high-level benefits and the full policy details if available.",
         "Property Questions: For questions about the property itself (e.g., appliance instructions, specific directions not in the property info), direct the user to contact the host via their email address.",
@@ -592,3 +592,5 @@ def chat_with_bot():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
+
+    
