@@ -414,11 +414,23 @@ export default function TripDetailsPage() {
                </Card>
             )}
 
-            {!isCancelled && !isCompleted && !isTripStarted && (
+            {!isCancelled && !isCompleted && (
               <Card>
                   <CardHeader><CardTitle>Need to make a change?</CardTitle></CardHeader>
                   <CardContent>
-                      <Button variant="destructive" className="w-full" onClick={() => setIsCancelDialogOpen(true)}>Cancel Booking</Button>
+                      <Button 
+                        variant="destructive" 
+                        className="w-full" 
+                        onClick={() => setIsCancelDialogOpen(true)}
+                        disabled={isTripStarted}
+                      >
+                        Cancel Booking
+                      </Button>
+                      {isTripStarted && (
+                        <p className="text-xs text-muted-foreground mt-2 text-center">
+                          This booking cannot be cancelled as the trip has already started.
+                        </p>
+                      )}
                   </CardContent>
               </Card>
             )}
