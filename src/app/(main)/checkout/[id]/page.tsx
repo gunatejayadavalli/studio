@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
-import { differenceInDays, format, parseISO } from 'date-fns';
+import { differenceInDays, format, parseISO, isSameDay, startOfDay } from 'date-fns';
 import { useStaticData } from '@/hooks/use-static-data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -24,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, Info, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle, Info, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function CheckoutPage() {
@@ -91,6 +91,8 @@ export default function CheckoutPage() {
 
   const fromDate = parseISO(from);
   const toDate = parseISO(to);
+  const isBookingForToday = isSameDay(fromDate, startOfDay(new Date()));
+
   const numberOfNights = differenceInDays(toDate, fromDate);
   const reservationCost = property.pricePerNight * numberOfNights;
   
@@ -195,6 +197,12 @@ export default function CheckoutPage() {
                       onCheckedChange={handleInsuranceToggle}
                     />
                   </div>
+                   {isBookingForToday && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 p-2 bg-amber-50 rounded-md">
+                        <AlertTriangle className="h-4 w-4 shrink-0"/>
+                        <p className="font-medium">This is your only chance to add insurance for a same-day booking.</p>
+                    </div>
+                  )}
                 </div>
                )}
             </CardContent>
