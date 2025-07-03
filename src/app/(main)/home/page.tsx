@@ -70,7 +70,7 @@ export default function HomePage() {
               <SelectValue placeholder="Sort by..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Sort by...</SelectItem>
+              <SelectItem value="default">Popular</SelectItem>
               <SelectItem value="price-asc">Price: Low to High</SelectItem>
               <SelectItem value="price-desc">Price: High to Low</SelectItem>
             </SelectContent>
