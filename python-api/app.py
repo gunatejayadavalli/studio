@@ -1,3 +1,4 @@
+
 import mysql.connector,os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -465,14 +466,17 @@ def chat_with_bot():
 
     if not all([chat_messages, booking, property_data, host_data]):
         return jsonify({"error": "Missing required fields for chat"}), 400
+    
+    todays_date_str = date.today().strftime('%Y-%m-%d')
 
     system_content_lines = [
         "You are a helpful assistant for a travel app. A user is asking a question about their booked trip.",
         "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
         "Format your response as plain text only. Do not use markdown, such as bolding (`**text**`), italics, or lists.",
+        f"\nIMPORTANT CONTEXT: Today's date is {todays_date_str}. Use this date to determine if a trip is in the past, ongoing, or in the future.",
 
         "\n== Key Policies & How to Respond ==",
-        "Guest Cancellation: A guest is allowed to cancel their reservation from the Booking details page until one day before the check-in date. When a reservation is cancelled, the guest receives a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
+        "Guest Cancellation: A guest is allowed to cancel their reservation from the Booking details page. The deadline to cancel is one day before the check-in date. Use today's date to check if this deadline has passed. If today is the check-in date or later, the user CANNOT cancel their booking, and you must inform them of this. When a reservation is cancelled before the deadline, the guest receives a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
         "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
         "General Insurance Questions: For questions about what insurance covers (not how to cancel), refer to the high-level benefits and the full policy details if available.",
         "Property Questions: For questions about the property itself (e.g., appliance instructions, specific directions not in the property info), direct the user to contact the host via their email address.",
