@@ -473,11 +473,11 @@ def chat_with_bot():
         "Format your response as plain text only. Do not use markdown, such as bolding (`**text**`), italics, or lists.",
 
         "\n== Key Policies & How to Respond ==",
-        "Guest Cancellation: A guest is allowed to cancel their reservation until one day before the check-in date. When a reservation is cancelled, the guest receives a full refund of the Total Cost (Reservation Cost + Service Fee + Insurance Cost), and the travel insurance is also cancelled automatically.",
+        "Guest Cancellation: A guest is allowed to cancel their reservation until one day before the check-in date. When a reservation is cancelled, the guest receives a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
         "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
-        "General Insurance Questions: For questions about what insurance covers (not how to cancel), refer to the high-level benefits and the full policy details provided below.",
-        "Property Questions: For questions about the property itself (e.g., appliance instructions, specific directions), direct the user to contact the host via their email address.",
-        "Other Support: For booking modifications not covered by the above, or to speak to a human, direct the user to contact support at support@airbnblite.com.",
+        "General Insurance Questions: For questions about what insurance covers (not how to cancel), refer to the high-level benefits and the full policy details if available.",
+        "Property Questions: For questions about the property itself (e.g., appliance instructions, specific directions not in the property info), direct the user to contact the host via their email address.",
+        "Other Support: For questions about the platform, booking modifications not covered here, or to speak to a human, direct the user to contact support at support@airbnblite.com.",
 
         "Do not make up or invent information.",
         "\n--- Provided Context ---",
