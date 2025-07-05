@@ -453,25 +453,41 @@ def get_insurance_plans():
 # --- AI Chatbot Agent Helpers ---
 
 # Step 1 Helper: Triage - Classify the user's intent
-def get_query_category(user_query):
-    """Classifies the user's query into one of several categories."""
+def get_query_category(user_query, chat_history):
+    """Classifies the user's query into one of several categories, considering chat history."""
+    
+    # Create a condensed version of the chat history for context
+    history_str = "\n".join([f"{msg['sender'].capitalize()}: {msg['text']}" for msg in chat_history[:-1]]) # all but the last message
+
     system_prompt = """
-    You are a query classification agent. Classify the user's query into one of the following categories:
+    You are a query classification agent. Your job is to classify the LATEST user query based on the provided conversation history.
+    Classify the query into one of the following categories:
     - "BOOKING": Questions about the booking itself (check-in/out dates, number of guests, cost).
     - "PROPERTY": Questions about the property itself (amenities, address, directions, rules, host).
     - "INSURANCE": Questions about travel insurance (coverage, benefits, cost, terms, how to purchase).
     - "CANCELLATION": Questions about cancelling the booking or the insurance.
     - "GENERAL": All other questions (greetings, thanks, questions about the app itself).
 
+    Analyze the 'Conversation History' to understand the context, then classify the 'Latest User Query'.
     Respond with ONLY the category name in a JSON object like {"category": "CATEGORY_NAME"}.
     """
     
+    user_content = f"""
+--- Conversation History ---
+{history_str}
+--- End of History ---
+
+--- Latest User Query ---
+{user_query}
+--- End of Query ---
+"""
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_query}
+                {"role": "user", "content": user_content}
             ],
             response_format={"type": "json_object"}
         )
@@ -480,6 +496,7 @@ def get_query_category(user_query):
     except Exception as e:
         print(f"Error in query classification: {e}")
         return "GENERAL"
+
 
 # Step 2 Helpers: Retrieve - Build targeted context based on intent
 def get_booking_context(booking_data):
@@ -557,7 +574,7 @@ def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
     
     lines.extend([
         "\n== Policy ==",
-        "Answer questions based on the provided insurance details. For questions about cancelling only the insurance, direct the user to contact support at support@airbnblite.com.",
+        "Answer questions based on the provided insurance details. If the user is eligible for an insurance plan but hasn't purchased one yet, inform them that they can add it from the Trip Details page. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
     ])
     return "\n".join(lines)
 
@@ -653,7 +670,7 @@ def chat_with_bot_optimized():
         return jsonify({"response": "I'm sorry, I didn't get your message. Could you please repeat?"})
 
     # Step 1: Triage the user's query
-    category = get_query_category(user_query)
+    category = get_query_category(user_query, chat_messages)
     print(f"Query classified as: {category}")
 
     # Step 2: Retrieve context based on the category
@@ -713,5 +730,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
 
     
+
 
 
