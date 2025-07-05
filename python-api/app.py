@@ -585,9 +585,11 @@ def get_cancellation_context(booking):
         "== Cancellation Policy ==",
         f"Today's Date: {todays_date_str}",
         f"Booking Check-in Date: {booking.get('checkIn')}",
-        "\nGuest Cancellation Rule: To determine if a guest can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel their reservation from the Trip Details page. If today's date is the same as or later than the check-in date, it is too late to cancel. If it is too late to cancel, do not tell the user they can cancel from the Trip Details page. In your response, do not mention today's date. Instead, simply state the policy and whether the user is allowed to cancel.",
-        "Refund Policy: When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
-        "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
+        "\nGuest Cancellation Rule: You must determine if the user can cancel their booking by comparing today's date with the check-in date.",
+        "- If today's date is BEFORE the check-in date: The user is allowed to cancel. Your response should state that they can cancel from the Trip Details page. Mention that they will receive a full refund of the Total Cost, and any purchased travel insurance is also cancelled automatically.",
+        "- If today's date is THE SAME AS or LATER THAN the check-in date: The user is NOT allowed to cancel. Your response must clearly state that it is too late to cancel because the check-in date has passed or is today. Do NOT mention the Trip Details page as a method for cancellation in this case.",
+        "In your response, do not mention today's date, just state the policy outcome.",
+        "\nInsurance-Only Cancellation: To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
     ]
     return "\n".join(lines)
 
@@ -738,3 +740,4 @@ if __name__ == '__main__':
     
 
     
+
