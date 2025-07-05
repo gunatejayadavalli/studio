@@ -557,7 +557,7 @@ def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
             else:
                  lines.append("\n(Could not load the full insurance policy document.)")
     elif eligible_insurance_plan:
-        lines.append("The user has NOT purchased insurance but is eligible for the following plan.")
+        lines.append("The user has NOT purchased insurance but is eligible for the following plan. To purchase, the guest can add and pay for it on the Trip Details page.")
         lines.append(f"Eligible Plan Name: {eligible_insurance_plan.get('name')}")
         if 'benefits' in eligible_insurance_plan and eligible_insurance_plan['benefits']:
             lines.append("\nHigh-level Benefits of Eligible Plan:")
@@ -574,7 +574,7 @@ def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
     
     lines.extend([
         "\n== Policy ==",
-        "Answer questions based on the provided insurance details. The user has not yet purchased the eligible insurance plan you have details for. When asked how to buy it, you should state that they can add it from the Trip Details page. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
+        "Answer questions based on the provided insurance details. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
     ])
     return "\n".join(lines)
 
@@ -585,7 +585,7 @@ def get_cancellation_context(booking):
         "== Cancellation Policy ==",
         f"Today's Date: {todays_date_str}",
         f"Booking Check-in Date: {booking.get('checkIn')}",
-        "\nGuest Cancellation Rule: A guest is allowed to cancel their reservation from the Booking details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as or later than the check-in date, it is too late to cancel.",
+        "\nGuest Cancellation Rule: A guest is allowed to cancel their reservation from the Trip Details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as or later than the check-in date, it is too late to cancel.",
         "Refund Policy: When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
         "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
     ]
@@ -734,5 +734,7 @@ if __name__ == '__main__':
 
 
 
+
+    
 
     
