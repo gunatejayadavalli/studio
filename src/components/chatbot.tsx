@@ -35,7 +35,7 @@ const ChatMessageContent = ({ text }: { text: string }) => {
         // The email addresses will be at odd indices because of the capturing group in split().
         if (index % 2 === 1) {
           return (
-            <a key={index} href={`mailto:${part}`} className="text-primary underline hover:text-primary/80">
+            <a key={index} href={`mailto:${part}`} className="font-medium text-primary-foreground underline hover:text-primary-foreground/80">
               {part}
             </a>
           );
