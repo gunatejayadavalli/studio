@@ -593,11 +593,12 @@ def chat_with_bot():
         return jsonify({"error": "Missing required fields"}), 400
 
     # Build a single, large context string by combining all available information
+    booking_context = get_booking_context(booking)
     property_context = get_property_context(property_data, host_data)
     insurance_context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
     cancellation_context = get_cancellation_context(booking)
     
-    full_context = f"{property_context}\n\n{insurance_context}\n\n{cancellation_context}"
+    full_context = f"{booking_context}\n\n{property_context}\n\n{insurance_context}\n\n{cancellation_context}"
     
     system_prompt = f"""
     You are a friendly and helpful assistant for the travel app AirbnbLite.
@@ -712,4 +713,5 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
 
     
+
 
