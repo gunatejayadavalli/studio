@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import logo from '@/data/airbnblite_logo-trans-bg.png';
 
 const registerFormSchema = z.object({
@@ -35,7 +35,7 @@ type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register } = useAuth();
+  const { register, user, isLoading } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,6 +50,12 @@ export default function RegisterPage() {
       isHost: false,
     },
   });
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push('/home');
+    }
+  }, [user, isLoading, router]);
 
   async function onSubmit(data: RegisterFormValues) {
     setIsSubmitting(true);
@@ -91,6 +97,14 @@ export default function RegisterPage() {
       />
     </div>
   );
+
+  if (isLoading || user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
