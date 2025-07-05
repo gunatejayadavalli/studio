@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import requests
 import io
 from pypdf import PdfReader
+import json
 
 # --- OpenAI Configuration ---
 # Make sure to set your OPENAI_API_KEY in your environment
@@ -449,12 +450,118 @@ def get_insurance_plans():
     conn.close()
     return jsonify(plans)
 
+# --- AI Chatbot Agent ---
 
-# --- AI Chatbot Route ---
+# Step 1: Triage - Classify the user's intent
+def get_query_category(user_query):
+    """Classifies the user's query into one of several categories."""
+    system_prompt = """
+    You are a query classification agent. Classify the user's query into one of the following categories:
+    - "PROPERTY": Questions about the property itself (amenities, address, directions, rules, host).
+    - "INSURANCE": Questions about travel insurance (coverage, benefits, cost, terms, how to purchase).
+    - "CANCELLATION": Questions about cancelling the booking or the insurance.
+    - "GENERAL": All other questions (greetings, thanks, questions about the app itself).
+
+    Respond with ONLY the category name in a JSON object like {"category": "CATEGORY_NAME"}.
+    """
+    
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_query}
+            ],
+            response_format={"type": "json_object"}
+        )
+        response = json.loads(completion.choices[0].message.content)
+        return response.get("category", "GENERAL")
+    except Exception as e:
+        print(f"Error in query classification: {e}")
+        return "GENERAL"
+
+# Step 2: Retrieve - Build targeted context based on intent
+def get_property_context(property_data, host_data):
+    """Builds a context string for property-related questions."""
+    lines = [
+        "== Property Details ==",
+        f"Property Name: {property_data.get('title')}",
+        f"Location: {property_data.get('location')}",
+        f"Description: {property_data.get('description')}",
+        f"Amenities: {', '.join(property_data.get('amenities', []))}",
+    ]
+    if property_data.get('propertyInfo'):
+        lines.append(f"\nAdditional Information from Host:\n{property_data.get('propertyInfo')}")
+    else:
+        lines.append("\nAdditional Information from Host: (No additional information was provided)")
+    lines.extend([
+        "\n== Host Information ==",
+        f"Host Name: {host_data.get('name')}",
+        f"Host Email: {host_data.get('email')}",
+        "\n== Policy ==",
+        "For questions about the property itself, refer to the provided details. If the information isn't available, direct the user to contact the host via their email.",
+    ])
+    return "\n".join(lines)
+
+def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
+    """
+    Builds context for insurance questions.
+    In a real-world app, this function would use the user's query to perform a
+    semantic search (RAG) over a vector database of insurance documents.
+    """
+    lines = ["== Insurance Details =="]
+    if insurance_plan:
+        lines.append(f"The user has purchased: {insurance_plan.get('name')}")
+        if 'benefits' in insurance_plan and insurance_plan['benefits']:
+            lines.append("\nHigh-level Benefits:")
+            lines.extend([f"- {benefit}" for benefit in insurance_plan.get('benefits', [])])
+        
+        if insurance_plan.get('termsUrl'):
+            policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
+            if policy_text:
+                lines.extend(["\n--- Full Insurance Policy Details ---", policy_text, "--- End of Policy ---"])
+            else:
+                 lines.append("\n(Could not load the full insurance policy document.)")
+    elif eligible_insurance_plan:
+        lines.append("The user has NOT purchased insurance but is eligible for the following plan.")
+        lines.append(f"Eligible Plan Name: {eligible_insurance_plan.get('name')}")
+        if 'benefits' in eligible_insurance_plan and eligible_insurance_plan['benefits']:
+            lines.append("\nHigh-level Benefits of Eligible Plan:")
+            lines.extend([f"- {benefit}" for benefit in eligible_insurance_plan.get('benefits', [])])
+        
+        if eligible_insurance_plan.get('termsUrl'):
+            policy_text = extract_text_from_pdf_url(eligible_insurance_plan['termsUrl'])
+            if policy_text:
+                lines.extend(["\n--- Full Policy Details for Eligible Plan ---", policy_text, "--- End of Policy ---"])
+            else:
+                 lines.append("\n(Could not load the full policy document.)")
+    else:
+        lines.append("No insurance was purchased, and it's no longer possible to add it.")
+    
+    lines.extend([
+        "\n== Policy ==",
+        "Answer questions based on the provided insurance details. For questions about cancelling only the insurance, direct the user to contact support at support@airbnblite.com.",
+    ])
+    return "\n".join(lines)
+
+def get_cancellation_context(booking):
+    """Builds context for cancellation questions."""
+    todays_date_str = date.today().strftime('%Y-%m-%d')
+    lines = [
+        "== Cancellation Policy ==",
+        f"Today's Date: {todays_date_str}",
+        f"Booking Check-in Date: {booking.get('checkIn')}",
+        "\nGuest Cancellation Rule: A guest is allowed to cancel their reservation from the Booking details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as or later than the check-in date, it is too late to cancel.",
+        "Refund Policy: When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
+        "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
+    ]
+    return "\n".join(lines)
+
+
 @app.route('/chat', methods=['POST'])
 def chat_with_bot():
     if not client:
-        return jsonify({"error": "OpenAI API key not configured on the server"}), 500
+        return jsonify({"error": "OpenAI API key not configured"}), 500
         
     data = request.json
     chat_messages = data.get('messages')
@@ -465,116 +572,53 @@ def chat_with_bot():
     eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
     if not all([chat_messages, booking, property_data, host_data]):
-        return jsonify({"error": "Missing required fields for chat"}), 400
+        return jsonify({"error": "Missing required fields"}), 400
     
-    todays_date_str = date.today().strftime('%B %d, %Y')
+    # Extract the latest user query
+    user_query = chat_messages[-1]['text'] if chat_messages else ""
+    if not user_query:
+        return jsonify({"response": "I'm sorry, I didn't get your message. Could you please repeat?"})
 
-    system_content_lines = [
-        "You are a helpful assistant for a travel app. A user is asking a question about their booked trip.",
-        "Answer the question based ONLY on the information provided below. Be friendly and conversational.",
-        "Format your response as plain text only. Do not use markdown, such as bolding (`**text**`), italics, or lists.",
-        f"\nIMPORTANT CONTEXT: Today's date is {todays_date_str}. Use this date to determine if a trip is in the past, ongoing, or in the future.",
+    # Step 1: Triage the user's query
+    category = get_query_category(user_query)
+    print(f"Query classified as: {category}")
 
-        "\n== Key Policies & How to Respond ==",
-        "Guest Cancellation: A guest is allowed to cancel their reservation from the Booking details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as the check-in date or later, it is too late to cancel. When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
-        "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
-        "General Insurance Questions: For questions about what insurance covers (not how to cancel), refer to the high-level benefits and the full policy details if available.",
-        "Property Questions: For questions about the property itself (e.g., appliance instructions, specific directions not in the property info), direct the user to contact the host via their email address.",
-        "Other Support: For questions about the platform, booking modifications not covered here, or to speak to a human, direct the user to contact support at support@airbnblite.com.",
+    # Step 2: Retrieve context based on the category
+    context = ""
+    if category == "PROPERTY":
+        context = get_property_context(property_data, host_data)
+    elif category == "INSURANCE":
+        context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
+    elif category == "CANCELLATION":
+        context = get_cancellation_context(booking)
+    # For "GENERAL", we provide a minimal context.
+    else: 
+        context = f"The user is asking a general question about their trip to {property_data.get('title')}."
 
-        "Do not make up or invent information.",
-        "\n--- Provided Context ---",
-        
-        "\n== Booking Details ==",
-        f"Property: {property_data.get('title')}",
-        f"Location: {property_data.get('location')}",
-        f"Check-in Date: {booking.get('checkIn')}",
-        f"Check-out Date: {booking.get('checkOut')}",
-        f"Number of Guests: {booking.get('guests')}",
-        
-        "\n-- Cost Breakdown --",
-        f"Reservation Cost: ${booking.get('reservationCost', 0):.2f}",
-        f"Service Fee: ${booking.get('serviceFee', 0):.2f}",
-    ]
-    if booking.get('insuranceCost', 0) > 0:
-        system_content_lines.append(f"Insurance Cost: ${booking.get('insuranceCost', 0):.2f}")
-    system_content_lines.extend([
-        "--------------------",
-        f"Total Cost: ${booking.get('totalCost', 0):.2f}",
-        "\n== Host Information ==",
-        f"Host Name: {host_data.get('name')}",
-        f"Host Email: {host_data.get('email')}",
-        
-        "\n== Property Details ==",
-        f"Description: {property_data.get('description')}",
-        f"Amenities: {', '.join(property_data.get('amenities', []))}",
-    ])
+    # Step 3: Synthesize the final answer with targeted context
+    system_prompt = f"""
+    You are a friendly and helpful assistant for the travel app AirbnbLite.
+    Your goal is to answer the user's question based ONLY on the information provided in the 'CONTEXT' section.
+    Be conversational and clear. Do not use markdown (like bolding or lists).
+    If the information to answer a question is not in the context, state that you don't have that information and suggest an alternative (e.g., 'contact the host' or 'contact support@airbnblite.com').
+
+    ---CONTEXT---
+    {context}
+    ---END OF CONTEXT---
+    """
     
-    if property_data.get('propertyInfo'):
-        system_content_lines.append(f"\nAdditional Information from Host:\n{property_data.get('propertyInfo')}")
-    else:
-        system_content_lines.append("\nAdditional Information from Host:\n(No additional information was provided by the host for this property)")
-
-    system_content_lines.append("\n== Insurance Details ==")
-    if insurance_plan:
-        system_content_lines.append(f"Travel Insurance Purchased: {insurance_plan.get('name')}")
-        if 'benefits' in insurance_plan and insurance_plan['benefits']:
-            system_content_lines.append("\nHigh-level Insurance Benefits:")
-            for benefit in insurance_plan.get('benefits', []):
-                system_content_lines.append(f"- {benefit}")
-        
-        if insurance_plan.get('termsUrl'):
-            policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
-            if policy_text:
-                system_content_lines.append("\n--- Full Insurance Policy Details ---")
-                system_content_lines.append(policy_text)
-                system_content_lines.append("--- End of Insurance Policy Details ---")
-            else:
-                 system_content_lines.append("\n(Could not load the full insurance policy document.)")
-    elif eligible_insurance_plan:
-        system_content_lines.append("Travel Insurance Purchased: No")
-        system_content_lines.append("\nThe user is eligible to purchase the following travel insurance plan. Answer any questions they have about it to help them decide.")
-        system_content_lines.append(f"Eligible Plan Name: {eligible_insurance_plan.get('name')}")
-        if 'benefits' in eligible_insurance_plan and eligible_insurance_plan['benefits']:
-            system_content_lines.append("\nHigh-level Benefits of Eligible Plan:")
-            for benefit in eligible_insurance_plan.get('benefits', []):
-                system_content_lines.append(f"- {benefit}")
-        
-        if eligible_insurance_plan.get('termsUrl'):
-            policy_text = extract_text_from_pdf_url(eligible_insurance_plan['termsUrl'])
-            if policy_text:
-                system_content_lines.append("\n--- Full Policy Details for Eligible Plan ---")
-                system_content_lines.append(policy_text)
-                system_content_lines.append("--- End of Policy Details for Eligible Plan ---")
-            else:
-                 system_content_lines.append("\n(Could not load the full policy document for the eligible plan.)")
-    else:
-        system_content_lines.append("Travel Insurance Purchased: No")
-        system_content_lines.append("It is no longer possible to add travel insurance to this booking.")
-
-    system_content_lines.append("\n--- End of Context ---")
-    
-    system_content = "\n".join(system_content_lines)
-
     # Convert frontend messages to OpenAI format
-    openai_messages = []
-    for msg in chat_messages:
-        role = "assistant" if msg["sender"] == "bot" else "user"
-        openai_messages.append({"role": role, "content": msg["text"]})
+    openai_messages = [{"role": "assistant" if msg["sender"] == "bot" else "user", "content": msg["text"]} for msg in chat_messages]
 
     messages_to_send = [
-        {"role": "system", "content": system_content},
+        {"role": "system", "content": system_prompt},
         *openai_messages
     ]
 
-    # Log the prompt for debugging
     print("\n--- Prompt sent to OpenAI ---")
     try:
-        # Use json for pretty printing if available
-        import json
         print(json.dumps(messages_to_send, indent=2))
-    except (ImportError, TypeError):
-        # Fallback to regular print if json is not available or data is not serializable
+    except (TypeError):
         print(messages_to_send)
     print("---------------------------\n")
 
