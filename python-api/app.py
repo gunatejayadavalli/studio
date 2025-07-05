@@ -585,7 +585,7 @@ def get_cancellation_context(booking):
         "== Cancellation Policy ==",
         f"Today's Date: {todays_date_str}",
         f"Booking Check-in Date: {booking.get('checkIn')}",
-        "\nGuest Cancellation Rule: A guest is allowed to cancel their reservation from the Trip Details page. To check if they can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel. If today's date is the same as or later than the check-in date, it is too late to cancel. In your response, do not mention today's date. Instead, simply state the policy and whether the user is allowed to cancel.",
+        "\nGuest Cancellation Rule: To determine if a guest can cancel, you MUST compare today's date to the check-in date. The rule is simple: if today's date is before the check-in date, the guest is allowed to cancel their reservation from the Trip Details page. If today's date is the same as or later than the check-in date, it is too late to cancel. If it is too late to cancel, do not tell the user they can cancel from the Trip Details page. In your response, do not mention today's date. Instead, simply state the policy and whether the user is allowed to cancel.",
         "Refund Policy: When a guest cancels in time, they receive a full refund of the Total Cost, and the travel insurance is also cancelled automatically.",
         "Insurance-Only Cancellation: To cancel only the travel insurance and keep the reservation, the guest must contact support at support@airbnblite.com.",
     ]
