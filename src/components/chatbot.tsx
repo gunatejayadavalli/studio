@@ -121,7 +121,7 @@ export function Chatbot({ booking, property, host, insurancePlan, eligiblePlan }
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
-      <Card className="w-full max-w-sm md:w-[400px] h-[500px] shadow-2xl flex flex-col">
+      <Card className="w-full max-w-sm md:w-[400px] h-[500px] min-w-[384px] md:min-w-[400px] min-h-[500px] shadow-2xl flex flex-col resize overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between bg-primary text-primary-foreground p-4">
           <div className="flex items-center gap-3">
             <Bot className="w-6 h-6" />
