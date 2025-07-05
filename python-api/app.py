@@ -574,7 +574,7 @@ def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
     
     lines.extend([
         "\n== Policy ==",
-        "Answer questions based on the provided insurance details. If the user is eligible for an insurance plan but hasn't purchased one yet, inform them that they can add it from the Trip Details page. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
+        "Answer questions based on the provided insurance details. The user has not yet purchased the eligible insurance plan you have details for. When asked how to buy it, you should state that they can add it from the Trip Details page. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
     ])
     return "\n".join(lines)
 
@@ -733,3 +733,6 @@ if __name__ == '__main__':
 
 
 
+
+
+    
