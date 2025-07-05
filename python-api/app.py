@@ -457,6 +457,7 @@ def get_query_category(user_query):
     """Classifies the user's query into one of several categories."""
     system_prompt = """
     You are a query classification agent. Classify the user's query into one of the following categories:
+    - "BOOKING": Questions about the booking itself (check-in/out dates, number of guests, cost).
     - "PROPERTY": Questions about the property itself (amenities, address, directions, rules, host).
     - "INSURANCE": Questions about travel insurance (coverage, benefits, cost, terms, how to purchase).
     - "CANCELLATION": Questions about cancelling the booking or the insurance.
@@ -481,6 +482,22 @@ def get_query_category(user_query):
         return "GENERAL"
 
 # Step 2 Helpers: Retrieve - Build targeted context based on intent
+def get_booking_context(booking_data):
+    """Builds a context string for booking-related questions."""
+    lines = [
+        "== Booking Details ==",
+        f"Check-in Date: {booking_data.get('checkIn')}",
+        f"Check-out Date: {booking_data.get('checkOut')}",
+        f"Number of Guests: {booking_data.get('guests')}",
+        f"Total Cost: ${booking_data.get('totalCost'):.2f}",
+        f"Reservation Cost: ${booking_data.get('reservationCost'):.2f}",
+        f"Service Fee: ${booking_data.get('serviceFee'):.2f}",
+        f"Insurance Cost: ${booking_data.get('insuranceCost'):.2f}",
+        "\n== Policy ==",
+        "Answer questions based on the provided booking details. Do not make up information.",
+    ]
+    return "\n".join(lines)
+
 def get_property_context(property_data, host_data):
     """Builds a context string for property-related questions."""
     lines = [
@@ -640,7 +657,9 @@ def chat_with_bot_optimized():
 
     # Step 2: Retrieve context based on the category
     context = ""
-    if category == "PROPERTY":
+    if category == "BOOKING":
+        context = get_booking_context(booking)
+    elif category == "PROPERTY":
         context = get_property_context(property_data, host_data)
     elif category == "INSURANCE":
         context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
@@ -693,3 +712,4 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
 
     
+
