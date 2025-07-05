@@ -109,7 +109,7 @@ export const getChatbotResponse = async (
             termsUrl: eligibleInsurancePlan.termsUrl,
         } : undefined
     };
-    return fetchWrapper('/chat', { method: 'POST', body: JSON.stringify(payload) });
+    return fetchWrapper(config.chatEndpoint, { method: 'POST', body: JSON.stringify(payload) });
 };
 
 // Insurance Plan endpoints

@@ -450,9 +450,9 @@ def get_insurance_plans():
     conn.close()
     return jsonify(plans)
 
-# --- AI Chatbot Agent ---
+# --- AI Chatbot Agent Helpers ---
 
-# Step 1: Triage - Classify the user's intent
+# Step 1 Helper: Triage - Classify the user's intent
 def get_query_category(user_query):
     """Classifies the user's query into one of several categories."""
     system_prompt = """
@@ -480,7 +480,7 @@ def get_query_category(user_query):
         print(f"Error in query classification: {e}")
         return "GENERAL"
 
-# Step 2: Retrieve - Build targeted context based on intent
+# Step 2 Helpers: Retrieve - Build targeted context based on intent
 def get_property_context(property_data, host_data):
     """Builds a context string for property-related questions."""
     lines = [
@@ -558,8 +558,63 @@ def get_cancellation_context(booking):
     return "\n".join(lines)
 
 
+# --- UN-OPTIMIZED CHATBOT ---
 @app.route('/chat', methods=['POST'])
 def chat_with_bot():
+    if not client:
+        return jsonify({"error": "OpenAI API key not configured"}), 500
+
+    data = request.json
+    chat_messages = data.get('messages')
+    booking = data.get('booking')
+    property_data = data.get('property')
+    host_data = data.get('hostInfo')
+    insurance_plan = data.get('insurancePlan')
+    eligible_insurance_plan = data.get('eligibleInsurancePlan')
+
+    if not all([chat_messages, booking, property_data, host_data]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Build a single, large context string by combining all available information
+    property_context = get_property_context(property_data, host_data)
+    insurance_context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
+    cancellation_context = get_cancellation_context(booking)
+    
+    full_context = f"{property_context}\n\n{insurance_context}\n\n{cancellation_context}"
+    
+    system_prompt = f"""
+    You are a friendly and helpful assistant for the travel app AirbnbLite.
+    Your goal is to answer the user's question based ONLY on the information provided in the 'CONTEXT' section.
+    Be conversational and clear. Do not use markdown (like bolding or lists).
+    If the information to answer a question is not in the context, state that you don't have that information and suggest an alternative (e.g., 'contact the host' or 'contact support@airbnblite.com').
+
+    ---CONTEXT---
+    {full_context}
+    ---END OF CONTEXT---
+    """
+    
+    openai_messages = [{"role": "assistant" if msg["sender"] == "bot" else "user", "content": msg["text"]} for msg in chat_messages]
+
+    messages_to_send = [
+        {"role": "system", "content": system_prompt},
+        *openai_messages
+    ]
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages_to_send
+        )
+        response_text = completion.choices[0].message.content
+        return jsonify({"response": response_text})
+    except Exception as e:
+        print(f"Error calling OpenAI: {e}")
+        return jsonify({"error": "Failed to get response from AI"}), 500
+
+
+# --- OPTIMIZED AI Chatbot Agent ---
+@app.route('/chatOptimized', methods=['POST'])
+def chat_with_bot_optimized():
     if not client:
         return jsonify({"error": "OpenAI API key not configured"}), 500
         
@@ -615,7 +670,7 @@ def chat_with_bot():
         *openai_messages
     ]
 
-    print("\n--- Prompt sent to OpenAI ---")
+    print("\n--- Prompt sent to OpenAI (Optimized) ---")
     try:
         print(json.dumps(messages_to_send, indent=2))
     except (TypeError):
