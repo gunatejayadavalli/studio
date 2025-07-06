@@ -109,7 +109,7 @@ export function CheckoutChatbot({ isOpen, onClose, property, eligiblePlan }: Che
           <CardHeader className="flex flex-row items-center justify-between bg-primary text-primary-foreground p-4">
           <div className="flex items-center gap-3">
               <Bot className="w-6 h-6" />
-              <CardTitle className="text-lg font-headline">Insurance Helper</CardTitle>
+              <CardTitle className="text-lg font-headline">AirBot</CardTitle>
           </div>
           <div className="flex items-center">
               <Button
