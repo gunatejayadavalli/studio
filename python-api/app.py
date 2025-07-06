@@ -481,14 +481,22 @@ def get_query_category(user_query, chat_history):
 {user_query}
 --- End of Query ---
 """
+    messages_to_send = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content}
+    ]
+
+    print("\n--- Prompt sent to OpenAI (get_query_category) ---")
+    try:
+        print(json.dumps(messages_to_send, indent=2))
+    except (TypeError):
+        print(messages_to_send)
+    print("---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content}
-            ],
+            messages=messages_to_send,
             response_format={"type": "json_object"}
         )
         response = json.loads(completion.choices[0].message.content)
@@ -637,6 +645,13 @@ def chat_with_bot():
         *openai_messages
     ]
 
+    print("\n--- Prompt sent to OpenAI (Chat) ---")
+    try:
+        print(json.dumps(messages_to_send, indent=2))
+    except (TypeError):
+        print(messages_to_send)
+    print("---------------------------\n")
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -765,6 +780,13 @@ def chat_checkout():
         *openai_messages
     ]
 
+    print("\n--- Prompt sent to OpenAI (Chat Checkout) ---")
+    try:
+        print(json.dumps(messages_to_send, indent=2))
+    except (TypeError):
+        print(messages_to_send)
+    print("---------------------------\n")
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -821,6 +843,13 @@ def suggest_insurance_message_endpoint():
         {"role": "user", "content": "Please write the suggestion message."}
     ]
 
+    print("\n--- Prompt sent to OpenAI (Suggest Insurance) ---")
+    try:
+        print(json.dumps(messages_to_send, indent=2))
+    except (TypeError):
+        print(messages_to_send)
+    print("---------------------------\n")
+
     try:
         completion = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -835,5 +864,7 @@ def suggest_insurance_message_endpoint():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
+
+    
 
     
