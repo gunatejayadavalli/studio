@@ -45,6 +45,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7076)
+context = os.getenv('context','/')
 
 # --- Helper functions for data transformation ---
 def property_to_dict(prop_tuple):
@@ -126,12 +127,12 @@ def extract_text_from_pdf_url(pdf_url):
 
 
 # --- API Routes ---
-@app.route('/')
+@app.route(context+'/')
 def index():
     return jsonify({"message": "Welcome to the AirbnbLite API!"})
 
 # --- User Routes ---
-@app.route('/users', methods=['GET'])
+@app.route(context+'/users', methods=['GET'])
 def get_users():
     conn = get_db_connection()
     if not conn:
@@ -143,7 +144,7 @@ def get_users():
     conn.close()
     return jsonify(users)
 
-@app.route('/register', methods=['POST'])
+@app.route(context+'/register', methods=['POST'])
 def register_user():
     data = request.json
     if not all(k in data for k in ['name', 'email', 'password']):
@@ -173,7 +174,7 @@ def register_user():
     conn.close()
     return jsonify(new_user), 201
 
-@app.route('/login', methods=['POST'])
+@app.route(context+'/login', methods=['POST'])
 def login():
     data = request.json
     if not all(k in data for k in ['email', 'password']):
@@ -196,7 +197,7 @@ def login():
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route('/users/<int:user_id>', methods=['PUT'])
+@app.route(context+'/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     data = request.json
     conn = get_db_connection()
@@ -242,7 +243,7 @@ def update_user(user_id):
 
 
 # --- Property Routes ---
-@app.route('/properties', methods=['GET'])
+@app.route(context+'/properties', methods=['GET'])
 def get_properties():
     conn = get_db_connection()
     if not conn:
@@ -254,7 +255,7 @@ def get_properties():
     conn.close()
     return jsonify(properties)
 
-@app.route('/properties', methods=['POST'])
+@app.route(context+'/properties', methods=['POST'])
 def add_property():
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -284,7 +285,7 @@ def add_property():
     
     return jsonify({"message": "Property added successfully", "id": new_id}), 201
 
-@app.route('/properties/<int:prop_id>', methods=['PUT'])
+@app.route(context+'/properties/<int:prop_id>', methods=['PUT'])
 def update_property(prop_id):
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
@@ -315,7 +316,7 @@ def update_property(prop_id):
     else:
         return jsonify({"error": "Property not found"}), 404
 
-@app.route('/properties/<int:prop_id>', methods=['DELETE'])
+@app.route(context+'/properties/<int:prop_id>', methods=['DELETE'])
 def delete_property(prop_id):
     conn = get_db_connection()
     if not conn:
@@ -335,7 +336,7 @@ def delete_property(prop_id):
         return jsonify({"error": "Property not found"}), 404
 
 # --- Booking Routes ---
-@app.route('/bookings', methods=['GET'])
+@app.route(context+'/bookings', methods=['GET'])
 def get_bookings():
     conn = get_db_connection()
     if not conn:
@@ -353,7 +354,7 @@ def get_bookings():
     conn.close()
     return jsonify(bookings)
 
-@app.route('/bookings', methods=['POST'])
+@app.route(context+'/bookings', methods=['POST'])
 def create_booking():
     data = request.json
     query = """
@@ -391,7 +392,7 @@ def create_booking():
     return jsonify(new_booking), 201
 
 
-@app.route('/bookings/<int:booking_id>', methods=['PUT'])
+@app.route(context+'/bookings/<int:booking_id>', methods=['PUT'])
 def update_booking(booking_id):
     data = request.json
     
@@ -438,7 +439,7 @@ def update_booking(booking_id):
         return jsonify({"error": "Booking not found or no changes made"}), 404
 
 # --- Insurance Plan Routes ---
-@app.route('/insurance-plans', methods=['GET'])
+@app.route(context+'/insurance-plans', methods=['GET'])
 def get_insurance_plans():
     conn = get_db_connection()
     if not conn:
@@ -603,7 +604,7 @@ def get_cancellation_context(booking):
 
 
 # --- UN-OPTIMIZED CHATBOT ---
-@app.route('/chat', methods=['POST'])
+@app.route(context+'/chat', methods=['POST'])
 def chat_with_bot():
     if not client:
         return jsonify({"error": "OpenAI API key not configured"}), 500
@@ -665,7 +666,7 @@ def chat_with_bot():
 
 
 # --- OPTIMIZED AI Chatbot Agent ---
-@app.route('/chatOptimized', methods=['POST'])
+@app.route(context+'/chatOptimized', methods=['POST'])
 def chat_with_bot_optimized():
     if not client:
         return jsonify({"error": "OpenAI API key not configured"}), 500
@@ -744,7 +745,7 @@ def chat_with_bot_optimized():
 
 
 # --- AI Chatbot for Checkout Decision Support ---
-@app.route('/chatCheckout', methods=['POST'])
+@app.route(context+'/chatCheckout', methods=['POST'])
 def chat_checkout():
     if not client:
         return jsonify({"error": "OpenAI API key not configured"}), 500
@@ -811,7 +812,7 @@ def get_insurance_suggestion_context(location, trip_cost, insurance_plan):
     return "\n".join(lines)
 
 
-@app.route('/suggest-insurance-message', methods=['POST'])
+@app.route(context+'/suggest-insurance-message', methods=['POST'])
 def suggest_insurance_message_endpoint():
     if not client:
         return jsonify({"error": "OpenAI API key not configured"}), 500
