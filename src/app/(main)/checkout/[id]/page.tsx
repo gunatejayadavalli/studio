@@ -42,6 +42,8 @@ export default function CheckoutPage() {
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [insuranceMessage, setInsuranceMessage] = useState('');
+  const [animatedInsuranceMessage, setAnimatedInsuranceMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   const propertyId = parseInt(params.id as string, 10);
@@ -60,7 +62,7 @@ export default function CheckoutPage() {
   const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
 
   useEffect(() => {
-    if (eligiblePlan && property) {
+    if (eligiblePlan && property && reservationCost > 0) {
       const fetchInsuranceMessage = async () => {
         try {
           const result = await apiClient.getInsuranceSuggestion(
@@ -79,6 +81,26 @@ export default function CheckoutPage() {
       fetchInsuranceMessage();
     }
   }, [eligiblePlan, property, reservationCost]);
+
+  useEffect(() => {
+    if (insuranceMessage) {
+      setAnimatedInsuranceMessage('');
+      setIsTyping(true);
+      let i = 0;
+      const intervalId = setInterval(() => {
+        if (i < insuranceMessage.length) {
+          setAnimatedInsuranceMessage(prev => prev + insuranceMessage.charAt(i));
+          i++;
+        } else {
+          clearInterval(intervalId);
+          setIsTyping(false);
+        }
+      }, 30); // Typing speed in milliseconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [insuranceMessage]);
+
 
   if (isDataLoading) {
     return (
@@ -207,11 +229,6 @@ export default function CheckoutPage() {
                {eligiblePlan && (
                 <div>
                   <h3 className="font-semibold mb-2">Travel Insurance</h3>
-                   {insuranceMessage && (
-                    <div className="p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm mb-3 border border-accent/20">
-                      <p>{insuranceMessage}</p>
-                    </div>
-                  )}
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <Label htmlFor="insurance-switch" className="font-medium">{eligiblePlan.name}</Label>
@@ -231,6 +248,19 @@ export default function CheckoutPage() {
                       onCheckedChange={handleInsuranceToggle}
                     />
                   </div>
+
+                  {animatedInsuranceMessage && (
+                    <div className="mt-4 p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm border border-accent/20">
+                      <p className="font-semibold mb-1 text-accent-foreground flex items-center gap-2">
+                        <Bot size={16}/> AI Says...
+                      </p>
+                      <p className="font-mono">
+                        {animatedInsuranceMessage}
+                        {isTyping && <span className="animate-pulse">|</span>}
+                      </p>
+                    </div>
+                  )}
+
                    {isBookingForToday && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 p-2 bg-amber-50 rounded-md">
                         <AlertTriangle className="h-4 w-4 shrink-0"/>
@@ -327,5 +357,3 @@ export default function CheckoutPage() {
     </>
   );
 }
-
-    
