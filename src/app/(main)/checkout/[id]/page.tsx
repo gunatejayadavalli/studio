@@ -127,7 +127,7 @@ export default function CheckoutPage() {
 
   if (isDataLoading) {
     return (
-      <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
+      <div className="container mx-auto py-8 px-4 md:px-6">
         <Skeleton className="h-10 w-1/3 mb-6" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
@@ -212,7 +212,7 @@ export default function CheckoutPage() {
 
   return (
     <>
-    <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
+    <div className="container mx-auto py-8 px-4 md:px-6">
        <h1 className="text-3xl font-bold font-headline mb-6">Confirm and Pay</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="space-y-6 lg:col-span-2">
