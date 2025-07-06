@@ -100,7 +100,7 @@ export default function CheckoutPage() {
           clearInterval(intervalId);
           setIsTyping(false);
         }
-      }, 30); // Typing speed in milliseconds
+      }, 20); // Typing speed in milliseconds
 
       return () => clearInterval(intervalId);
     }
@@ -256,7 +256,7 @@ export default function CheckoutPage() {
                   {animatedInsuranceMessage && (
                     <div className="mt-4 p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm border border-accent/20">
                       <p className="font-semibold mb-1 text-accent-foreground flex items-center gap-2">
-                        <Bot size={16}/> AI Says...
+                        <Bot size={16}/> A Smart Suggestion
                       </p>
                       <p className="font-mono">
                         {animatedInsuranceMessage}
