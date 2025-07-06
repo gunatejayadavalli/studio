@@ -30,14 +30,14 @@ import * as apiClient from '@/lib/api-client';
 import { CheckoutChatbot } from '@/components/checkout-chatbot';
 
 export default function CheckoutPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const { addBooking } = useBookings();
   const { properties, insurancePlans, isLoading: isDataLoading } = useStaticData();
-
+  
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
@@ -52,7 +52,7 @@ export default function CheckoutPage() {
   const guests = searchParams.get('guests') || '2';
   
   const property = properties.find((p) => p.id === propertyId);
-
+  
   const fromDate = from ? parseISO(from) : null;
   const toDate = to ? parseISO(to) : null;
 
@@ -60,6 +60,11 @@ export default function CheckoutPage() {
   const reservationCost = property ? property.pricePerNight * numberOfNights : 0;
   
   const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
+
+  const isBookingForToday = fromDate ? isSameDay(fromDate, startOfDay(new Date())) : false;
+  const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (reservationCost * eligiblePlan.pricePercent) / 100 : 0;
+  const serviceFee = reservationCost * 0.1;
+  const totalCost = reservationCost + serviceFee + insuranceCost;
 
   useEffect(() => {
     if (eligiblePlan && property && reservationCost > 0) {
@@ -143,11 +148,6 @@ export default function CheckoutPage() {
   if (isNaN(propertyId) || !property || !from || !to || !fromDate || !toDate) {
     return notFound();
   }
-
-  const isBookingForToday = isSameDay(fromDate, startOfDay(new Date()));
-  const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (reservationCost * eligiblePlan.pricePercent) / 100 : 0;
-  const serviceFee = reservationCost * 0.1;
-  const totalCost = reservationCost + serviceFee + insuranceCost;
 
   const handleBooking = async () => {
     if (!user) {
@@ -246,6 +246,13 @@ export default function CheckoutPage() {
                     />
                   </div>
 
+                   {isBookingForToday && (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 p-2 bg-amber-50 rounded-md">
+                        <AlertTriangle className="h-4 w-4 shrink-0"/>
+                        <p className="font-medium">This is your only chance to add insurance for a same-day booking.</p>
+                    </div>
+                  )}
+
                   {animatedInsuranceMessage && (
                     <div className="mt-4 p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm border border-accent/20">
                       <p className="font-semibold mb-1 text-accent-foreground flex items-center gap-2">
@@ -260,13 +267,6 @@ export default function CheckoutPage() {
                             <Bot className="mr-2 h-4 w-4"/> Need help deciding?
                         </Button>
                       )}
-                    </div>
-                  )}
-
-                   {isBookingForToday && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 p-2 bg-amber-50 rounded-md">
-                        <AlertTriangle className="h-4 w-4 shrink-0"/>
-                        <p className="font-medium">This is your only chance to add insurance for a same-day booking.</p>
                     </div>
                   )}
                 </div>
