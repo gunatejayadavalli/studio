@@ -24,7 +24,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, Info, FileText, Loader2, AlertTriangle, Bot } from 'lucide-react';
+import { CheckCircle, Info, FileText, Loader2, AlertTriangle, Bot, Calendar, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as apiClient from '@/lib/api-client';
 import { CheckoutChatbot } from '@/components/checkout-chatbot';
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
           clearInterval(intervalId);
           setIsTyping(false);
         }
-      }, 20); // Typing speed in milliseconds
+      }, 10); // Typing speed in milliseconds
 
       return () => clearInterval(intervalId);
     }
@@ -109,7 +109,7 @@ export default function CheckoutPage() {
 
   if (isDataLoading) {
     return (
-      <div className="container mx-auto max-w-4xl py-8 px-4 md:px-6">
+      <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
         <Skeleton className="h-10 w-1/3 mb-6" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
@@ -192,10 +192,10 @@ export default function CheckoutPage() {
 
   return (
     <>
-    <div className="container mx-auto max-w-4xl py-8 px-4 md:px-6">
+    <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
        <h1 className="text-3xl font-bold font-headline mb-6">Confirm and Pay</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-12">
+        <div className="space-y-6">
           <Card>
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                <div className="relative h-24 w-24 rounded-lg overflow-hidden shrink-0">
@@ -212,32 +212,40 @@ export default function CheckoutPage() {
                 <p className="text-sm text-muted-foreground">{property.location}</p>
               </div>
             </CardHeader>
-            <Separator />
-            <CardContent className="pt-6 space-y-4">
+          </Card>
+          
+          <Card>
+            <CardContent className="pt-6 space-y-6">
               <div>
-                  <h3 className="font-semibold mb-2">Your trip</h3>
-                  <div className="flex justify-between">
-                    <p className="font-medium">Dates</p>
-                    <p>{format(fromDate, "MMM d")} - {format(toDate, "MMM d, yyyy")}</p>
-                  </div>
-                   <div className="flex justify-between mt-2">
-                    <p className="font-medium">Guests</p>
-                    <p>{guests} guest{parseInt(guests, 10) > 1 ? 's' : ''}</p>
+                  <h3 className="font-semibold mb-4 text-lg">Your Trip Details</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <Calendar className="h-5 w-5 text-muted-foreground" />
+                           <span className="font-medium">Dates</span>
+                        </div>
+                        <span className="font-medium text-right">{format(fromDate, "MMM d")} - {format(toDate, "MMM d, yyyy")}</span>
+                    </div>
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                           <Users className="h-5 w-5 text-muted-foreground" />
+                           <span className="font-medium">Guests</span>
+                        </div>
+                        <span className="font-medium">{guests} guest{parseInt(guests, 10) > 1 ? 's' : ''}</span>
+                    </div>
                   </div>
               </div>
               <Separator />
                {eligiblePlan && (
                 <div>
-                  <h3 className="font-semibold mb-2">Travel Insurance</h3>
-                  <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg">Travel Insurance</h3>
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex-1">
                       <Label htmlFor="insurance-switch" className="font-medium">{eligiblePlan.name}</Label>
                       <p className="text-sm text-muted-foreground">Protect your trip from the unexpected.</p>
-                      <div className="flex items-center gap-4">
-                        <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
+                      <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
                           <Info className="mr-1 h-4 w-4"/> View benefits
-                        </Button>
-                      </div>
+                      </Button>
                     </div>
                     <Switch
                       id="insurance-switch"
@@ -246,7 +254,7 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                   {isBookingForToday && (
+                  {isBookingForToday && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 p-2 bg-amber-50 rounded-md">
                         <AlertTriangle className="h-4 w-4 shrink-0"/>
                         <p className="font-medium">This is your only chance to add insurance for a same-day booking.</p>
@@ -254,15 +262,15 @@ export default function CheckoutPage() {
                   )}
 
                   {animatedInsuranceMessage && (
-                    <div className="mt-4 p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm border border-accent/20">
-                      <p className="font-semibold mb-1 text-accent-foreground flex items-center gap-2">
-                        <Bot size={16}/> AirBot Suggests...
+                    <div className="mt-4">
+                      <p className="font-semibold mb-1 text-muted-foreground flex items-center gap-2 text-sm">
+                        <Bot size={16} className="text-primary"/> AirBot Suggests...
                       </p>
-                      <p className="font-mono">
+                      <p className="font-mono text-sm text-foreground/80">
                         {animatedInsuranceMessage}
                         {isTyping && <span className="animate-pulse">|</span>}
                       </p>
-                      {!isTyping && (
+                      {!isTyping && animatedInsuranceMessage && (
                          <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsChatbotOpen(true)}>
                             <Bot className="mr-2 h-4 w-4"/> Need help deciding?
                         </Button>
