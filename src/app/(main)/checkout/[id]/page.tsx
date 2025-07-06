@@ -38,18 +38,46 @@ export default function CheckoutPage() {
   const { addBooking } = useBookings();
   const { properties, insurancePlans, isLoading: isDataLoading } = useStaticData();
 
-  const propertyId = parseInt(params.id as string, 10);
-  const property = properties.find((p) => p.id === propertyId);
-
-  const from = searchParams.get('from');
-  const to = searchParams.get('to');
-  const guests = searchParams.get('guests') || '2';
-  
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [insuranceMessage, setInsuranceMessage] = useState('');
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
+  const propertyId = parseInt(params.id as string, 10);
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
+  const guests = searchParams.get('guests') || '2';
+  
+  const property = properties.find((p) => p.id === propertyId);
+
+  const fromDate = from ? parseISO(from) : null;
+  const toDate = to ? parseISO(to) : null;
+
+  const numberOfNights = fromDate && toDate ? differenceInDays(toDate, fromDate) : 0;
+  const reservationCost = property ? property.pricePerNight * numberOfNights : 0;
+  
+  const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
+
+  useEffect(() => {
+    if (eligiblePlan && property) {
+      const fetchInsuranceMessage = async () => {
+        try {
+          const result = await suggestInsuranceMessage({
+            location: property.location,
+            tripCost: reservationCost,
+          });
+          if (result.message) {
+            setInsuranceMessage(result.message);
+          }
+        } catch (error) {
+          console.error("Failed to fetch insurance message:", error);
+          setInsuranceMessage("Protect your trip and travel with peace of mind.");
+        }
+      };
+      fetchInsuranceMessage();
+    }
+  }, [eligiblePlan, property, reservationCost]);
 
   if (isDataLoading) {
     return (
@@ -89,43 +117,14 @@ export default function CheckoutPage() {
     );
   }
 
-  if (isNaN(propertyId) || !property || !from || !to) {
+  if (isNaN(propertyId) || !property || !from || !to || !fromDate || !toDate) {
     return notFound();
   }
 
-  const fromDate = parseISO(from);
-  const toDate = parseISO(to);
   const isBookingForToday = isSameDay(fromDate, startOfDay(new Date()));
-
-  const numberOfNights = differenceInDays(toDate, fromDate);
-  const reservationCost = property.pricePerNight * numberOfNights;
-  
-  const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
-  
   const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (reservationCost * eligiblePlan.pricePercent) / 100 : 0;
-  
   const serviceFee = reservationCost * 0.1;
   const totalCost = reservationCost + serviceFee + insuranceCost;
-
-  useEffect(() => {
-    if (eligiblePlan && property) {
-      const fetchInsuranceMessage = async () => {
-        try {
-          const result = await suggestInsuranceMessage({
-            location: property.location,
-            tripCost: reservationCost,
-          });
-          if (result.message) {
-            setInsuranceMessage(result.message);
-          }
-        } catch (error) {
-          console.error("Failed to fetch insurance message:", error);
-          setInsuranceMessage("Protect your trip and travel with peace of mind.");
-        }
-      };
-      fetchInsuranceMessage();
-    }
-  }, [eligiblePlan, property, reservationCost]);
 
   const handleBooking = async () => {
     if (!user) {
