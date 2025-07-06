@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
@@ -41,11 +41,14 @@ export default function CheckoutPage() {
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  
+  // AI Suggestion State
   const [insuranceMessage, setInsuranceMessage] = useState('');
   const [animatedInsuranceMessage, setAnimatedInsuranceMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-  const [isFetchingSuggestion, setIsFetchingSuggestion] = useState(false);
+  const [isFetchingSuggestion, setIsFetchingSuggestion] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout>();
+
 
   const propertyId = parseInt(params.id as string, 10);
   const from = searchParams.get('from');
@@ -67,20 +70,21 @@ export default function CheckoutPage() {
   const serviceFee = reservationCost * 0.1;
   const totalCost = reservationCost + serviceFee + insuranceCost;
 
+  // Fetch AI Suggestion
   useEffect(() => {
-    setInsuranceMessage(''); // Clear previous message
     if (eligiblePlan && property && reservationCost > 0) {
+      setIsFetchingSuggestion(true);
+      setAnimatedInsuranceMessage('');
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
       const fetchInsuranceMessage = async () => {
-        setIsFetchingSuggestion(true);
         try {
           const result = await apiClient.getInsuranceSuggestion(
             property.location,
             reservationCost,
             eligiblePlan
           );
-          if (result.message) {
-            setInsuranceMessage(result.message);
-          }
+          setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
         } catch (error) {
           console.error("Failed to fetch insurance message:", error);
           setInsuranceMessage("Protect your trip and travel with peace of mind.");
@@ -89,29 +93,35 @@ export default function CheckoutPage() {
         }
       };
       fetchInsuranceMessage();
+    } else {
+        setIsFetchingSuggestion(false);
+        setInsuranceMessage('');
+        setAnimatedInsuranceMessage('');
     }
   }, [eligiblePlan, property, reservationCost]);
 
+  // Animate AI Suggestion
   useEffect(() => {
-    if (insuranceMessage) {
-      setAnimatedInsuranceMessage('');
-      setIsTyping(true);
+    if (!isFetchingSuggestion && insuranceMessage) {
       let i = 0;
-      const intervalId = setInterval(() => {
+      setAnimatedInsuranceMessage(''); 
+
+      intervalRef.current = setInterval(() => {
         if (i < insuranceMessage.length) {
           setAnimatedInsuranceMessage(prev => prev + insuranceMessage.charAt(i));
           i++;
         } else {
-          clearInterval(intervalId);
-          setIsTyping(false);
+          if (intervalRef.current) clearInterval(intervalRef.current);
         }
-      }, 5); // Typing speed in milliseconds
-
-      return () => clearInterval(intervalId);
-    } else {
-      setAnimatedInsuranceMessage(''); // Clear animated message if source is cleared
+      }, 5); 
     }
-  }, [insuranceMessage]);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [isFetchingSuggestion, insuranceMessage]);
+
+  const isTyping = !isFetchingSuggestion && animatedInsuranceMessage.length < insuranceMessage.length;
+  const showDecisionButton = !isFetchingSuggestion && animatedInsuranceMessage.length > 0 && !isTyping;
 
 
   if (isDataLoading) {
@@ -287,7 +297,7 @@ export default function CheckoutPage() {
                           </>
                         )}
                       </p>
-                      {!isFetchingSuggestion && !isTyping && animatedInsuranceMessage && (
+                      {showDecisionButton && (
                          <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsChatbotOpen(true)}>
                             <Bot className="mr-2 h-4 w-4"/> Need help deciding?
                         </Button>
