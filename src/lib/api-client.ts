@@ -135,3 +135,22 @@ export const getCheckoutChatbotResponse = async (
 
 // Insurance Plan endpoints
 export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/insurance-plans');
+
+// AI Insurance Suggestion
+export const getInsuranceSuggestion = (
+  location: string,
+  tripCost: number,
+  insurancePlan: InsurancePlan
+): Promise<{ message: string }> => {
+  const payload = {
+    location,
+    tripCost,
+    insurancePlan: {
+      name: insurancePlan.name,
+      benefits: insurancePlan.benefits,
+    },
+  };
+  return fetchWrapper('/suggest-insurance-message', { method: 'POST', body: JSON.stringify(payload) });
+};
+
+    

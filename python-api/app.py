@@ -777,17 +777,63 @@ def chat_checkout():
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 
+# --- NEW AI HELPER FOR INSURANCE SUGGESTION ---
+def get_insurance_suggestion_context(location, trip_cost, insurance_plan):
+    """Builds context for generating an insurance suggestion message."""
+    lines = [
+        f"The user is booking a trip to {location} with a total cost of ${trip_cost:.2f}.",
+        f"They are eligible for the '{insurance_plan.get('name')}' plan.",
+        "\nKey benefits of this plan include:",
+    ]
+    lines.extend([f"- {benefit}" for benefit in insurance_plan.get('benefits', [])])
+    return "\n".join(lines)
+
+
+@app.route('/suggest-insurance-message', methods=['POST'])
+def suggest_insurance_message_endpoint():
+    if not client:
+        return jsonify({"error": "OpenAI API key not configured"}), 500
+
+    data = request.json
+    location = data.get('location')
+    trip_cost = data.get('tripCost')
+    insurance_plan = data.get('insurancePlan')
+
+    if not all([location, trip_cost, insurance_plan]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    context = get_insurance_suggestion_context(location, trip_cost, insurance_plan)
+
+    system_prompt = f"""
+    You are a helpful travel assistant. Your goal is to write a short, friendly, and encouraging message (2-3 sentences) suggesting travel insurance.
+    Use ONLY the information provided in the 'CONTEXT' section.
+    Highlight one or two key benefits from the context to make the suggestion feel specific and valuable.
+    Frame it as a helpful suggestion, not a hard sell. For example, mention "peace of mind."
+    Do not use markdown.
+
+    ---CONTEXT---
+    {context}
+    ---END OF CONTEXT---
+    """
+    
+    messages_to_send = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "Please write the suggestion message."}
+    ]
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages_to_send,
+            max_tokens=100
+        )
+        response_text = completion.choices[0].message.content.strip()
+        return jsonify({ "message": response_text })
+    except Exception as e:
+        print(f"Error calling OpenAI for insurance suggestion: {e}")
+        return jsonify({"error": "Failed to get response from AI"}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
 
     
-
-
-
-
-
-    
-
-    
-
-

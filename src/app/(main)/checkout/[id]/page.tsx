@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { CheckCircle, Info, FileText, Loader2, AlertTriangle, Bot } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { suggestInsuranceMessage } from '@/ai/flows/suggest-insurance';
+import * as apiClient from '@/lib/api-client';
 import { CheckoutChatbot } from '@/components/checkout-chatbot';
 
 export default function CheckoutPage() {
@@ -63,10 +63,11 @@ export default function CheckoutPage() {
     if (eligiblePlan && property) {
       const fetchInsuranceMessage = async () => {
         try {
-          const result = await suggestInsuranceMessage({
-            location: property.location,
-            tripCost: reservationCost,
-          });
+          const result = await apiClient.getInsuranceSuggestion(
+            property.location,
+            reservationCost,
+            eligiblePlan
+          );
           if (result.message) {
             setInsuranceMessage(result.message);
           }
@@ -326,3 +327,5 @@ export default function CheckoutPage() {
     </>
   );
 }
+
+    
