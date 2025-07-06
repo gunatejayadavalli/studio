@@ -45,6 +45,7 @@ export default function CheckoutPage() {
   const [animatedInsuranceMessage, setAnimatedInsuranceMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isFetchingSuggestion, setIsFetchingSuggestion] = useState(false);
 
   const propertyId = parseInt(params.id as string, 10);
   const from = searchParams.get('from');
@@ -67,8 +68,10 @@ export default function CheckoutPage() {
   const totalCost = reservationCost + serviceFee + insuranceCost;
 
   useEffect(() => {
+    setInsuranceMessage(''); // Clear previous message
     if (eligiblePlan && property && reservationCost > 0) {
       const fetchInsuranceMessage = async () => {
+        setIsFetchingSuggestion(true);
         try {
           const result = await apiClient.getInsuranceSuggestion(
             property.location,
@@ -81,6 +84,8 @@ export default function CheckoutPage() {
         } catch (error) {
           console.error("Failed to fetch insurance message:", error);
           setInsuranceMessage("Protect your trip and travel with peace of mind.");
+        } finally {
+          setIsFetchingSuggestion(false);
         }
       };
       fetchInsuranceMessage();
@@ -103,6 +108,8 @@ export default function CheckoutPage() {
       }, 5); // Typing speed in milliseconds
 
       return () => clearInterval(intervalId);
+    } else {
+      setAnimatedInsuranceMessage(''); // Clear animated message if source is cleared
     }
   }, [insuranceMessage]);
 
@@ -263,16 +270,24 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  {animatedInsuranceMessage && (
+                  {(isFetchingSuggestion || animatedInsuranceMessage) && (
                     <div className="mt-4">
                       <p className="font-semibold mb-1 text-muted-foreground flex items-center gap-2 text-sm">
                         <Bot size={16} className="text-primary"/> AirBot Suggests...
                       </p>
                       <p className="font-mono text-xs italic text-foreground/80">
-                        {animatedInsuranceMessage}
-                        {isTyping && <span className="animate-pulse">|</span>}
+                        {isFetchingSuggestion ? (
+                          <>
+                            Typing...<span className="animate-pulse">|</span>
+                          </>
+                        ) : (
+                          <>
+                            {animatedInsuranceMessage}
+                            {isTyping && <span className="animate-pulse">|</span>}
+                          </>
+                        )}
                       </p>
-                      {!isTyping && animatedInsuranceMessage && (
+                      {!isFetchingSuggestion && !isTyping && animatedInsuranceMessage && (
                          <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsChatbotOpen(true)}>
                             <Bot className="mr-2 h-4 w-4"/> Need help deciding?
                         </Button>
