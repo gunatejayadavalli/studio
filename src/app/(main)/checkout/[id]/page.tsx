@@ -74,6 +74,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (eligiblePlan && property && reservationCost > 0) {
       setIsFetchingSuggestion(true);
+      setInsuranceMessage('');
       setAnimatedInsuranceMessage('');
       if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -128,8 +129,8 @@ export default function CheckoutPage() {
     return (
       <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
         <Skeleton className="h-10 w-1/3 mb-6" />
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                 <Skeleton className="h-24 w-24 rounded-lg" />
@@ -145,7 +146,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
           </div>
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardHeader><Skeleton className="h-8 w-32" /></CardHeader>
               <CardContent className="space-y-4">
@@ -213,8 +214,8 @@ export default function CheckoutPage() {
     <>
     <div className="container mx-auto max-w-6xl py-8 px-4 md:px-6">
        <h1 className="text-3xl font-bold font-headline mb-6">Confirm and Pay</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 xl:gap-12">
-        <div className="space-y-6 lg:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader className="flex flex-row items-start gap-4 space-y-0">
                <div className="relative h-24 w-24 rounded-lg overflow-hidden shrink-0">
@@ -309,7 +310,7 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
         </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <Card className="sticky top-24">
             <CardHeader>
               <CardTitle>Price Details</CardTitle>
