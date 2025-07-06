@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
@@ -24,8 +24,10 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
-import { CheckCircle, Info, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Info, FileText, Loader2, AlertTriangle, Bot } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { suggestInsuranceMessage } from '@/ai/flows/suggest-insurance';
+import { CheckoutChatbot } from '@/components/checkout-chatbot';
 
 export default function CheckoutPage() {
   const params = useParams();
@@ -46,6 +48,8 @@ export default function CheckoutPage() {
   const [selectedInsurancePlanId, setSelectedInsurancePlanId] = useState<string | null>(null);
   const [isBenefitDialogOpen, setIsBenefitDialogOpen] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
+  const [insuranceMessage, setInsuranceMessage] = useState('');
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   if (isDataLoading) {
     return (
@@ -102,6 +106,26 @@ export default function CheckoutPage() {
   
   const serviceFee = reservationCost * 0.1;
   const totalCost = reservationCost + serviceFee + insuranceCost;
+
+  useEffect(() => {
+    if (eligiblePlan && property) {
+      const fetchInsuranceMessage = async () => {
+        try {
+          const result = await suggestInsuranceMessage({
+            location: property.location,
+            tripCost: reservationCost,
+          });
+          if (result.message) {
+            setInsuranceMessage(result.message);
+          }
+        } catch (error) {
+          console.error("Failed to fetch insurance message:", error);
+          setInsuranceMessage("Protect your trip and travel with peace of mind.");
+        }
+      };
+      fetchInsuranceMessage();
+    }
+  }, [eligiblePlan, property, reservationCost]);
 
   const handleBooking = async () => {
     if (!user) {
@@ -183,13 +207,23 @@ export default function CheckoutPage() {
                {eligiblePlan && (
                 <div>
                   <h3 className="font-semibold mb-2">Travel Insurance</h3>
+                   {insuranceMessage && (
+                    <div className="p-3 rounded-md bg-accent/50 text-accent-foreground/90 text-sm mb-3 border border-accent/20">
+                      <p>{insuranceMessage}</p>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <Label htmlFor="insurance-switch" className="font-medium">{eligiblePlan.name}</Label>
                       <p className="text-sm text-muted-foreground">Protect your trip from the unexpected.</p>
-                      <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
-                        <Info className="mr-1 h-4 w-4"/> View benefits
-                      </Button>
+                      <div className="flex items-center gap-4">
+                        <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
+                          <Info className="mr-1 h-4 w-4"/> View benefits
+                        </Button>
+                         <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsChatbotOpen(true)}>
+                          <Bot className="mr-1 h-4 w-4"/> Need help deciding?
+                        </Button>
+                      </div>
                     </div>
                     <Switch
                       id="insurance-switch"
@@ -250,6 +284,16 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+    
+    {eligiblePlan && property && (
+      <CheckoutChatbot 
+        isOpen={isChatbotOpen} 
+        onClose={() => setIsChatbotOpen(false)} 
+        property={property}
+        eligiblePlan={eligiblePlan}
+      />
+    )}
+
     {eligiblePlan && (
         <AlertDialog open={isBenefitDialogOpen} onOpenChange={setIsBenefitDialogOpen}>
             <AlertDialogContent>

@@ -728,6 +728,55 @@ def chat_with_bot_optimized():
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 
+# --- AI Chatbot for Checkout Decision Support ---
+@app.route('/chatCheckout', methods=['POST'])
+def chat_checkout():
+    if not client:
+        return jsonify({"error": "OpenAI API key not configured"}), 500
+
+    data = request.json
+    chat_messages = data.get('messages')
+    eligible_insurance_plan = data.get('eligibleInsurancePlan')
+
+    if not all([chat_messages, eligible_insurance_plan]):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    # Context is focused ONLY on the eligible insurance plan
+    # Pass `None` for booking as it's not created yet
+    context = get_insurance_context(None, eligible_insurance_plan, None)
+
+    system_prompt = f"""
+    You are an expert insurance assistant for the travel app AirbnbLite.
+    Your SOLE PURPOSE is to help the user decide if they should purchase the travel insurance plan they are eligible for.
+    Use ONLY the provided 'CONTEXT' about the plan's benefits, cost, and terms to answer their questions.
+    Be helpful, clear, and informative. Do not discuss any other topics.
+    If asked something outside the scope of the provided insurance plan, politely state that you can only assist with questions about the insurance offered.
+
+    ---CONTEXT---
+    {context}
+    ---END OF CONTEXT---
+    """
+
+    # Convert frontend messages to OpenAI format
+    openai_messages = [{"role": "assistant" if msg["sender"] == "bot" else "user", "content": msg["text"]} for msg in chat_messages]
+
+    messages_to_send = [
+        {"role": "system", "content": system_prompt},
+        *openai_messages
+    ]
+
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages_to_send
+        )
+        response_text = completion.choices[0].message.content
+        return jsonify({"response": response_text})
+    except Exception as e:
+        print(f"Error calling OpenAI in /chatCheckout: {e}")
+        return jsonify({"error": "Failed to get response from AI"}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port,debug=True)
 
@@ -740,4 +789,5 @@ if __name__ == '__main__':
     
 
     
+
 

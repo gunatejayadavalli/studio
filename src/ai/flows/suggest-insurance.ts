@@ -2,61 +2,47 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that suggests relevant travel insurance options based on trip details.
+ * @fileOverview An AI agent that generates a friendly message suggesting travel insurance.
  *
- * - suggestInsuranceOptions - A function that suggests insurance options based on trip details.
- * - SuggestInsuranceOptionsInput - The input type for the suggestInsuranceOptions function.
- * - SuggestInsuranceOptionsOutput - The return type for the suggestInsuranceOptions function.
+ * - suggestInsuranceMessage - A function that generates an insurance suggestion message.
+ * - SuggestInsuranceMessageInput - The input type for the suggestInsuranceMessage function.
+ * - SuggestInsuranceMessageOutput - The return type for the suggestInsuranceMessage function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SuggestInsuranceOptionsInputSchema = z.object({
+const SuggestInsuranceMessageInputSchema = z.object({
   location: z.string().describe('The location of the trip.'),
-  startDate: z.string().describe('The start date of the trip (YYYY-MM-DD).'),
-  endDate: z.string().describe('The end date of the trip (YYYY-MM-DD).'),
   tripCost: z.number().describe('The total cost of the trip.'),
 });
-export type SuggestInsuranceOptionsInput = z.infer<typeof SuggestInsuranceOptionsInputSchema>;
+export type SuggestInsuranceMessageInput = z.infer<typeof SuggestInsuranceMessageInputSchema>;
 
-const SuggestInsuranceOptionsOutputSchema = z.object({
-  insuranceOptions: z.array(
-    z.object({
-      name: z.string().describe('The name of the insurance option.'),
-      description: z.string().describe('A description of the insurance option.'),
-      price: z.number().describe('The price of the insurance option.'),
-      coverageDetails: z.string().describe('Detailed coverage information for the option.'),
-    })
-  ).describe('A list of suggested insurance options.'),
+const SuggestInsuranceMessageOutputSchema = z.object({
+  message: z.string().describe('A friendly, encouraging message about travel insurance.'),
 });
-export type SuggestInsuranceOptionsOutput = z.infer<typeof SuggestInsuranceOptionsOutputSchema>;
+export type SuggestInsuranceMessageOutput = z.infer<typeof SuggestInsuranceMessageOutputSchema>;
 
-export async function suggestInsuranceOptions(input: SuggestInsuranceOptionsInput): Promise<SuggestInsuranceOptionsOutput> {
-  return suggestInsuranceOptionsFlow(input);
+export async function suggestInsuranceMessage(input: SuggestInsuranceMessageInput): Promise<SuggestInsuranceMessageOutput> {
+  return suggestInsuranceMessageFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestInsuranceOptionsPrompt',
-  input: {schema: SuggestInsuranceOptionsInputSchema},
-  output: {schema: SuggestInsuranceOptionsOutputSchema},
-  prompt: `Suggest relevant travel insurance options based on the following trip details:
+  name: 'suggestInsuranceMessagePrompt',
+  input: {schema: SuggestInsuranceMessageInputSchema},
+  output: {schema: SuggestInsuranceMessageOutputSchema},
+  prompt: `You are a helpful travel assistant. A user is booking a trip to {{location}} with a total cost of \${{tripCost}}.
 
-Location: {{location}}
-Start Date: {{startDate}}
-End Date: {{endDate}}
-Trip Cost: {{tripCost}}
+Write a short, friendly, and encouraging message (2-3 sentences) highlighting the high-level benefits of purchasing travel insurance for this trip. Mention peace of mind and protection against unexpected events like cancellations or delays. Frame it as a helpful suggestion, not a hard sell.
 
-Consider the trip details to suggest suitable insurance options. Provide a variety of options with different coverage levels and price points.
-
-Ensure each insurance option includes a name, description, price, and coverage details. The response MUST be in the format defined by the output schema.`, 
+The response MUST be a single message in the format defined by the output schema.`, 
 });
 
-const suggestInsuranceOptionsFlow = ai.defineFlow(
+const suggestInsuranceMessageFlow = ai.defineFlow(
   {
-    name: 'suggestInsuranceOptionsFlow',
-    inputSchema: SuggestInsuranceOptionsInputSchema,
-    outputSchema: SuggestInsuranceOptionsOutputSchema,
+    name: 'suggestInsuranceMessageFlow',
+    inputSchema: SuggestInsuranceMessageInputSchema,
+    outputSchema: SuggestInsuranceMessageOutputSchema,
   },
   async input => {
     const {output} = await prompt(input);

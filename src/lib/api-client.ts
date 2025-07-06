@@ -112,5 +112,26 @@ export const getChatbotResponse = async (
     return fetchWrapper(config.chatEndpoint, { method: 'POST', body: JSON.stringify(payload) });
 };
 
+// Checkout Chatbot endpoint
+export const getCheckoutChatbotResponse = async (
+    messages: ChatMessage[],
+    property: Property,
+    eligibleInsurancePlan: InsurancePlan
+): Promise<{ response: string }> => {
+    const payload = {
+        messages,
+        property: { // Pass some property context in case it's useful
+            title: property.title,
+            location: property.location,
+        },
+        eligibleInsurancePlan: {
+            name: eligibleInsurancePlan.name,
+            benefits: eligibleInsurancePlan.benefits,
+            termsUrl: eligibleInsurancePlan.termsUrl,
+        }
+    };
+    return fetchWrapper('/chatCheckout', { method: 'POST', body: JSON.stringify(payload) });
+};
+
 // Insurance Plan endpoints
 export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/insurance-plans');
