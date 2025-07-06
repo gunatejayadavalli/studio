@@ -2,10 +2,10 @@
   "name": "nextjs-template-1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack --port=${port}",
+    "dev": "next dev",
     "lint": "next lint",
     "build": "next build",
-    "start": "next start --port=${port}",
+    "start": "next start",
     "test": "jest --env=jsdom --testResultsProcessor ./node_modules/jest-sonar-reporter/index.js --watchAll=false -u",
     "coverage": "jest --watchAll=false -u --coverage",
     "test:ci": "jest --ci",
