@@ -237,9 +237,6 @@ export default function CheckoutPage() {
                         <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsBenefitDialogOpen(true)}>
                           <Info className="mr-1 h-4 w-4"/> View benefits
                         </Button>
-                         <Button variant="link" size="sm" className="p-0 h-auto" onClick={() => setIsChatbotOpen(true)}>
-                          <Bot className="mr-1 h-4 w-4"/> Need help deciding?
-                        </Button>
                       </div>
                     </div>
                     <Switch
@@ -258,6 +255,11 @@ export default function CheckoutPage() {
                         {animatedInsuranceMessage}
                         {isTyping && <span className="animate-pulse">|</span>}
                       </p>
+                      {!isTyping && (
+                         <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setIsChatbotOpen(true)}>
+                            <Bot className="mr-2 h-4 w-4"/> Need help deciding?
+                        </Button>
+                      )}
                     </div>
                   )}
 
