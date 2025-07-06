@@ -268,7 +268,7 @@ export default function CheckoutPage() {
                       <p className="font-semibold mb-1 text-muted-foreground flex items-center gap-2 text-sm">
                         <Bot size={16} className="text-primary"/> AirBot Suggests...
                       </p>
-                      <p className="font-mono text-sm text-foreground/80">
+                      <p className="font-mono text-xs italic text-foreground/80">
                         {animatedInsuranceMessage}
                         {isTyping && <span className="animate-pulse">|</span>}
                       </p>
