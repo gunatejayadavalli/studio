@@ -45,7 +45,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7076)
-context = os.getenv('context','/')
+context = os.getenv('context','/airbnbliteapi')
 
 # --- Helper functions for data transformation ---
 def property_to_dict(prop_tuple):
