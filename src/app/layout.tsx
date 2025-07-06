@@ -6,7 +6,7 @@ import './globals.css';
 import beloLogo from '@/data/airbnb-belo-logo.png';
 
 export const metadata: Metadata = {
-  title: 'Airbnb',
+  title: 'Airbnblite',
   description: 'A modern Airbnb clone',
   icons: {
     icon: {
