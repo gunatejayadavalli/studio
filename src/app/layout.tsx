@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   title: 'Airbnb',
   description: 'A modern Airbnb clone',
   icons: {
-    icon: beloLogo.src,
+    icon: {
+      url: beloLogo.src,
+      type: 'image/png',
+    },
   },
 };
 
