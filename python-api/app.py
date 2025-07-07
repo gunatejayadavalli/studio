@@ -22,12 +22,11 @@ else:
 
 # --- Database Configuration ---
 db_config = {
-    # 'host': '34.47.199.230',
-    'host': 'localhost',
-    'port': '3306',
-    'user': 'root',
-    'password': 'password',
-    'database': 'airbnblite-db'
+    'host': os.getenv('DB_HOST', '34.47.199.230'),
+    'port': os.getenv('DB_PORT', '3306'),
+    'user': os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', 'password'),
+    'database': os.getenv('DB_NAME', 'airbnblite-db')
 }
 
 # --- Helper function to get database connection ---
