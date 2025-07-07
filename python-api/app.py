@@ -9,6 +9,16 @@ import requests
 import io
 from pypdf import PdfReader
 import json
+import logging
+
+# --- Logging Configuration ---
+# Configure logging to write to a file named 'app.log'
+# This will capture INFO level messages and above, with timestamps.
+logging.basicConfig(
+    filename='app.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # --- OpenAI Configuration ---
 # Make sure to set your OPENAI_API_KEY in your environment
@@ -17,7 +27,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 if openai.api_key:
     client = openai.OpenAI()
 else:
-    print("Warning: OPENAI_API_KEY not found. The /chat endpoint will not work.")
+    logging.warning("Warning: OPENAI_API_KEY not found. AI-related endpoints will not work.")
     client = None
 
 # --- Database Configuration ---
@@ -33,18 +43,22 @@ db_config = {
 def get_db_connection():
     try:
         conn = mysql.connector.connect(**db_config)
+        logging.info("Successfully connected to the database.")
         return conn
     except mysql.connector.Error as err:
-        print(f"Error connecting to MySQL: {err}")
+        logging.error(f"Error connecting to MySQL: {err}")
         return None
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
+logging.info("Flask application starting up...")
+
 # Allow all origins for any route. The context path is handled by the deployment environment.
 CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7076)
 context = os.getenv('context','/airbnbliteapi')
+logging.info(f"Application configured with context path '{context}' on port '{port}'")
 
 # --- Helper functions for data transformation ---
 def property_to_dict(prop_tuple):
@@ -103,6 +117,7 @@ def insurance_plan_to_dict(plan_tuple):
 
 def extract_text_from_pdf_url(pdf_url):
     """Downloads a PDF from a URL and extracts text."""
+    logging.info(f"Attempting to extract text from PDF URL: {pdf_url}")
     try:
         response = requests.get(pdf_url, timeout=10)
         response.raise_for_status()
@@ -116,23 +131,26 @@ def extract_text_from_pdf_url(pdf_url):
             if page_text:
                 text += page_text + "\n"
         
+        logging.info(f"Successfully extracted text from {pdf_url}")
         return text
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching PDF from {pdf_url}: {e}")
+        logging.error(f"Error fetching PDF from {pdf_url}: {e}")
         return None
     except Exception as e:
-        print(f"Error reading PDF content from {pdf_url}: {e}")
+        logging.error(f"Error reading PDF content from {pdf_url}: {e}")
         return None
 
 
 # --- API Routes ---
 @app.route(context+'/')
 def index():
+    logging.info(f"Received request for {request.method} {request.path}")
     return jsonify({"message": "Welcome to the AirbnbLite API!"})
 
 # --- User Routes ---
 @app.route(context+'/users', methods=['GET'])
 def get_users():
+    logging.info(f"Received request for {request.method} {request.path}")
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
@@ -145,8 +163,10 @@ def get_users():
 
 @app.route(context+'/register', methods=['POST'])
 def register_user():
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     if not all(k in data for k in ['name', 'email', 'password']):
+        logging.warning("Registration failed: Missing required fields.")
         return jsonify({"error": "Missing required fields"}), 400
 
     conn = get_db_connection()
@@ -158,6 +178,7 @@ def register_user():
     if cursor.fetchone():
         cursor.close()
         conn.close()
+        logging.warning(f"Registration failed: Email '{data['email']}' already exists.")
         return jsonify({"error": "Email already exists"}), 409
 
     query = "INSERT INTO users (name, email, password, avatar, isHost) VALUES (%s, %s, %s, %s, %s)"
@@ -171,12 +192,15 @@ def register_user():
 
     cursor.close()
     conn.close()
+    logging.info(f"Successfully registered new user with ID: {new_user_id}")
     return jsonify(new_user), 201
 
 @app.route(context+'/login', methods=['POST'])
 def login():
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     if not all(k in data for k in ['email', 'password']):
+        logging.warning("Login failed: Missing email or password.")
         return jsonify({"error": "Missing email or password"}), 400
 
     conn = get_db_connection()
@@ -192,12 +216,15 @@ def login():
     conn.close()
 
     if user:
+        logging.info(f"User '{data['email']}' logged in successfully.")
         return jsonify(user_to_dict(user))
     else:
+        logging.warning(f"Login failed: Invalid credentials for user '{data['email']}'.")
         return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route(context+'/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     conn = get_db_connection()
     if not conn:
@@ -220,6 +247,7 @@ def update_user(user_id):
         values.append(data['password'])
 
     if not fields:
+        logging.warning(f"User update for ID {user_id} failed: No fields to update.")
         return jsonify({"error": "No fields to update"}), 400
 
     query = f"UPDATE users SET {', '.join(fields)} WHERE id = %s"
@@ -231,6 +259,7 @@ def update_user(user_id):
     if cursor.rowcount == 0:
         cursor.close()
         conn.close()
+        logging.warning(f"User update for ID {user_id} failed: User not found or no changes made.")
         return jsonify({"error": "User not found or no changes made"}), 404
 
     cursor.execute("SELECT id, name, email, NULL, avatar, isHost FROM users WHERE id = %s", (user_id,))
@@ -238,12 +267,14 @@ def update_user(user_id):
 
     cursor.close()
     conn.close()
+    logging.info(f"Successfully updated user ID: {user_id}")
     return jsonify(updated_user)
 
 
 # --- Property Routes ---
 @app.route(context+'/properties', methods=['GET'])
 def get_properties():
+    logging.info(f"Received request for {request.method} {request.path}")
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
@@ -256,6 +287,7 @@ def get_properties():
 
 @app.route(context+'/properties', methods=['POST'])
 def add_property():
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
     images_str = "|".join(data.get('images', []))
@@ -282,10 +314,12 @@ def add_property():
     cursor.close()
     conn.close()
     
+    logging.info(f"Successfully added new property with ID: {new_id}")
     return jsonify({"message": "Property added successfully", "id": new_id}), 201
 
 @app.route(context+'/properties/<int:prop_id>', methods=['PUT'])
 def update_property(prop_id):
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     amenities_str = ",".join(data.get('amenities', []))
 
@@ -311,12 +345,15 @@ def update_property(prop_id):
     conn.close()
 
     if rowcount > 0:
+        logging.info(f"Successfully updated property ID: {prop_id}")
         return jsonify({"message": "Property updated successfully"}), 200
     else:
+        logging.warning(f"Property update for ID {prop_id} failed: Property not found.")
         return jsonify({"error": "Property not found"}), 404
 
 @app.route(context+'/properties/<int:prop_id>', methods=['DELETE'])
 def delete_property(prop_id):
+    logging.info(f"Received request for {request.method} {request.path}")
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
@@ -330,13 +367,16 @@ def delete_property(prop_id):
     conn.close()
 
     if rowcount > 0:
+        logging.info(f"Successfully deleted property ID: {prop_id}")
         return jsonify({"message": "Property deleted successfully"}), 200
     else:
+        logging.warning(f"Property deletion for ID {prop_id} failed: Property not found.")
         return jsonify({"error": "Property not found"}), 404
 
 # --- Booking Routes ---
 @app.route(context+'/bookings', methods=['GET'])
 def get_bookings():
+    logging.info(f"Received request for {request.method} {request.path}")
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
@@ -355,6 +395,7 @@ def get_bookings():
 
 @app.route(context+'/bookings', methods=['POST'])
 def create_booking():
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     query = """
     INSERT INTO bookings 
@@ -388,11 +429,13 @@ def create_booking():
     cursor.close()
     conn.close()
 
+    logging.info(f"Successfully created new booking with ID: {new_id}")
     return jsonify(new_booking), 201
 
 
 @app.route(context+'/bookings/<int:booking_id>', methods=['PUT'])
 def update_booking(booking_id):
+    logging.info(f"Received request for {request.method} {request.path}")
     data = request.json
     
     conn = get_db_connection()
@@ -420,6 +463,7 @@ def update_booking(booking_id):
         values.append(data['insuranceCost'])
 
     if not fields:
+        logging.warning(f"Booking update for ID {booking_id} failed: No fields to update.")
         return jsonify({"error": "No fields to update"}), 400
 
     query = f"UPDATE bookings SET {', '.join(fields)} WHERE id = %s"
@@ -433,13 +477,16 @@ def update_booking(booking_id):
     conn.close()
 
     if rowcount > 0:
+        logging.info(f"Successfully updated booking ID: {booking_id}")
         return jsonify({"message": "Booking updated successfully"}), 200
     else:
+        logging.warning(f"Booking update for ID {booking_id} failed: Booking not found or no changes made.")
         return jsonify({"error": "Booking not found or no changes made"}), 404
 
 # --- Insurance Plan Routes ---
 @app.route(context+'/insurance-plans', methods=['GET'])
 def get_insurance_plans():
+    logging.info(f"Received request for {request.method} {request.path}")
     conn = get_db_connection()
     if not conn:
         return jsonify({"error": "Database connection failed"}), 500
@@ -486,12 +533,7 @@ def get_query_category(user_query, chat_history):
         {"role": "user", "content": user_content}
     ]
 
-    print("\n--- Prompt sent to OpenAI (get_query_category) ---")
-    try:
-        print(json.dumps(messages_to_send, indent=2))
-    except (TypeError):
-        print(messages_to_send)
-    print("---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (get_query_category) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -500,9 +542,11 @@ def get_query_category(user_query, chat_history):
             response_format={"type": "json_object"}
         )
         response = json.loads(completion.choices[0].message.content)
-        return response.get("category", "GENERAL")
+        category = response.get("category", "GENERAL")
+        logging.info(f"Query classification successful. Category: {category}")
+        return category
     except Exception as e:
-        print(f"Error in query classification: {e}")
+        logging.error(f"Error in query classification: {e}")
         return "GENERAL"
 
 
@@ -605,7 +649,9 @@ def get_cancellation_context(booking):
 # --- UN-OPTIMIZED CHATBOT ---
 @app.route(context+'/chat', methods=['POST'])
 def chat_with_bot():
+    logging.info(f"Received request for {request.method} {request.path}")
     if not client:
+        logging.error("Chat request failed: OpenAI API key not configured")
         return jsonify({"error": "OpenAI API key not configured"}), 500
 
     data = request.json
@@ -617,6 +663,7 @@ def chat_with_bot():
     eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
     if not all([chat_messages, booking, property_data, host_data]):
+        logging.warning("Chat request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
 
     # Build a single, large context string by combining all available information
@@ -645,12 +692,7 @@ def chat_with_bot():
         *openai_messages
     ]
 
-    print("\n--- Prompt sent to OpenAI (Chat) ---")
-    try:
-        print(json.dumps(messages_to_send, indent=2))
-    except (TypeError):
-        print(messages_to_send)
-    print("---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (Chat) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -660,14 +702,16 @@ def chat_with_bot():
         response_text = completion.choices[0].message.content
         return jsonify({"response": response_text})
     except Exception as e:
-        print(f"Error calling OpenAI: {e}")
+        logging.error(f"Error calling OpenAI in /chat: {e}")
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 
 # --- OPTIMIZED AI Chatbot Agent ---
 @app.route(context+'/chatOptimized', methods=['POST'])
 def chat_with_bot_optimized():
+    logging.info(f"Received request for {request.method} {request.path}")
     if not client:
+        logging.error("Optimized chat request failed: OpenAI API key not configured")
         return jsonify({"error": "OpenAI API key not configured"}), 500
         
     data = request.json
@@ -679,6 +723,7 @@ def chat_with_bot_optimized():
     eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
     if not all([chat_messages, booking, property_data, host_data]):
+        logging.warning("Optimized chat request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
     
     # Extract the latest user query
@@ -688,7 +733,7 @@ def chat_with_bot_optimized():
 
     # Step 1: Triage the user's query
     category = get_query_category(user_query, chat_messages)
-    print(f"Query classified as: {category}")
+    logging.info(f"Optimized chat: Query classified as '{category}'")
 
     # Step 2: Retrieve context based on the category
     context = ""
@@ -703,7 +748,8 @@ def chat_with_bot_optimized():
     # For "GENERAL", we provide a minimal context.
     else: 
         context = f"The user is asking a general question about their trip to {property_data.get('title')}."
-
+    logging.info(f"Optimized chat: Generated context for category '{category}'")
+    
     # Step 3: Synthesize the final answer with targeted context
     system_prompt = f"""
     You are a friendly and helpful assistant for the travel app AirbnbLite.
@@ -724,12 +770,7 @@ def chat_with_bot_optimized():
         *openai_messages
     ]
 
-    print("\n--- Prompt sent to OpenAI (Optimized) ---")
-    try:
-        print(json.dumps(messages_to_send, indent=2))
-    except (TypeError):
-        print(messages_to_send)
-    print("---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (Optimized) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -739,14 +780,16 @@ def chat_with_bot_optimized():
         response_text = completion.choices[0].message.content
         return jsonify({"response": response_text})
     except Exception as e:
-        print(f"Error calling OpenAI: {e}")
+        logging.error(f"Error calling OpenAI in /chatOptimized: {e}")
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 
 # --- AI Chatbot for Checkout Decision Support ---
 @app.route(context+'/chatCheckout', methods=['POST'])
 def chat_checkout():
+    logging.info(f"Received request for {request.method} {request.path}")
     if not client:
+        logging.error("Checkout chat request failed: OpenAI API key not configured")
         return jsonify({"error": "OpenAI API key not configured"}), 500
 
     data = request.json
@@ -754,6 +797,7 @@ def chat_checkout():
     eligible_insurance_plan = data.get('eligibleInsurancePlan')
 
     if not all([chat_messages, eligible_insurance_plan]):
+        logging.warning("Checkout chat request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
     
     # Context is focused ONLY on the eligible insurance plan
@@ -780,12 +824,7 @@ def chat_checkout():
         *openai_messages
     ]
 
-    print("\n--- Prompt sent to OpenAI (Chat Checkout) ---")
-    try:
-        print(json.dumps(messages_to_send, indent=2))
-    except (TypeError):
-        print(messages_to_send)
-    print("---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (Chat Checkout) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -795,7 +834,7 @@ def chat_checkout():
         response_text = completion.choices[0].message.content
         return jsonify({"response": response_text})
     except Exception as e:
-        print(f"Error calling OpenAI in /chatCheckout: {e}")
+        logging.error(f"Error calling OpenAI in /chatCheckout: {e}")
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 
@@ -813,7 +852,9 @@ def get_insurance_suggestion_context(location, trip_cost, insurance_plan):
 
 @app.route(context+'/suggest-insurance-message', methods=['POST'])
 def suggest_insurance_message_endpoint():
+    logging.info(f"Received request for {request.method} {request.path}")
     if not client:
+        logging.error("Insurance suggestion request failed: OpenAI API key not configured")
         return jsonify({"error": "OpenAI API key not configured"}), 500
 
     data = request.json
@@ -822,6 +863,7 @@ def suggest_insurance_message_endpoint():
     insurance_plan = data.get('insurancePlan')
 
     if not all([location, trip_cost, insurance_plan]):
+        logging.warning("Insurance suggestion request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
 
     context = get_insurance_suggestion_context(location, trip_cost, insurance_plan)
@@ -830,7 +872,7 @@ def suggest_insurance_message_endpoint():
     You are a helpful travel assistant. Your goal is to write a short, friendly, and encouraging message (2-3 sentences) suggesting travel insurance.
     Use ONLY the information provided in the 'CONTEXT' section.
     Highlight one or two key benefits from the context to make the suggestion feel specific and valuable.
-    Frame it as a helpful suggestion, not a hard sell. For example, mention "peace of mind."
+    Frame it as a helpful suggestion, not a hard sell. For example, mention \"peace of mind.\"
     Do not use markdown.
 
     ---CONTEXT---
@@ -843,12 +885,7 @@ def suggest_insurance_message_endpoint():
         {"role": "user", "content": "Please write the suggestion message."}
     ]
 
-    print("\n--- Prompt sent to OpenAI (Suggest Insurance) ---")
-    try:
-        print(json.dumps(messages_to_send, indent=2))
-    except (TypeError):
-        print(messages_to_send)
-    print("---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (Suggest Insurance) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -859,11 +896,17 @@ def suggest_insurance_message_endpoint():
         response_text = completion.choices[0].message.content.strip()
         return jsonify({ "message": response_text })
     except Exception as e:
-        print(f"Error calling OpenAI for insurance suggestion: {e}")
+        logging.error(f"Error calling OpenAI for insurance suggestion: {e}")
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 if __name__ == '__main__':
+    # The 'debug=True' parameter enables Flask's development server.
+    # This should be False in a production environment.
+    # A production-grade WSGI server like Gunicorn or uWSGI should be used instead.
+    logging.info("Starting Flask development server.")
     app.run(host='0.0.0.0', port=port,debug=True)
+
+    
 
     
 
