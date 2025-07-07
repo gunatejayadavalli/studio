@@ -78,40 +78,43 @@ export default function CheckoutPage() {
   useEffect(() => {
     const controller = new AbortController();
 
-    if (eligiblePlan && property && reservationCost > 0) {
-      setIsFetchingSuggestion(true);
-      setInsuranceMessage('');
-      setAnimatedInsuranceMessage('');
-      if (intervalRef.current) clearInterval(intervalRef.current);
-
-      const fetchInsuranceMessage = async () => {
-        try {
-          const result = await apiClient.getInsuranceSuggestion(
-            property.location,
-            reservationCost,
-            eligiblePlan,
-            controller.signal
-          );
-          setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
-        } catch (error: any) {
-          if (error.name !== 'AbortError') {
-            console.error("Failed to fetch insurance message:", error);
-            setInsuranceMessage("Protect your trip and travel with peace of mind.");
-          }
-        } finally {
-          if (!controller.signal.aborted) {
-            setIsFetchingSuggestion(false);
-          }
-        }
-      };
-      fetchInsuranceMessage();
-    } else {
-        setIsFetchingSuggestion(false);
+    const handler = setTimeout(() => {
+      if (eligiblePlan && property && reservationCost > 0) {
+        setIsFetchingSuggestion(true);
         setInsuranceMessage('');
         setAnimatedInsuranceMessage('');
-    }
+        if (intervalRef.current) clearInterval(intervalRef.current);
+
+        const fetchInsuranceMessage = async () => {
+          try {
+            const result = await apiClient.getInsuranceSuggestion(
+              property.location,
+              reservationCost,
+              eligiblePlan,
+              controller.signal
+            );
+            setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
+          } catch (error: any) {
+            if (error.name !== 'AbortError') {
+              console.error("Failed to fetch insurance message:", error);
+              setInsuranceMessage("Protect your trip and travel with peace of mind.");
+            }
+          } finally {
+            if (!controller.signal.aborted) {
+              setIsFetchingSuggestion(false);
+            }
+          }
+        };
+        fetchInsuranceMessage();
+      } else {
+          setIsFetchingSuggestion(false);
+          setInsuranceMessage('');
+          setAnimatedInsuranceMessage('');
+      }
+    }, 50);
 
     return () => {
+      clearTimeout(handler);
       controller.abort();
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
