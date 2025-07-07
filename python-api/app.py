@@ -22,7 +22,7 @@ else:
 
 # --- Database Configuration ---
 db_config = {
-    'host': os.getenv('DB_HOST', '34.47.199.230'),
+    'host': os.getenv('DB_HOST', 'localhost'),
     'port': os.getenv('DB_PORT', '3306'),
     'user': os.getenv('DB_USER', 'root'),
     'password': os.getenv('DB_PASSWORD', 'password'),
