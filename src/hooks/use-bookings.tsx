@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { Booking, InsurancePlan } from '@/lib/types';
 import { useAuth } from './use-auth';
 import * as apiClient from '@/lib/api-client';
@@ -43,15 +43,15 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
     loadBookings();
   }, [user]);
 
-  const addBooking = async (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => {
+  const addBooking = useCallback(async (newBookingData: Omit<Booking, 'id' | 'userId' | 'status' | 'cancellationReason'>) => {
     if (!user) throw new Error("User must be logged in to create a booking.");
 
     const apiBookingData = { ...newBookingData, userId: user.id };
     const newBooking = await apiClient.createBooking(apiBookingData);
     setBookings(prev => [...prev, newBooking]);
-  };
+  }, [user]);
   
-  const cancelBooking = async (bookingId: number, cancelledBy: 'guest' | 'host', reason?: string) => {
+  const cancelBooking = useCallback(async (bookingId: number, cancelledBy: 'guest' | 'host', reason?: string) => {
     const updatedStatus = `cancelled-by-${cancelledBy}`;
     
     await apiClient.updateBooking(bookingId, { status: updatedStatus, cancellationReason: reason });
@@ -61,9 +61,9 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
         b.id === bookingId ? { ...b, status: updatedStatus, cancellationReason: reason } : b
       )
     );
-  };
+  }, []);
   
-  const addInsuranceToBooking = async (bookingId: number, insurancePlan: InsurancePlan) => {
+  const addInsuranceToBooking = useCallback(async (bookingId: number, insurancePlan: InsurancePlan) => {
     const booking = bookings.find(b => b.id === bookingId);
     if (!booking) throw new Error("Booking not found.");
 
@@ -83,7 +83,7 @@ export const BookingsProvider = ({ children }: { children: ReactNode }) => {
         b.id === bookingId ? { ...b, ...updatedData } : b
       )
     );
-  };
+  }, [bookings]);
 
   return (
     <BookingsContext.Provider value={{ bookings, addBooking, cancelBooking, addInsuranceToBooking, isLoading }}>
@@ -99,5 +99,3 @@ export const useBookings = () => {
   }
   return context;
 };
-
-    

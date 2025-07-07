@@ -76,6 +76,8 @@ export default function CheckoutPage() {
 
   // Fetch AI Suggestion
   useEffect(() => {
+    let ignore = false;
+
     if (eligiblePlan && property && reservationCost > 0) {
       setIsFetchingSuggestion(true);
       setInsuranceMessage('');
@@ -89,12 +91,18 @@ export default function CheckoutPage() {
             reservationCost,
             eligiblePlan
           );
-          setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
+          if (!ignore) {
+            setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
+          }
         } catch (error) {
-          console.error("Failed to fetch insurance message:", error);
-          setInsuranceMessage("Protect your trip and travel with peace of mind.");
+          if (!ignore) {
+            console.error("Failed to fetch insurance message:", error);
+            setInsuranceMessage("Protect your trip and travel with peace of mind.");
+          }
         } finally {
-          setIsFetchingSuggestion(false);
+          if (!ignore) {
+            setIsFetchingSuggestion(false);
+          }
         }
       };
       fetchInsuranceMessage();
@@ -103,6 +111,13 @@ export default function CheckoutPage() {
         setInsuranceMessage('');
         setAnimatedInsuranceMessage('');
     }
+
+    return () => {
+      ignore = true;
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [eligiblePlan, property, reservationCost]);
 
   // Animate AI Suggestion
