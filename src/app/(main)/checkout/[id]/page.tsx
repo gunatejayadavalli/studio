@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, notFound, useParams, useSearchParams } from 'next/navigation';
@@ -54,16 +54,20 @@ export default function CheckoutPage() {
   const from = searchParams.get('from');
   const to = searchParams.get('to');
   const guests = searchParams.get('guests') || '2';
-  
-  const property = properties.find((p) => p.id === propertyId);
+
+  const property = useMemo(() => properties.find((p) => p.id === propertyId), [properties, propertyId]);
   
   const fromDate = from ? parseISO(from) : null;
   const toDate = to ? parseISO(to) : null;
 
   const numberOfNights = fromDate && toDate ? differenceInDays(toDate, fromDate) : 0;
-  const reservationCost = property ? property.pricePerNight * numberOfNights : 0;
   
-  const eligiblePlan = insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue);
+  const reservationCost = useMemo(() => property ? property.pricePerNight * numberOfNights : 0, [property, numberOfNights]);
+  
+  const eligiblePlan = useMemo(() => 
+    insurancePlans.find(plan => reservationCost >= plan.minTripValue && reservationCost < plan.maxTripValue),
+    [insurancePlans, reservationCost]
+  );
 
   const isBookingForToday = fromDate ? isSameDay(fromDate, startOfDay(new Date())) : false;
   const insuranceCost = eligiblePlan && selectedInsurancePlanId ? (reservationCost * eligiblePlan.pricePercent) / 100 : 0;
