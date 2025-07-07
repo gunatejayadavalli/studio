@@ -76,7 +76,7 @@ export default function CheckoutPage() {
 
   // Fetch AI Suggestion
   useEffect(() => {
-    let ignore = false;
+    const controller = new AbortController();
 
     if (eligiblePlan && property && reservationCost > 0) {
       setIsFetchingSuggestion(true);
@@ -89,18 +89,17 @@ export default function CheckoutPage() {
           const result = await apiClient.getInsuranceSuggestion(
             property.location,
             reservationCost,
-            eligiblePlan
+            eligiblePlan,
+            controller.signal
           );
-          if (!ignore) {
-            setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
-          }
-        } catch (error) {
-          if (!ignore) {
+          setInsuranceMessage(result.message || "Protect your trip and travel with peace of mind.");
+        } catch (error: any) {
+          if (error.name !== 'AbortError') {
             console.error("Failed to fetch insurance message:", error);
             setInsuranceMessage("Protect your trip and travel with peace of mind.");
           }
         } finally {
-          if (!ignore) {
+          if (!controller.signal.aborted) {
             setIsFetchingSuggestion(false);
           }
         }
@@ -113,7 +112,7 @@ export default function CheckoutPage() {
     }
 
     return () => {
-      ignore = true;
+      controller.abort();
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }

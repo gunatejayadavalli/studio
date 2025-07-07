@@ -30,6 +30,10 @@ async function fetchWrapper(endpoint: string, options?: RequestInit) {
       console.error(detailedError);
       throw new Error(detailedError);
     }
+    if (error.name === 'AbortError') {
+        console.log('Fetch request was aborted.');
+        throw error;
+    }
     throw error;
   }
 }
@@ -140,7 +144,8 @@ export const getInsurancePlans = (): Promise<InsurancePlan[]> => fetchWrapper('/
 export const getInsuranceSuggestion = (
   location: string,
   tripCost: number,
-  insurancePlan: InsurancePlan
+  insurancePlan: InsurancePlan,
+  signal?: AbortSignal
 ): Promise<{ message: string }> => {
   const payload = {
     location,
@@ -150,7 +155,9 @@ export const getInsuranceSuggestion = (
       benefits: insurancePlan.benefits,
     },
   };
-  return fetchWrapper('/suggest-insurance-message', { method: 'POST', body: JSON.stringify(payload) });
+  return fetchWrapper('/suggest-insurance-message', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    signal,
+  });
 };
-
-    
