@@ -1,15 +1,8 @@
-
-import mysql.connector,os
+import mysql.connector,os,io,json,logging,requests
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from openai import OpenAI
 from datetime import date
-import openai
-from dotenv import load_dotenv
-import requests
-import io
 from pypdf import PdfReader
-import json
-import logging
 
 # --- Logging Configuration ---
 # Configure logging to write to a file named 'app.log'
@@ -21,18 +14,17 @@ logging.basicConfig(
 )
 
 # --- OpenAI Configuration ---
-# Make sure to set your OPENAI_API_KEY in your environment
-load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
-if openai.api_key:
-    client = openai.OpenAI()
+api_key = os.getenv('OPENAI_API_KEY')
+
+if api_key:
+    client = OpenAI(api_key=api_key)
 else:
-    logging.warning("Warning: OPENAI_API_KEY not found. AI-related endpoints will not work.")
+    print("Warning: OPENAI_API_KEY not found. The /chat endpoint will not work.")
     client = None
 
 # --- Database Configuration ---
 db_config = {
-    'host': os.getenv('DB_HOST', 'localhost'),
+    'host': os.getenv('DB_HOST', '34.47.199.230'),
     'port': os.getenv('DB_PORT', '3306'),
     'user': os.getenv('DB_USER', 'root'),
     'password': os.getenv('DB_PASSWORD', 'password'),
@@ -53,11 +45,8 @@ def get_db_connection():
 app = Flask(__name__)
 logging.info("Flask application starting up...")
 
-# Allow all origins for any route. The context path is handled by the deployment environment.
-CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
-
-port = os.getenv('port', 7076)
-context = os.getenv('context','/airbnbliteapi')
+port = os.getenv('port', 7075)
+context = os.getenv('context', '/airbnbliteapi')
 logging.info(f"Application configured with context path '{context}' on port '{port}'")
 
 # --- Helper functions for data transformation ---
@@ -140,7 +129,6 @@ def extract_text_from_pdf_url(pdf_url):
         logging.error(f"Error reading PDF content from {pdf_url}: {e}")
         return None
 
-
 # --- API Routes ---
 @app.route(context+'/')
 def index():
@@ -160,7 +148,7 @@ def get_users():
     cursor.close()
     conn.close()
     return jsonify(users)
-
+    
 @app.route(context+'/register', methods=['POST'])
 def register_user():
     logging.info(f"Received request for {request.method} {request.path}")
@@ -520,14 +508,14 @@ def get_query_category(user_query, chat_history):
     """
     
     user_content = f"""
---- Conversation History ---
-{history_str}
---- End of History ---
+    --- Conversation History ---
+    {history_str}
+    --- End of History ---
 
---- Latest User Query ---
-{user_query}
---- End of Query ---
-"""
+    --- Latest User Query ---
+    {user_query}
+    --- End of Query ---
+    """
     messages_to_send = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_content}
@@ -900,14 +888,4 @@ def suggest_insurance_message_endpoint():
         return jsonify({"error": "Failed to get response from AI"}), 500
 
 if __name__ == '__main__':
-    # The 'debug=True' parameter enables Flask's development server.
-    # This should be False in a production environment.
-    # A production-grade WSGI server like Gunicorn or uWSGI should be used instead.
-    logging.info("Starting Flask development server.")
-    app.run(host='0.0.0.0', port=port,debug=True)
-
-    
-
-    
-
-    
+    app.run(host='0.0.0.0', port=port)
