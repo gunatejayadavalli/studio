@@ -3,7 +3,6 @@ from flask import Flask, jsonify, request
 from openai import OpenAI
 from datetime import date
 from pypdf import PdfReader
-from flask_cors import CORS
 
 # --- Logging Configuration ---
 # Configure logging to write to a file named 'app.log'
@@ -25,10 +24,10 @@ else:
 
 # --- Database Configuration ---
 db_config = {
-    'host': os.getenv('DB_HOST', '13.223.36.156'),
+    'host': os.getenv('DB_HOST', '34.47.199.230'),
     'port': os.getenv('DB_PORT', '3306'),
     'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', 'Mypass@123'),
+    'password': os.getenv('DB_PASSWORD', 'password'),
     'database': os.getenv('DB_NAME', 'airbnblite-db')
 }
 
@@ -45,9 +44,6 @@ def get_db_connection():
 # --- Flask App Initialization ---
 app = Flask(__name__)
 logging.info("Flask application starting up...")
-
-# Allow all origins for any route. The context path is handled by the deployment environment.
-CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers="*", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 port = os.getenv('port', 7075)
 context = os.getenv('context', '/airbnbliteapi')
