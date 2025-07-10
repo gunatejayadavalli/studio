@@ -31,6 +31,7 @@ function DeveloperSettings() {
     setIsChecked(apiEndpoint === 'cloud');
   }, [apiEndpoint]);
 
+  const apiName = isChecked ? 'Cloud' : 'Local';
 
   return (
     <>
@@ -41,7 +42,7 @@ function DeveloperSettings() {
           <div className="flex items-center gap-2">
             {isChecked ? <Cloud className="h-5 w-5 text-primary" /> : <Server className="h-5 w-5 text-primary" />}
             <Label htmlFor="api-switch" className="text-sm cursor-pointer">
-              API: <span className="font-bold">{isChecked ? 'Cloud' : 'Local'}</span>
+              API: <span className="font-bold">{apiName}</span>
             </Label>
           </div>
           <Switch
@@ -51,7 +52,7 @@ function DeveloperSettings() {
             disabled={isCheckingApi}
           />
         </div>
-         <div className="flex items-center justify-center text-xs text-muted-foreground pt-1 min-h-[20px]">
+         <div className="flex items-center justify-start text-xs text-muted-foreground pt-1 min-h-[20px]">
             {isCheckingApi && (
                 <div className="flex items-center gap-1.5 text-blue-600">
                     <RefreshCw className="h-3 w-3 animate-spin"/>
@@ -61,13 +62,13 @@ function DeveloperSettings() {
             {!isCheckingApi && apiStatus === 'online' && (
                 <div className="flex items-center gap-1.5 text-green-600">
                     <CheckCircle className="h-3 w-3"/>
-                    <span>API is online</span>
+                    <span>{apiName} API is ready</span>
                 </div>
             )}
             {!isCheckingApi && apiStatus === 'offline' && (
                 <div className="flex items-center gap-1.5 text-red-600">
                     <XCircle className="h-3 w-3"/>
-                    <span>API is offline</span>
+                    <span>{apiName} API is not ready</span>
                 </div>
             )}
         </div>
@@ -81,7 +82,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('alex@gmail.com');
   const [password, setPassword] = useState('password123');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const { login, user, isLoading } = useAuth();
+  const { login, user, isLoading, apiStatus } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -128,6 +129,8 @@ export default function LoginPage() {
     );
   }
 
+  const isApiOffline = apiStatus === 'offline';
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-sm mx-auto shadow-xl">
@@ -147,7 +150,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={isLoggingIn}
+                disabled={isLoggingIn || isApiOffline}
               />
             </div>
             <div className="space-y-2">
@@ -158,10 +161,10 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={isLoggingIn}
+                disabled={isLoggingIn || isApiOffline}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+            <Button type="submit" className="w-full" disabled={isLoggingIn || isApiOffline}>
               {isLoggingIn && <Loader2 className="animate-spin mr-2" />}
               Login
             </Button>

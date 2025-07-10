@@ -51,6 +51,7 @@ function DeveloperSettings() {
     setIsChecked(apiEndpoint === 'cloud');
   }, [apiEndpoint]);
 
+  const apiName = isChecked ? 'Cloud' : 'Local';
 
   return (
     <>
@@ -61,7 +62,7 @@ function DeveloperSettings() {
           <div className="flex items-center gap-2">
             {isChecked ? <Cloud className="h-5 w-5 text-primary" /> : <Server className="h-5 w-5 text-primary" />}
             <Label htmlFor="api-switch-register" className="text-sm cursor-pointer">
-              API: <span className="font-bold">{isChecked ? 'Cloud' : 'Local'}</span>
+              API: <span className="font-bold">{apiName}</span>
             </Label>
           </div>
           <Switch
@@ -71,7 +72,7 @@ function DeveloperSettings() {
             disabled={isCheckingApi}
           />
         </div>
-        <div className="flex items-center justify-center text-xs text-muted-foreground pt-1 min-h-[20px]">
+        <div className="flex items-center justify-start text-xs text-muted-foreground pt-1 min-h-[20px]">
             {isCheckingApi && (
                 <div className="flex items-center gap-1.5 text-blue-600">
                     <RefreshCw className="h-3 w-3 animate-spin"/>
@@ -81,13 +82,13 @@ function DeveloperSettings() {
             {!isCheckingApi && apiStatus === 'online' && (
                 <div className="flex items-center gap-1.5 text-green-600">
                     <CheckCircle className="h-3 w-3"/>
-                    <span>API is online</span>
+                    <span>{apiName} API is ready</span>
                 </div>
             )}
             {!isCheckingApi && apiStatus === 'offline' && (
                 <div className="flex items-center gap-1.5 text-red-600">
                     <XCircle className="h-3 w-3"/>
-                    <span>API is offline</span>
+                    <span>{apiName} API is not ready</span>
                 </div>
             )}
         </div>
@@ -99,7 +100,7 @@ function DeveloperSettings() {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, user, isLoading } = useAuth();
+  const { register, user, isLoading, apiStatus } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -169,6 +170,8 @@ export default function RegisterPage() {
       </div>
     );
   }
+  
+  const isApiOffline = apiStatus === 'offline';
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -182,34 +185,34 @@ export default function RegisterPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Full Name<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Full Name<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input placeholder="John Doe" {...field} disabled={isSubmitting || isApiOffline} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@gmail.com" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="email" placeholder="you@gmail.com" {...field} disabled={isSubmitting || isApiOffline} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="password" render={({ field }) => (
-                <FormItem><FormLabel>Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting || isApiOffline} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                <FormItem><FormLabel>Confirm Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Confirm Password<span className="text-destructive ml-1">*</span></FormLabel><FormControl><Input type="password" {...field} disabled={isSubmitting || isApiOffline} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="avatar" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Avatar URL</FormLabel>
-                  <FormControl><Input placeholder="https://your-image-url.com" {...field} disabled={isSubmitting} /></FormControl>
+                  <FormControl><Input placeholder="https://your-image-url.com" {...field} disabled={isSubmitting || isApiOffline} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="isHost" render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting} /></FormControl>
+                    <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isSubmitting || isApiOffline} /></FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Sign up as a host</FormLabel>
                       <FormDescription>Check this box if you want to be able to list properties.</FormDescription>
                     </div>
                   </FormItem>
               )} />
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full" disabled={isSubmitting || isApiOffline}>
                 {isSubmitting && <Loader2 className="animate-spin mr-2" />}
                 Create Account
               </Button>
