@@ -30,8 +30,8 @@ async function fetchWrapper(endpoint: string, options?: RequestInit) {
     return response.json();
   } catch (error: any) {
     console.error(`API call to ${endpoint} failed:`, error);
-    if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      const detailedError = `Network request failed. This may be a CORS issue or a "mixed content" error. If your application is on HTTPS, your API endpoint (${apiBaseUrl}) must also be on HTTPS.`;
+    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+      const detailedError = `Network request failed. This may be a CORS issue or a "mixed content" error if the frontend is on HTTPS and the API is on HTTP.`;
       console.error(detailedError);
       throw new Error(detailedError);
     }
@@ -42,6 +42,17 @@ async function fetchWrapper(endpoint: string, options?: RequestInit) {
     throw error;
   }
 }
+
+// Health check endpoint
+export const checkApiHealth = async (baseUrl: string): Promise<boolean> => {
+    try {
+        const response = await fetch(`${baseUrl}/`, { method: 'GET', signal: AbortSignal.timeout(3000) });
+        return response.ok;
+    } catch (error) {
+        console.warn(`API health check for ${baseUrl} failed:`, error);
+        return false;
+    }
+};
 
 // User endpoints
 export const getUsers = (): Promise<User[]> => fetchWrapper('/users');

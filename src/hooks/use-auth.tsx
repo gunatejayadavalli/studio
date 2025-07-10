@@ -1,12 +1,14 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import * as apiClient from '@/lib/api-client';
+import { config } from '@/lib/config';
 
 type ApiEndpoint = 'local' | 'cloud';
+type ApiStatus = 'unknown' | 'online' | 'offline';
 
 type AuthContextType = {
   user: User | null;
@@ -20,6 +22,9 @@ type AuthContextType = {
   isLoading: boolean;
   apiEndpoint: ApiEndpoint;
   setApiEndpoint: (endpoint: ApiEndpoint) => void;
+  checkAndSetApiEndpoint: (endpoint: ApiEndpoint) => Promise<void>;
+  apiStatus: ApiStatus;
+  isCheckingApi: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,8 +34,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setModeState] = useState<'guest' | 'host'>('guest');
   const [isLoading, setIsLoading] = useState(true);
   const [apiEndpoint, setApiEndpointState] = useState<ApiEndpoint>('local');
+  const [apiStatus, setApiStatus] = useState<ApiStatus>('unknown');
+  const [isCheckingApi, setIsCheckingApi] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  
+  const checkApiStatus = useCallback(async (endpoint: ApiEndpoint) => {
+    setIsCheckingApi(true);
+    setApiStatus('unknown');
+    const url = config.apiUrls[endpoint];
+    const isOnline = await apiClient.checkApiHealth(url);
+    setApiStatus(isOnline ? 'online' : 'offline');
+    setIsCheckingApi(false);
+  }, []);
 
   useEffect(() => {
     const loadUserFromStorage = () => {
@@ -41,12 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(JSON.parse(storedUser));
         }
         const storedEndpoint = localStorage.getItem('apiEndpoint') as ApiEndpoint | null;
-        if (storedEndpoint && ['local', 'cloud'].includes(storedEndpoint)) {
-            setApiEndpointState(storedEndpoint);
-            apiClient.setApiBaseUrl(storedEndpoint);
-        } else {
-            apiClient.setApiBaseUrl('local');
-        }
+        const currentEndpoint = storedEndpoint && ['local', 'cloud'].includes(storedEndpoint) ? storedEndpoint : 'local';
+        
+        setApiEndpointState(currentEndpoint);
+        apiClient.setApiBaseUrl(currentEndpoint);
+        checkApiStatus(currentEndpoint); // Check status on initial load
+
       } catch (error) {
         console.error("Failed to parse auth data from localStorage", error);
         localStorage.removeItem('airbnbUser');
@@ -56,12 +72,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     loadUserFromStorage();
-  }, []);
+  }, [checkApiStatus]);
 
   const setApiEndpoint = (endpoint: ApiEndpoint) => {
     localStorage.setItem('apiEndpoint', endpoint);
     setApiEndpointState(endpoint);
     apiClient.setApiBaseUrl(endpoint);
+    checkApiStatus(endpoint);
+  };
+
+  const checkAndSetApiEndpoint = async (endpoint: ApiEndpoint) => {
+    localStorage.setItem('apiEndpoint', endpoint);
+    setApiEndpointState(endpoint);
+    apiClient.setApiBaseUrl(endpoint);
+    await checkApiStatus(endpoint);
   };
 
   useEffect(() => {
@@ -142,6 +166,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     apiEndpoint,
     setApiEndpoint,
+    checkAndSetApiEndpoint,
+    apiStatus,
+    isCheckingApi,
   };
 
   return (

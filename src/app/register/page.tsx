@@ -15,12 +15,13 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { User } from '@/lib/types';
-import { Loader2, Server, Cloud } from 'lucide-react';
+import { Loader2, Server, Cloud, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import logo from '@/data/airbnblite_logo-trans-bg.png';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const registerFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters.'),
@@ -37,16 +38,19 @@ const registerFormSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
 function DeveloperSettings() {
-  const { apiEndpoint, setApiEndpoint } = useAuth();
+  const { apiEndpoint, checkAndSetApiEndpoint, apiStatus, isCheckingApi } = useAuth();
   const [isChecked, setIsChecked] = useState(apiEndpoint === 'cloud');
 
-  const handleToggle = (checked: boolean) => {
+  const handleToggle = async (checked: boolean) => {
     const newEndpoint = checked ? 'cloud' : 'local';
-    setApiEndpoint(newEndpoint);
     setIsChecked(checked);
+    await checkAndSetApiEndpoint(newEndpoint);
   };
+  
+  useEffect(() => {
+    setIsChecked(apiEndpoint === 'cloud');
+  }, [apiEndpoint]);
 
-  if (!setApiEndpoint) return null;
 
   return (
     <>
@@ -56,7 +60,7 @@ function DeveloperSettings() {
         <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
           <div className="flex items-center gap-2">
             {isChecked ? <Cloud className="h-5 w-5 text-primary" /> : <Server className="h-5 w-5 text-primary" />}
-            <Label htmlFor="api-switch-register" className="text-sm">
+            <Label htmlFor="api-switch-register" className="text-sm cursor-pointer">
               API: <span className="font-bold">{isChecked ? 'Cloud' : 'Local'}</span>
             </Label>
           </div>
@@ -64,7 +68,28 @@ function DeveloperSettings() {
             id="api-switch-register"
             checked={isChecked}
             onCheckedChange={handleToggle}
+            disabled={isCheckingApi}
           />
+        </div>
+        <div className="flex items-center justify-center text-xs text-muted-foreground pt-1 min-h-[20px]">
+            {isCheckingApi && (
+                <div className="flex items-center gap-1.5 text-blue-600">
+                    <RefreshCw className="h-3 w-3 animate-spin"/>
+                    <span>Checking status...</span>
+                </div>
+            )}
+            {!isCheckingApi && apiStatus === 'online' && (
+                <div className="flex items-center gap-1.5 text-green-600">
+                    <CheckCircle className="h-3 w-3"/>
+                    <span>API is online</span>
+                </div>
+            )}
+            {!isCheckingApi && apiStatus === 'offline' && (
+                <div className="flex items-center gap-1.5 text-red-600">
+                    <XCircle className="h-3 w-3"/>
+                    <span>API is offline</span>
+                </div>
+            )}
         </div>
       </div>
     </>
