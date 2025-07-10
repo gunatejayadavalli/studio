@@ -3,7 +3,12 @@
 import { config } from './config';
 import type { User, Property, Booking, InsurancePlan, PropertyFormValues, ChatMessage } from './types';
 
-const { apiBaseUrl } = config;
+let apiBaseUrl = config.apiUrls.local;
+
+export const setApiBaseUrl = (endpoint: 'local' | 'cloud') => {
+    apiBaseUrl = config.apiUrls[endpoint];
+    console.log(`API base URL set to: ${apiBaseUrl}`);
+};
 
 async function fetchWrapper(endpoint: string, options?: RequestInit) {
   try {

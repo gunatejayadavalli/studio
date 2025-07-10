@@ -11,8 +11,46 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Server, Cloud } from 'lucide-react';
 import logo from '@/data/airbnblite_logo-trans-bg.png';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+
+function DeveloperSettings() {
+  const { apiEndpoint, setApiEndpoint } = useAuth();
+  const [isChecked, setIsChecked] = useState(apiEndpoint === 'cloud');
+
+  const handleToggle = (checked: boolean) => {
+    const newEndpoint = checked ? 'cloud' : 'local';
+    setApiEndpoint(newEndpoint);
+    setIsChecked(checked);
+  };
+
+  if (!setApiEndpoint) return null;
+
+  return (
+    <>
+      <Separator className="my-6" />
+      <div className="space-y-3 px-6 pb-4">
+        <Label className="text-xs font-semibold text-muted-foreground">Developer Settings</Label>
+        <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            {isChecked ? <Cloud className="h-5 w-5 text-primary" /> : <Server className="h-5 w-5 text-primary" />}
+            <Label htmlFor="api-switch" className="text-sm">
+              API: <span className="font-bold">{isChecked ? 'Cloud' : 'Local'}</span>
+            </Label>
+          </div>
+          <Switch
+            id="api-switch"
+            checked={isChecked}
+            onCheckedChange={handleToggle}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState('alex@gmail.com');
@@ -110,6 +148,7 @@ export default function LoginPage() {
             Register
           </Link>
         </CardFooter>
+        <DeveloperSettings />
       </Card>
     </div>
   );

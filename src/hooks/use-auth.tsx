@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import * as apiClient from '@/lib/api-client';
 
+type ApiEndpoint = 'local' | 'cloud';
+
 type AuthContextType = {
   user: User | null;
   mode: 'guest' | 'host';
@@ -16,6 +18,8 @@ type AuthContextType = {
   updateUser: (data: Partial<User>) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message?: string }>;
   isLoading: boolean;
+  apiEndpoint: ApiEndpoint;
+  setApiEndpoint: (endpoint: ApiEndpoint) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [mode, setModeState] = useState<'guest' | 'host'>('guest');
   const [isLoading, setIsLoading] = useState(true);
+  const [apiEndpoint, setApiEndpointState] = useState<ApiEndpoint>('local');
   const router = useRouter();
   const pathname = usePathname();
 
@@ -35,15 +40,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         }
+        const storedEndpoint = localStorage.getItem('apiEndpoint') as ApiEndpoint | null;
+        if (storedEndpoint && ['local', 'cloud'].includes(storedEndpoint)) {
+            setApiEndpointState(storedEndpoint);
+            apiClient.setApiBaseUrl(storedEndpoint);
+        } else {
+            apiClient.setApiBaseUrl('local');
+        }
       } catch (error) {
         console.error("Failed to parse auth data from localStorage", error);
         localStorage.removeItem('airbnbUser');
+        localStorage.removeItem('apiEndpoint');
       } finally {
         setIsLoading(false);
       }
     };
     loadUserFromStorage();
   }, []);
+
+  const setApiEndpoint = (endpoint: ApiEndpoint) => {
+    localStorage.setItem('apiEndpoint', endpoint);
+    setApiEndpointState(endpoint);
+    apiClient.setApiBaseUrl(endpoint);
+  };
 
   useEffect(() => {
     if (user?.isHost) {
@@ -120,7 +139,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setMode,
     updateUser,
     changePassword,
-    isLoading
+    isLoading,
+    apiEndpoint,
+    setApiEndpoint,
   };
 
   return (
