@@ -1,3 +1,4 @@
+
 import mysql.connector,os,io,json,logging,requests,configparser
 from flask import Flask, jsonify, request
 from openai import OpenAI
@@ -647,6 +648,8 @@ def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, b
             search_results = vector_db_service.search_policy_documents(user_query, policy_source_url)
             logging.info(f"Vector search returned {len(search_results)} results.")
             if search_results:
+                for i, result in enumerate(search_results):
+                    logging.info(f"\n--- Retrieved Chunk {i+1} ---\n{result.payload['text']}\n---------------------------\n")
                 policy_text = "\n\n".join([result.payload['text'] for result in search_results])
                 lines.extend(["\n--- Relevant Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
             else:
