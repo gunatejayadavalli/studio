@@ -639,18 +639,20 @@ def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, b
         lines.extend([f"- {benefit}" for benefit in current_plan['benefits']])
 
     if policy_source_url:
+        use_fallback = False
         if method == 'vector_search':
             logging.info(f"Performing vector search for query: '{user_query}'")
-            # Ingest document if not already processed
             vector_db_service.get_or_create_policy_embeddings(policy_source_url)
-            # Search for relevant context
             search_results = vector_db_service.search_policy_documents(user_query, policy_source_url)
+            
             if search_results:
                 policy_text = "\n\n".join([result.payload['text'] for result in search_results])
                 lines.extend(["\n--- Relevant Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
             else:
-                lines.append("\n(Could not find relevant details in the policy document for this query.)")
-        else: # Default to pdf_extract
+                logging.warning(f"Vector search for '{user_query}' returned no results. Falling back to PDF extraction.")
+                use_fallback = True
+        
+        if method == 'pdf_extract' or use_fallback:
             policy_text = extract_text_from_pdf_url(policy_source_url)
             if policy_text:
                 lines.extend(["\n--- Full Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
