@@ -562,7 +562,9 @@ def get_query_category(user_query, chat_history):
             messages=messages_to_send,
             response_format={"type": "json_object"}
         )
-        response = json.loads(completion.choices[0].message.content)
+        response_content = completion.choices[0].message.content
+        logging.info(f"\n--- OpenAI Response (get_query_category) ---\n{response_content}\n---------------------------\n")
+        response = json.loads(response_content)
         category = response.get("category", "GENERAL")
         logging.info(f"Query classification successful. Category: {category}")
         return category
@@ -737,6 +739,7 @@ def chat_with_bot():
             messages=messages_to_send
         )
         response_text = completion.choices[0].message.content
+        logging.info(f"\n--- OpenAI Response (Chat) ---\n{response_text}\n---------------------------\n")
         return jsonify({"response": response_text})
     except Exception as e:
         logging.error(f"Error calling OpenAI in /chat: {e}")
@@ -815,6 +818,7 @@ def chat_with_bot_optimized():
             messages=messages_to_send
         )
         response_text = completion.choices[0].message.content
+        logging.info(f"\n--- OpenAI Response (Optimized) ---\n{response_text}\n---------------------------\n")
         return jsonify({"response": response_text})
     except Exception as e:
         logging.error(f"Error calling OpenAI in /chatOptimized: {e}")
@@ -874,6 +878,7 @@ def chat_checkout():
             messages=messages_to_send
         )
         response_text = completion.choices[0].message.content
+        logging.info(f"\n--- OpenAI Response (Chat Checkout) ---\n{response_text}\n---------------------------\n")
         return jsonify({"response": response_text})
     except Exception as e:
         logging.error(f"Error calling OpenAI in /chatCheckout: {e}")
@@ -936,6 +941,7 @@ def suggest_insurance_message_endpoint():
             max_tokens=100
         )
         response_text = completion.choices[0].message.content.strip()
+        logging.info(f"\n--- OpenAI Response (Suggest Insurance) ---\n{response_text}\n---------------------------\n")
         return jsonify({ "message": response_text })
     except Exception as e:
         logging.error(f"Error calling OpenAI for insurance suggestion: {e}")
@@ -945,4 +951,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 
     
+    
+
     
