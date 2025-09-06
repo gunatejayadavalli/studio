@@ -1,4 +1,3 @@
-
 import mysql.connector,os,io,json,logging,requests,configparser
 from flask import Flask, jsonify, request
 from openai import OpenAI
@@ -20,7 +19,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 # --- Database Configuration ---
-db_env = os.getenv('DB_ENV', 'local')
+db_env = os.getenv('DB_ENV', 'cloud')
 
 db_config = {
     'host': config.get(db_env, 'DB_HOST', fallback=None),
@@ -646,7 +645,7 @@ def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, b
             logging.info(f"Performing vector search for query: '{user_query}'")
             vector_db_service.get_or_create_policy_embeddings(policy_source_url)
             search_results = vector_db_service.search_policy_documents(user_query, policy_source_url)
-            
+            logging.info(f"Vector search returned {len(search_results)} results.")
             if search_results:
                 policy_text = "\n\n".join([result.payload['text'] for result in search_results])
                 lines.extend(["\n--- Relevant Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
@@ -949,8 +948,3 @@ def suggest_insurance_message_endpoint():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
-
-    
-    
-
-    
