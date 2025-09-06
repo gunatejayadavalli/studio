@@ -621,6 +621,7 @@ def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, b
     lines = ["== Insurance Details =="]
     policy_text = None
     policy_source_url = None
+    current_plan = insurance_plan or eligible_insurance_plan
     
     if insurance_plan:
         lines.append(f"The user has purchased: {insurance_plan.get('name')}")
@@ -632,6 +633,10 @@ def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, b
     else:
         lines.append("No insurance was purchased, and it's no longer possible to add it.")
         policy_source_url = None
+
+    if current_plan and current_plan.get('benefits'):
+        lines.append("\n== High-level Benefits ==")
+        lines.extend([f"- {benefit}" for benefit in current_plan['benefits']])
 
     if policy_source_url:
         if method == 'vector_search':
@@ -937,4 +942,5 @@ def suggest_insurance_message_endpoint():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 
+    
     
