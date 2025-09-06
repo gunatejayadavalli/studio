@@ -1,9 +1,11 @@
+
 import mysql.connector,os,io,json,logging,requests,configparser
 from flask import Flask, jsonify, request
 from openai import OpenAI
 from datetime import date
 from pypdf import PdfReader
 from flask_cors import CORS
+import vector_db_service
 
 # --- Logging Configuration ---
 # Configure logging to write to a file named 'app.log'
@@ -34,9 +36,15 @@ openai_api_key = config.get('openai', 'OPENAI_API_KEY', fallback=None)
 if openai_api_key:
     client = OpenAI(api_key=openai_api_key)
     print("OpenAI client initialized successfully.")
+    vector_db_service.initialize(client)
 else:
-    print("Warning: OPENAI_API_KEY not found. The /chat endpoint will not work.")
+    print("Warning: OPENAI_API_KEY not found. AI endpoints will not work.")
     client = None
+
+# --- Dynamic App Configuration ---
+app_config = {
+    'insurance_context_method': config.get('app', 'insurance_context_method', fallback='pdf_extract')
+}
 
 # --- Helper function to get database connection ---
 def get_db_connection():
@@ -144,6 +152,21 @@ def extract_text_from_pdf_url(pdf_url):
 def index():
     logging.info(f"Received request for {request.method} {request.path}")
     return jsonify({"message": "Welcome to the AirbnbLite API!"})
+
+# --- Config Route ---
+@app.route(context+'/config/insurance-method', methods=['GET', 'POST'])
+def manage_insurance_method():
+    if request.method == 'GET':
+        return jsonify({"method": app_config['insurance_context_method']})
+    elif request.method == 'POST':
+        data = request.json
+        new_method = data.get('method')
+        if new_method in ['pdf_extract', 'vector_search']:
+            app_config['insurance_context_method'] = new_method
+            logging.info(f"Insurance context method switched to: {new_method}")
+            return jsonify({"message": f"Method switched to {new_method}", "method": new_method}), 200
+        else:
+            return jsonify({"error": "Invalid method. Must be 'pdf_extract' or 'vector_search'."}), 400
 
 # --- User Routes ---
 @app.route(context+'/users', methods=['GET'])
@@ -587,41 +610,48 @@ def get_property_context(property_data, host_data):
     ])
     return "\n".join(lines)
 
-def get_insurance_context(insurance_plan, eligible_insurance_plan, booking):
+def get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, booking):
     """
     Builds context for insurance questions.
-    In a real-world app, this function would use the user's query to perform a
-    semantic search (RAG) over a vector database of insurance documents.
+    Uses either full PDF extraction or vector search based on app config.
     """
+    method = app_config['insurance_context_method']
+    logging.info(f"Building insurance context using method: {method}")
+
     lines = ["== Insurance Details =="]
+    policy_text = None
+    policy_source_url = None
+    
     if insurance_plan:
         lines.append(f"The user has purchased: {insurance_plan.get('name')}")
-        if 'benefits' in insurance_plan and insurance_plan['benefits']:
-            lines.append("\nHigh-level Benefits:")
-            lines.extend([f"- {benefit}" for benefit in insurance_plan.get('benefits', [])])
-        
-        if insurance_plan.get('termsUrl'):
-            policy_text = extract_text_from_pdf_url(insurance_plan['termsUrl'])
-            if policy_text:
-                lines.extend(["\n--- Full Insurance Policy Details ---", policy_text, "--- End of Policy ---"])
-            else:
-                 lines.append("\n(Could not load the full insurance policy document.)")
+        policy_source_url = insurance_plan.get('termsUrl')
     elif eligible_insurance_plan:
         lines.append("The user has NOT purchased insurance but is eligible for the following plan. To purchase, the guest can add and pay for it on the Trip Details page.")
         lines.append(f"Eligible Plan Name: {eligible_insurance_plan.get('name')}")
-        if 'benefits' in eligible_insurance_plan and eligible_insurance_plan['benefits']:
-            lines.append("\nHigh-level Benefits of Eligible Plan:")
-            lines.extend([f"- {benefit}" for benefit in eligible_insurance_plan.get('benefits', [])])
-        
-        if eligible_insurance_plan.get('termsUrl'):
-            policy_text = extract_text_from_pdf_url(eligible_insurance_plan['termsUrl'])
-            if policy_text:
-                lines.extend(["\n--- Full Policy Details for Eligible Plan ---", policy_text, "--- End of Policy ---"])
-            else:
-                 lines.append("\n(Could not load the full policy document.)")
+        policy_source_url = eligible_insurance_plan.get('termsUrl')
     else:
         lines.append("No insurance was purchased, and it's no longer possible to add it.")
-    
+        policy_source_url = None
+
+    if policy_source_url:
+        if method == 'vector_search':
+            logging.info(f"Performing vector search for query: '{user_query}'")
+            # Ingest document if not already processed
+            vector_db_service.get_or_create_policy_embeddings(policy_source_url)
+            # Search for relevant context
+            search_results = vector_db_service.search_policy_documents(user_query, policy_source_url)
+            if search_results:
+                policy_text = "\n\n".join([result.payload['text'] for result in search_results])
+                lines.extend(["\n--- Relevant Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
+            else:
+                lines.append("\n(Could not find relevant details in the policy document for this query.)")
+        else: # Default to pdf_extract
+            policy_text = extract_text_from_pdf_url(policy_source_url)
+            if policy_text:
+                lines.extend(["\n--- Full Insurance Policy Details ---", policy_text, "--- End of Policy Details ---"])
+            else:
+                 lines.append("\n(Could not load the full insurance policy document.)")
+
     lines.extend([
         "\n== Policy ==",
         "Answer questions based on the provided insurance details. To cancel only the travel insurance while keeping the reservation, the guest must contact support at support@airbnblite.com.",
@@ -663,11 +693,13 @@ def chat_with_bot():
     if not all([chat_messages, booking, property_data, host_data]):
         logging.warning("Chat request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
+    
+    user_query = chat_messages[-1]['text'] if chat_messages else ""
 
     # Build a single, large context string by combining all available information
     booking_context = get_booking_context(booking)
     property_context = get_property_context(property_data, host_data)
-    insurance_context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
+    insurance_context = get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, booking)
     cancellation_context = get_cancellation_context(booking)
     
     full_context = f"{booking_context}\n\n{property_context}\n\n{insurance_context}\n\n{cancellation_context}"
@@ -740,7 +772,7 @@ def chat_with_bot_optimized():
     elif category == "PROPERTY":
         context = get_property_context(property_data, host_data)
     elif category == "INSURANCE":
-        context = get_insurance_context(insurance_plan, eligible_insurance_plan, booking)
+        context = get_insurance_context(user_query, insurance_plan, eligible_insurance_plan, booking)
     elif category == "CANCELLATION":
         context = get_cancellation_context(booking)
     # For "GENERAL", we provide a minimal context.
@@ -798,9 +830,14 @@ def chat_checkout():
         logging.warning("Checkout chat request failed: Missing required fields")
         return jsonify({"error": "Missing required fields"}), 400
     
+    # Extract the latest user query
+    user_query = chat_messages[-1]['text'] if chat_messages else ""
+    if not user_query:
+        return jsonify({"response": "I'm sorry, I didn't get your message. Could you please repeat?"})
+
     # Context is focused ONLY on the eligible insurance plan
     # Pass `None` for booking as it's not created yet
-    context = get_insurance_context(None, eligible_insurance_plan, None)
+    context = get_insurance_context(user_query, None, eligible_insurance_plan, None)
 
     system_prompt = f"""
     You are an expert insurance assistant for the travel app AirbnbLite.
@@ -899,3 +936,5 @@ def suggest_insurance_message_endpoint():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
+
+    
