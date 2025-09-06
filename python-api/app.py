@@ -810,7 +810,7 @@ def chat_with_bot_optimized():
         *openai_messages
     ]
 
-    logging.info("\n--- Prompt sent to OpenAI (Optimized) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
+    logging.info("\n--- Prompt sent to OpenAI (Chat Optimized) ---\n" + json.dumps(messages_to_send, indent=2) + "\n---------------------------\n")
 
     try:
         completion = client.chat.completions.create(
@@ -818,7 +818,7 @@ def chat_with_bot_optimized():
             messages=messages_to_send
         )
         response_text = completion.choices[0].message.content
-        logging.info(f"\n--- OpenAI Response (Optimized) ---\n{response_text}\n---------------------------\n")
+        logging.info(f"\n--- OpenAI Response (Chat Optimized) ---\n{response_text}\n---------------------------\n")
         return jsonify({"response": response_text})
     except Exception as e:
         logging.error(f"Error calling OpenAI in /chatOptimized: {e}")
