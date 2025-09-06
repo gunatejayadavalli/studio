@@ -81,8 +81,17 @@ def get_or_create_policy_embeddings(pdf_url):
         logging.error(f"Failed to download or parse PDF from {pdf_url}: {e}")
         return
 
-    # 2. Chunk Text
-    chunks = [p.strip() for p in full_text.split('\n\n') if p.strip()]
+    # 2. Chunk Text with overlap
+    chunk_size = 1000  # characters
+    chunk_overlap = 200 # characters
+    
+    chunks = []
+    start = 0
+    while start < len(full_text):
+        end = start + chunk_size
+        chunks.append(full_text[start:end])
+        start += chunk_size - chunk_overlap
+
     logging.info(f"Split document into {len(chunks)} chunks.")
 
     # 3. Embed Chunks
@@ -101,22 +110,27 @@ def get_or_create_policy_embeddings(pdf_url):
         
     # 4. Create Collection if it doesn't exist
     try:
-        qdrant_client.recreate_collection(
-            collection_name=collection_name,
-            vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
-            on_disk_payload=True
-        )
-        logging.info(f"Collection '{collection_name}' created or recreated successfully.")
-        
-        # Create a payload index for the 'source' field to enable filtering
-        qdrant_client.create_payload_index(
-            collection_name=collection_name,
-            field_name="source",
-            field_schema=models.PayloadSchemaType.KEYWORD
-        )
-        logging.info("Payload index for 'source' field created successfully.")
+        # qdrant_client.recreate_collection is a convenience method that does this check internally.
+        # But we do it explicitly to add the payload index only on creation.
+        try:
+             qdrant_client.get_collection(collection_name=collection_name)
+        except Exception:
+            logging.info(f"Collection '{collection_name}' not found. Creating it.")
+            qdrant_client.recreate_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
+                on_disk_payload=True
+            )
+            qdrant_client.create_payload_index(
+                collection_name=collection_name,
+                field_name="source",
+                field_schema=models.PayloadSchemaType.KEYWORD
+            )
+            logging.info(f"Collection '{collection_name}' and payload index created successfully.")
+
     except Exception as e:
-        logging.warning(f"Could not recreate collection or index '{collection_name}', it might already exist. Error: {e}")
+        logging.error(f"Failed to create collection or index '{collection_name}'. Error: {e}")
+        return # Stop if we can't create the collection
         
     # 5. Upsert to Qdrant
     try:
