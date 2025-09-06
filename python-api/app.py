@@ -1,4 +1,4 @@
-import mysql.connector,os,io,json,logging,requests
+import mysql.connector,os,io,json,logging,requests,configparser
 from flask import Flask, jsonify, request
 from openai import OpenAI
 from datetime import date
@@ -14,23 +14,29 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-# --- OpenAI Configuration ---
-api_key = os.getenv('OPENAI_API_KEY')
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-if api_key:
-    client = OpenAI(api_key=api_key)
+# --- Database Configuration ---
+db_env = os.getenv('DB_ENV', 'local')
+
+db_config = {
+    'host': config.get(db_env, 'DB_HOST', fallback=None),
+    'port': config.get(db_env, 'DB_PORT', fallback=None),
+    'user': config.get(db_env, 'DB_USER', fallback=None),
+    'password': config.get(db_env, 'DB_PASSWORD', fallback=None),
+    'database': config.get(db_env, 'DB_NAME', fallback=None)
+}
+
+# --- OpenAI Configuration ---
+openai_api_key = config.get('openai', 'OPENAI_API_KEY', fallback=None)
+
+if openai_api_key:
+    client = OpenAI(api_key=openai_api_key)
+    print("OpenAI client initialized successfully.")
 else:
     print("Warning: OPENAI_API_KEY not found. The /chat endpoint will not work.")
     client = None
-
-# --- Database Configuration ---
-db_config = {
-    'host': os.getenv('DB_HOST', '13.223.36.156'),
-    'port': os.getenv('DB_PORT', '3306'),
-    'user': os.getenv('DB_USER', 'root'),
-    'password': os.getenv('DB_PASSWORD', 'Mypass@123'),
-    'database': os.getenv('DB_NAME', 'airbnblite-db')
-}
 
 # --- Helper function to get database connection ---
 def get_db_connection():
