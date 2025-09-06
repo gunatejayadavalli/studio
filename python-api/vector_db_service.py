@@ -107,8 +107,16 @@ def get_or_create_policy_embeddings(pdf_url):
             on_disk_payload=True
         )
         logging.info(f"Collection '{collection_name}' created or recreated successfully.")
+        
+        # Create a payload index for the 'source' field to enable filtering
+        qdrant_client.create_payload_index(
+            collection_name=collection_name,
+            field_name="source",
+            field_schema=models.PayloadSchemaType.KEYWORD
+        )
+        logging.info("Payload index for 'source' field created successfully.")
     except Exception as e:
-        logging.warning(f"Could not recreate collection '{collection_name}', it might already exist. Error: {e}")
+        logging.warning(f"Could not recreate collection or index '{collection_name}', it might already exist. Error: {e}")
         
     # 5. Upsert to Qdrant
     try:
